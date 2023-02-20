@@ -67,7 +67,7 @@ class Particle:
 
     def move_object(self):
         x, y, z = self.position.get_tuple()
-        x, y, z = self.perspective_projection(x, y, z)
+        # x, y, z = self.perspective_projection(x, y, z)
         diameter = tuple(dim + z for dim in self.diameter)
         diameter = tuple(min(float("inf"), max(0.001, d)) for d in diameter)
         print(diameter)
