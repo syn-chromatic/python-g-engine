@@ -307,7 +307,7 @@ class Simulation:
                 self.timestep_adjustment(frame_time)
                 continue
             self.turtle_screen.update()
-            time.sleep(frame_time)
+            time.sleep(frame_hold)
 
 
 sim = Simulation()

@@ -69,8 +69,7 @@ class Particle:
         x, y, z = self.position.get_tuple()
         # x, y, z = self.perspective_projection(x, y, z)
         diameter = tuple(dim + z for dim in self.diameter)
-        diameter = tuple(min(float("inf"), max(0.001, d)) for d in diameter)
-        print(diameter)
+        diameter = tuple(min(float("inf"), max(0.1, d)) for d in diameter)
         # self.trail_thickness = int(self.trail_thickness + z)
 
         self.turtle.pensize(self.trail_thickness)
@@ -149,10 +148,12 @@ class Simulation:
     def add_center_particle(self) -> None:
         x, y = 0, 0
         z = 0
+        mass = 500_000
+
         p = Particle(x, y, z)
-        p.set_velocity(0, 0, 0.01)
+        p.set_velocity(0, 0, 0)
         p.set_color((0.5, 0.2, 0.2))
-        p.set_mass(500_000)
+        p.set_mass(mass)
         p.set_diameter((10, 10))
         self.particles.append(p)
 
@@ -161,8 +162,8 @@ class Simulation:
         z = 0
         p = Particle(x, y, z)
         p.set_diameter((0.5, 0.5))
-        p.set_velocity(5, -10, 0.01)
-        mass = random.uniform(1, 1000)
+        p.set_velocity(10, -5, 0.5)
+        mass = random.uniform(50, 500)
         p.set_mass(mass)
         p.set_diameter((mass * 0.001, mass * 0.001))
 

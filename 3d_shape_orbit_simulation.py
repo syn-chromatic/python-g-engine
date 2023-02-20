@@ -253,7 +253,7 @@ class Simulation:
         self.objects: list[ShapeProjector] = []
         self.turtle_screen = turtle.Screen()
         self.turtle_screen.tracer(0)
-        self.turtle_screen.bgcolor((0.1, 0.1, 0.1))
+        self.turtle_screen.bgcolor((0.15, 0.15, 0.15))
         self.turtle_screen.title("Orbital System")
         self.timestep = 0.01
 
@@ -279,20 +279,20 @@ class Simulation:
 
         p = ShapeProjector(shape, x, y, z)
         p.set_velocity(0, 0, 0)
-        p.set_color((0.8, 0.2, 0.2))
+        p.set_color((0.8, 0.3, 0.3))
         p.set_mass(mass)
         p.set_scale(mass / 10000)
         p.update()
         self.objects.append(p)
 
     def add_orbiting_object(self) -> None:
-        x, y = random.uniform(-400, -200), random.uniform(-400, -200)
+        x, y = random.uniform(-300, -200), random.uniform(-300, -200)
         z = 0
         shape = self.get_shape()
         mass = random.uniform(50, 500)
 
         p = ShapeProjector(shape, x, y, z)
-        p.set_velocity(5, -10, 0.1)
+        p.set_velocity(10, -5, 0.5)
         p.set_mass(mass)
         p.set_scale(mass / 50)
         p.update()
@@ -318,17 +318,18 @@ class Simulation:
         self.turtle_screen.update()
 
     def start_simulation(self):
+        input()
         while True:
-            frame_st = time.process_time()
+            frame_st = time.perf_counter()
             self.compute_all_objects()
-            frame_time = time.process_time() - frame_st
+            frame_time = time.perf_counter() - frame_st
             frame_hold = self.timestep - frame_time
 
             if frame_hold < 0:
                 self.timestep_adjustment(frame_time)
                 continue
             self.turtle_screen.update()
-            time.sleep(frame_time)
+            time.sleep(frame_hold)
 
 
 sim = Simulation()
