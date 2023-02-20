@@ -43,7 +43,7 @@ class Vector3D:
 class Particle:
     def __init__(self, x: float, y: float, z: float) -> None:
         self.position = Vector3D(x, y, z)
-        self.velocity = Vector3D(0, 0, 0.01)
+        self.velocity = Vector3D(0, 0, 0)
         self.acceleration = Vector3D(0, 0, 0)
         self.visible = True
         self.mass = 1
@@ -58,17 +58,19 @@ class Particle:
 
     @staticmethod
     def perspective_projection(x, y, z) -> tuple[float, float, float]:
-        distance = 1
+        distance = 5
 
-        z = 1 / (distance - z)
-        x = x * z
-        y = y * z
+        t = 1 / (distance - z)
+        x = x * t
+        y = y * t
         return (x, y, z)
 
     def move_object(self):
         x, y, z = self.position.get_tuple()
-        # x, y, z = self.perspective_projection(x, y, z)
+        x, y, z = self.perspective_projection(x, y, z)
         diameter = tuple(dim + z for dim in self.diameter)
+        diameter = tuple(min(float("inf"), max(0.001, d)) for d in diameter)
+        print(diameter)
         # self.trail_thickness = int(self.trail_thickness + z)
 
         self.turtle.pensize(self.trail_thickness)
@@ -97,14 +99,16 @@ class Particle:
         self.velocity.y = random.uniform(min_range, max_range)
         return self
 
-    def set_velocity(self, x: float, y: float) -> Self:
+    def set_velocity(self, x: float, y: float, z: float) -> Self:
         self.velocity.x = x
         self.velocity.y = y
+        self.velocity.z = z
         return self
 
-    def set_acceleration(self, x: float, y: float) -> Self:
+    def set_acceleration(self, x: float, y: float, z: float) -> Self:
         self.acceleration.x = x
         self.acceleration.y = y
+        self.acceleration.z = z
         return self
 
     def update(self) -> Self:
@@ -146,6 +150,7 @@ class Simulation:
         x, y = 0, 0
         z = 0
         p = Particle(x, y, z)
+        p.set_velocity(0, 0, 0.01)
         p.set_color((0.5, 0.2, 0.2))
         p.set_mass(500_000)
         p.set_diameter((10, 10))
@@ -156,7 +161,7 @@ class Simulation:
         z = 0
         p = Particle(x, y, z)
         p.set_diameter((0.5, 0.5))
-        p.set_velocity(5, -10)
+        p.set_velocity(5, -10, 0.01)
         mass = random.uniform(1, 1000)
         p.set_mass(mass)
         p.set_diameter((mass * 0.001, mass * 0.001))
