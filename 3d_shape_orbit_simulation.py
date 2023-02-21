@@ -241,7 +241,7 @@ class ShapeProjector(ShapeProjectorBase):
     def apply_attraction(self, target: Self) -> None:
         force = target._position.subtract_vector(self._position)
         distance = force.get_length()
-        g_const = 0.0005
+        g_const = 0.0001
         strength = g_const * (self._mass * target._mass) / distance
         force = force.set_magnitude(strength)
         self.apply_force(force)
@@ -308,7 +308,7 @@ class Simulation:
         mass = random.uniform(50, 100)
 
         p = ShapeProjector(shape, x, y, z)
-        p.set_velocity(20, -3, 1)
+        p.set_velocity(10, -3, 1)
         p.set_mass(mass)
         p.set_scale(mass / 50)
         p.update_object()
@@ -338,6 +338,7 @@ class Simulation:
         self.turtle_object.write(fps, font=("Arial", 24, "normal"))
 
     def start_simulation(self):
+        input()
         while True:
             frame_st = time.perf_counter()
             self.compute_all_objects()
