@@ -40,7 +40,7 @@ class Vector3D:
         return self
 
 
-class ShapeProjectorBase:
+class ShapeBase:
     def __init__(
         self, shape: list[tuple[float, float, float]], x: float, y: float, z: float
     ):
@@ -107,7 +107,13 @@ class ShapeProjectorBase:
         self._turtle_object.pencolor(*color)
         self._turtle_object.fillcolor(*color)
 
-    def _draw_line(
+    def _draw_line(self, p1: tuple[float, float], p2: tuple[float, float]):
+        self._turtle_object.penup()
+        self._turtle_object.goto(*p1)
+        self._turtle_object.pendown()
+        self._turtle_object.goto(*p2)
+
+    def _draw_edge(
         self,
         a: tuple[float, float, float],
         b: tuple[float, float, float],
@@ -115,8 +121,6 @@ class ShapeProjectorBase:
         scale: float,
         color_shading: float,
     ):
-        # a = self._perspective_projection(*a)
-        # b = self._perspective_projection(*b)
         x1 = a[0] * scale + position[0]
         y1 = a[1] * scale + position[1]
         x2 = b[0] * scale + position[0]
@@ -124,14 +128,23 @@ class ShapeProjectorBase:
 
         color = tuple((i * color_shading for i in self._color))
         self._set_color(color)
-        self._turtle_object.penup()
-        self._turtle_object.goto(x1, y1)
-        self._turtle_object.pendown()
-        self._turtle_object.goto(x2, y2)
+        self._draw_line((x1, y1), (x2, y2))
         self._set_color(color)
 
+    def _draw_edge_perspective(
+        self,
+        a: tuple[float, float, float],
+        b: tuple[float, float, float],
+        position: tuple[float, float, float],
+        scale: float,
+        color_shading: float,
+    ):
+        a = self._perspective_projection(*a)
+        b = self._perspective_projection(*b)
+        self._draw_edge(a, b, position, scale, color_shading)
 
-class ShapeProjector(ShapeProjectorBase):
+
+class Shape(ShapeBase):
     def __init__(
         self, shape: list[tuple[float, float, float]], x: float, y: float, z: float
     ):
@@ -147,9 +160,9 @@ class ShapeProjector(ShapeProjectorBase):
             shape_s1 = self._shape[s1]
             shape_s2 = self._shape[s2]
             shape_s3 = self._shape[s3]
-            self._draw_line(shape_i, shape_s1, position, scale, 1.0)
-            self._draw_line(shape_i, shape_s2, position, scale, 0.85)
-            self._draw_line(shape_s2, shape_s3, position, scale, 0.75)
+            self._draw_edge(shape_i, shape_s1, position, scale, 1.0)
+            self._draw_edge(shape_i, shape_s2, position, scale, 0.85)
+            self._draw_edge(shape_s2, shape_s3, position, scale, 0.75)
 
     def add_x_angle_rotation(self, rotation: float):
         self._x_angle += rotation
@@ -189,10 +202,6 @@ class ShapeProjector(ShapeProjectorBase):
     def set_color(self, color: tuple[float, float, float]) -> None:
         self._color = color
         self._set_color(color)
-
-    def with_trail(self) -> Self:
-        self._turtle_object.pendown()
-        return self
 
     def random_velocity(self, min_range: float = 0, max_range: float = 1) -> Self:
         self._velocity.x = random.uniform(min_range, max_range)
@@ -257,7 +266,7 @@ class Simulation:
         self.setup_turtle_screen()
         self.setup_turtle_object()
 
-        self.objects: list[ShapeProjector] = []
+        self.objects: list[Shape] = []
         self.timestep = 0.1
 
     def setup_turtle_screen(self):
@@ -293,7 +302,7 @@ class Simulation:
         shape = self.get_shape()
         mass = 800_000
 
-        p = ShapeProjector(shape, x, y, z)
+        p = Shape(shape, x, y, z)
         p.set_velocity(0, 0, 0)
         p.set_color((0.8, 0.3, 0.3))
         p.set_mass(mass)
@@ -307,7 +316,7 @@ class Simulation:
         shape = self.get_shape()
         mass = random.uniform(50, 100)
 
-        p = ShapeProjector(shape, x, y, z)
+        p = Shape(shape, x, y, z)
         p.set_velocity(10, -3, 1)
         p.set_mass(mass)
         p.set_scale(mass / 50)
