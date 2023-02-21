@@ -217,7 +217,7 @@ class ShapeProjector(ShapeProjectorBase):
         position = self._position.get_tuple()
         self.draw_shape(position, scale)
 
-    def update(self) -> Self:
+    def update_object(self) -> Self:
         self._position = self._position.add_vector(self._velocity)
         self._velocity = self._velocity.add_vector(self._acceleration)
         self._acceleration = self._acceleration.multiply(0)
@@ -291,7 +291,7 @@ class Simulation:
         p.set_color((0.8, 0.3, 0.3))
         p.set_mass(mass)
         p.set_scale(mass / 10_000)
-        p.update()
+        p.update_object()
         self.objects.append(p)
 
     def add_orbiting_object(self) -> None:
@@ -304,12 +304,12 @@ class Simulation:
         p.set_velocity(10, -5, 0.5)
         p.set_mass(mass)
         p.set_scale(mass / 50)
-        p.update()
+        p.update_object()
         self.objects.append(p)
 
     def setup_objects(self) -> None:
         self.add_center_object()
-        for _ in range(25):
+        for _ in range(10):
             self.add_orbiting_object()
         self.turtle_screen.update()
 
@@ -319,11 +319,10 @@ class Simulation:
                 if pl1 != pl2:
                     pl1.apply_attraction(pl2)
 
-            pl1.update()
+            pl1.update_object()
 
     def timestep_adjustment(self, frame_en: float) -> int:
         self.timestep = frame_en
-        self.turtle_screen.update()
         return 0
 
     def write_fps(self, frame_time: float):
