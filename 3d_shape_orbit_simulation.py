@@ -44,10 +44,10 @@ class ShapeProjectorBase:
     def __init__(
         self, shape: list[tuple[float, float, float]], x: float, y: float, z: float
     ):
-        self._shape = shape
-        self._turtle_screen = turtle.Screen()
         self._turtle_object = turtle.Turtle()
-        self._setup_turtle()
+        self._setup_turtle_object()
+
+        self._shape = shape
         self._mouse_states = [[], []]
         self._color = (1.0, 1.0, 1.0)
 
@@ -62,7 +62,7 @@ class ShapeProjectorBase:
         self._mass = 1
         self._size = 1
 
-    def _setup_turtle(self):
+    def _setup_turtle_object(self):
         self._turtle_object.pencolor("light blue")
         self._turtle_object.pensize(3)
         self._turtle_object.hideturtle()
@@ -252,19 +252,26 @@ class Simulation:
     def __init__(self) -> None:
         self.canvas_width = 300
         self.canvas_height = 300
-        self.objects: list[ShapeProjector] = []
         self.turtle_screen = turtle.Screen()
+        self.turtle_object = turtle.Turtle()
+        self.setup_turtle_screen()
+        self.setup_turtle_object()
+
+        self.objects: list[ShapeProjector] = []
+        self.timestep = 0.1
+
+    def setup_turtle_screen(self):
         self.turtle_screen.screensize(self.canvas_width, self.canvas_height)
         self.turtle_screen.tracer(0)
         self.turtle_screen.bgcolor((0.15, 0.15, 0.15))
         self.turtle_screen.title("Orbital System")
-        self.turtle_object = turtle.Turtle()
+
+    def setup_turtle_object(self):
         self.turtle_object.hideturtle()
         self.turtle_object.pencolor((0.8, 0.8, 0.8))
         self.turtle_object.fillcolor((0.8, 0.8, 0.8))
         self.turtle_object.penup()
         self.turtle_object.goto(-self.canvas_width, self.canvas_height)
-        self.timestep = 0.1
 
     @staticmethod
     def get_shape():
@@ -284,7 +291,7 @@ class Simulation:
         x, y = 0, 0
         z = 0
         shape = self.get_shape()
-        mass = 500_000
+        mass = 800_000
 
         p = ShapeProjector(shape, x, y, z)
         p.set_velocity(0, 0, 0)
@@ -295,13 +302,13 @@ class Simulation:
         self.objects.append(p)
 
     def add_orbiting_object(self) -> None:
-        x, y = random.uniform(-200, -100), random.uniform(-200, -100)
+        x, y = random.uniform(-100, -50), random.uniform(-100, -50)
         z = 0
         shape = self.get_shape()
-        mass = random.uniform(50, 500)
+        mass = random.uniform(50, 100)
 
         p = ShapeProjector(shape, x, y, z)
-        p.set_velocity(10, -5, 0.5)
+        p.set_velocity(20, -3, 1)
         p.set_mass(mass)
         p.set_scale(mass / 50)
         p.update_object()
@@ -309,7 +316,7 @@ class Simulation:
 
     def setup_objects(self) -> None:
         self.add_center_object()
-        for _ in range(10):
+        for _ in range(15):
             self.add_orbiting_object()
         self.turtle_screen.update()
 
