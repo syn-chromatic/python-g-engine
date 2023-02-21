@@ -264,7 +264,7 @@ class Simulation:
         self.turtle_screen.screensize(self.canvas_width, self.canvas_height)
         self.turtle_screen.tracer(0)
         self.turtle_screen.bgcolor((0.15, 0.15, 0.15))
-        self.turtle_screen.title("Orbital System")
+        self.turtle_screen.title("Physics System")
 
     def setup_turtle_object(self):
         self.turtle_object.hideturtle()
