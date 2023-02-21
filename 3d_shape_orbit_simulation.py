@@ -56,11 +56,11 @@ class ShapeProjectorBase:
         self._z_angle = 0
         self._scale = 1
 
-        self.position = Vector3D(x, y, z)
-        self.velocity = Vector3D(0, 0, 0)
-        self.acceleration = Vector3D(0, 0, 0)
-        self.mass = 1
-        self.size = 1
+        self._position = Vector3D(x, y, z)
+        self._velocity = Vector3D(0, 0, 0)
+        self._acceleration = Vector3D(0, 0, 0)
+        self._mass = 1
+        self._size = 1
 
     def _setup_turtle(self):
         self._turtle_object.pencolor("light blue")
@@ -95,13 +95,13 @@ class ShapeProjectorBase:
         return (x, y, z)
 
     @staticmethod
-    def _perspective_projection(xyz_point) -> tuple[float, float, float]:
+    def _perspective_projection(x, y, z) -> tuple[float, float, float]:
         distance = 5
 
-        z = 1 / (distance - xyz_point[2])
-        x = xyz_point[0] * z
-        y = xyz_point[1] * z
-        return (x, y, z)
+        zp = 1 / (distance - z)
+        xp = x * zp
+        yp = y * zp
+        return (xp, yp, zp)
 
     def _set_color(self, color: tuple[float, float, float]):
         self._turtle_object.pencolor(*color)
@@ -111,13 +111,16 @@ class ShapeProjectorBase:
         self,
         a: tuple[float, float, float],
         b: tuple[float, float, float],
+        position: tuple[float, float, float],
         scale: float,
         color_shading: float,
     ):
-        x1 = a[0] * scale + self.position.x
-        y1 = a[1] * scale + self.position.y
-        x2 = b[0] * scale + self.position.x
-        y2 = b[1] * scale + self.position.y
+        # a = self._perspective_projection(*a)
+        # b = self._perspective_projection(*b)
+        x1 = a[0] * scale + position[0]
+        y1 = a[1] * scale + position[1]
+        x2 = b[0] * scale + position[0]
+        y2 = b[1] * scale + position[1]
 
         color = tuple((i * color_shading for i in self._color))
         self._set_color(color)
@@ -134,17 +137,19 @@ class ShapeProjector(ShapeProjectorBase):
     ):
         super().__init__(shape, x, y, z)
 
-    def draw_shape(self, scale):
+    def draw_shape(self, position, scale):
         self._turtle_object.clear()
         for i in range(4):
             s1 = (i + 1) % 4
             s2 = i + 4
             s3 = s1 + 4
-            self._draw_line(self._shape[i], self._shape[s1], scale, 1.0)
-            self._draw_line(self._shape[i], self._shape[s2], scale, 0.85)
-            self._draw_line(self._shape[s2], self._shape[s3], scale, 0.75)
-
-        self._turtle_screen.update()
+            shape_i = self._shape[i]
+            shape_s1 = self._shape[s1]
+            shape_s2 = self._shape[s2]
+            shape_s3 = self._shape[s3]
+            self._draw_line(shape_i, shape_s1, position, scale, 1.0)
+            self._draw_line(shape_i, shape_s2, position, scale, 0.85)
+            self._draw_line(shape_s2, shape_s3, position, scale, 0.75)
 
     def add_x_angle_rotation(self, rotation: float):
         self._x_angle += rotation
@@ -172,7 +177,7 @@ class ShapeProjector(ShapeProjectorBase):
         return self
 
     def set_mass(self, mass: float) -> Self:
-        self.mass = mass
+        self._mass = mass
         return self
 
     def set_scale(self, scale: float):
@@ -190,37 +195,32 @@ class ShapeProjector(ShapeProjectorBase):
         return self
 
     def random_velocity(self, min_range: float = 0, max_range: float = 1) -> Self:
-        self.velocity.x = random.uniform(min_range, max_range)
-        self.velocity.y = random.uniform(min_range, max_range)
+        self._velocity.x = random.uniform(min_range, max_range)
+        self._velocity.y = random.uniform(min_range, max_range)
         return self
 
     def set_velocity(self, x: float, y: float, z: float) -> Self:
-        self.velocity.x = x
-        self.velocity.y = y
-        self.velocity.z = z
+        self._velocity.x = x
+        self._velocity.y = y
+        self._velocity.z = z
         return self
 
     def set_acceleration(self, x: float, y: float, z: float) -> Self:
-        self.acceleration.x = x
-        self.acceleration.y = y
-        self.acceleration.z = z
+        self._acceleration.x = x
+        self._acceleration.y = y
+        self._acceleration.z = z
         return self
 
     def move_object(self):
-        x, y, z = self.position.get_tuple()
-        # self._turtle_object.pensize(self.trail_thickness)
-
-        # self._scale += z
-        scale = self._scale + z
+        scale = self._scale + self._position.z
         scale = min(float("inf"), max(0, scale))
-        # print(self._scale)
-        self.draw_shape(scale)
-        # self._turtle_object.goto(x, y)
+        position = self._position.get_tuple()
+        self.draw_shape(position, scale)
 
     def update(self) -> Self:
-        self.position = self.position.add_vector(self.velocity)
-        self.velocity = self.velocity.add_vector(self.acceleration)
-        self.acceleration = self.acceleration.multiply(0)
+        self._position = self._position.add_vector(self._velocity)
+        self._velocity = self._velocity.add_vector(self._acceleration)
+        self._acceleration = self._acceleration.multiply(0)
         self.move_object()
         return self
 
@@ -229,8 +229,8 @@ class ShapeProjector(ShapeProjectorBase):
         return min(max_val, max(min_val, val))
 
     def apply_force(self, force: Vector3D) -> None:
-        force = force.divide(self.mass)
-        self.acceleration = self.acceleration.add_vector(force)
+        force = force.divide(self._mass)
+        self._acceleration = self._acceleration.add_vector(force)
 
     def apply_angular_force(self, force: Vector3D):
         xf, yf, zf = force.get_tuple()
@@ -239,10 +239,10 @@ class ShapeProjector(ShapeProjectorBase):
         self.add_z_angle_rotation(zf / 10000000)
 
     def apply_attraction(self, target: Self) -> None:
-        force = target.position.subtract_vector(self.position)
+        force = target._position.subtract_vector(self._position)
         distance = force.get_length()
         g_const = 0.0005
-        strength = g_const * (self.mass * target.mass) / distance
+        strength = g_const * (self._mass * target._mass) / distance
         force = force.set_magnitude(strength)
         self.apply_force(force)
         self.apply_angular_force(force)
@@ -250,12 +250,21 @@ class ShapeProjector(ShapeProjectorBase):
 
 class Simulation:
     def __init__(self) -> None:
+        self.canvas_width = 300
+        self.canvas_height = 300
         self.objects: list[ShapeProjector] = []
         self.turtle_screen = turtle.Screen()
+        self.turtle_screen.screensize(self.canvas_width, self.canvas_height)
         self.turtle_screen.tracer(0)
         self.turtle_screen.bgcolor((0.15, 0.15, 0.15))
         self.turtle_screen.title("Orbital System")
-        self.timestep = 0.01
+        self.turtle_object = turtle.Turtle()
+        self.turtle_object.hideturtle()
+        self.turtle_object.pencolor((0.8, 0.8, 0.8))
+        self.turtle_object.fillcolor((0.8, 0.8, 0.8))
+        self.turtle_object.penup()
+        self.turtle_object.goto(-self.canvas_width, self.canvas_height)
+        self.timestep = 0.1
 
     @staticmethod
     def get_shape():
@@ -281,12 +290,12 @@ class Simulation:
         p.set_velocity(0, 0, 0)
         p.set_color((0.8, 0.3, 0.3))
         p.set_mass(mass)
-        p.set_scale(mass / 10000)
+        p.set_scale(mass / 10_000)
         p.update()
         self.objects.append(p)
 
     def add_orbiting_object(self) -> None:
-        x, y = random.uniform(-300, -200), random.uniform(-300, -200)
+        x, y = random.uniform(-200, -100), random.uniform(-200, -100)
         z = 0
         shape = self.get_shape()
         mass = random.uniform(50, 500)
@@ -300,7 +309,7 @@ class Simulation:
 
     def setup_objects(self) -> None:
         self.add_center_object()
-        for _ in range(20):
+        for _ in range(25):
             self.add_orbiting_object()
         self.turtle_screen.update()
 
@@ -312,26 +321,36 @@ class Simulation:
 
             pl1.update()
 
-    def timestep_adjustment(self, frame_time: float) -> None:
-        print(f"ADJUSTING TIMESTEP TO {frame_time}")
-        self.timestep = frame_time
+    def timestep_adjustment(self, frame_en: float) -> int:
+        self.timestep = frame_en
         self.turtle_screen.update()
+        return 0
+
+    def write_fps(self, frame_time: float):
+        fps = f"{1 / frame_time:.2f} FPS"
+        self.turtle_object.clear()
+        self.turtle_object.write(fps, font=("Arial", 24, "normal"))
 
     def start_simulation(self):
-        input()
         while True:
             frame_st = time.perf_counter()
             self.compute_all_objects()
-            frame_time = time.perf_counter() - frame_st
-            frame_hold = self.timestep - frame_time
+            frame_en = time.perf_counter() - frame_st
+            frame_hold = self.timestep - frame_en
 
-            if frame_hold < 0:
-                self.timestep_adjustment(frame_time)
-                continue
-            self.turtle_screen.update()
+            if frame_hold < 0 or frame_hold > 0.01:
+                frame_hold = self.timestep_adjustment(frame_en)
+
             time.sleep(frame_hold)
+            self.turtle_screen.update()
+            frame_time = time.perf_counter() - frame_st
+            self.write_fps(frame_time)
 
 
 sim = Simulation()
 sim.setup_objects()
-sim.start_simulation()
+
+try:
+    sim.start_simulation()
+except KeyboardInterrupt:
+    print("Program Exited.")
