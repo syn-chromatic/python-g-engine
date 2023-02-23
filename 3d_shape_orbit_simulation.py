@@ -183,28 +183,24 @@ class Shape(ShapeBase):
             self._draw_edge(shape_s2, shape_s3, position, scale, 0.75)
 
     def add_x_angle_rotation(self, rotation: float):
-        self._x_angle += rotation
-        self._shape = [self._rotate_x(p, self._x_angle) for p in self._shape]
+        x_angle = self._x_angle + rotation
+        self._shape = [self._rotate_x(p, x_angle) for p in self._shape]
         return self
 
     def add_y_angle_rotation(self, rotation: float):
-        self._y_angle += rotation
-        self._shape = [self._rotate_y(p, self._y_angle) for p in self._shape]
+        y_angle = self._y_angle + rotation
+        self._shape = [self._rotate_y(p, y_angle) for p in self._shape]
         return self
 
     def add_z_angle_rotation(self, rotation: float):
-        self._z_angle += rotation
-        self._shape = [self._rotate_z(p, self._z_angle) for p in self._shape]
+        z_angle = self._z_angle + rotation
+        self._shape = [self._rotate_z(p, z_angle) for p in self._shape]
         return self
 
     def add_total_angle_rotation(self, rotation: float):
-        self._x_angle += rotation
-        self._y_angle += rotation
-        self._z_angle += rotation
-
-        self._shape = [self._rotate_x(p, self._x_angle) for p in self._shape]
-        self._shape = [self._rotate_y(p, self._y_angle) for p in self._shape]
-        self._shape = [self._rotate_z(p, self._z_angle) for p in self._shape]
+        self.add_x_angle_rotation(rotation)
+        self.add_y_angle_rotation(rotation)
+        self.add_z_angle_rotation(rotation)
         return self
 
     def set_mass(self, mass: float) -> Self:
@@ -261,9 +257,9 @@ class Shape(ShapeBase):
 
     def apply_angular_force(self, force: Vector3D):
         xf, yf, zf = force.get_tuple()
-        self.add_x_angle_rotation(xf / 10000000)
-        self.add_y_angle_rotation(yf / 10000000)
-        self.add_z_angle_rotation(zf / 10000000)
+        self.add_x_angle_rotation(xf / 100000)
+        self.add_y_angle_rotation(yf / 100000)
+        self.add_z_angle_rotation(zf / 100000)
 
     def apply_attraction(self, target: Self) -> None:
         force = target._position.subtract_vector(self._position)
