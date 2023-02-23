@@ -8,6 +8,8 @@ from typing_extensions import Self
 
 
 class Vector3D:
+    __slots__ = ["x", "y", "z"]
+
     def __init__(self, x: float = 0, y: float = 0, z: float = 0) -> None:
         self.x = x
         self.y = y
@@ -41,6 +43,21 @@ class Vector3D:
 
 
 class ShapeBase:
+    __slots__ = [
+        "_turtle_object",
+        "_shape",
+        "_color",
+        "_x_angle",
+        "_y_angle",
+        "_z_angle",
+        "_scale",
+        "_position",
+        "_velocity",
+        "_acceleration",
+        "_mass",
+        "_size",
+    ]
+
     def __init__(
         self, shape: list[tuple[float, float, float]], x: float, y: float, z: float
     ):
@@ -48,7 +65,6 @@ class ShapeBase:
         self._setup_turtle_object()
 
         self._shape = shape
-        self._mouse_states = [[], []]
         self._color = (1.0, 1.0, 1.0)
 
         self._x_angle = 0
@@ -145,6 +161,8 @@ class ShapeBase:
 
 
 class Shape(ShapeBase):
+    __slots__ = []
+
     def __init__(
         self, shape: list[tuple[float, float, float]], x: float, y: float, z: float
     ):
@@ -258,6 +276,15 @@ class Shape(ShapeBase):
 
 
 class Simulation:
+    __slots__ = [
+        "canvas_width",
+        "canvas_height",
+        "turtle_screen",
+        "turtle_object",
+        "objects",
+        "timestep",
+    ]
+
     def __init__(self) -> None:
         self.canvas_width = 300
         self.canvas_height = 300
@@ -325,7 +352,7 @@ class Simulation:
 
     def setup_objects(self) -> None:
         self.add_center_object()
-        for _ in range(15):
+        for _ in range(20):
             self.add_orbiting_object()
         self.turtle_screen.update()
 

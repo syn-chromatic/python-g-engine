@@ -1,6 +1,5 @@
 import turtle
 import math
-import random
 
 
 class ShapeProjectorBase:
@@ -103,28 +102,24 @@ class ShapeProjector(ShapeProjectorBase):
         self._turtle_screen.update()
 
     def add_x_angle_rotation(self, rotation: float):
-        self._x_angle += rotation
-        self._shape = [self._rotate_x(p, self._x_angle) for p in self._shape]
+        x_angle = self._x_angle + rotation
+        self._shape = [self._rotate_x(p, x_angle) for p in self._shape]
         return self
 
     def add_y_angle_rotation(self, rotation: float):
-        self._y_angle += rotation
-        self._shape = [self._rotate_y(p, self._y_angle) for p in self._shape]
+        y_angle = self._y_angle + rotation
+        self._shape = [self._rotate_y(p, y_angle) for p in self._shape]
         return self
 
     def add_z_angle_rotation(self, rotation: float):
-        self._z_angle += rotation
-        self._shape = [self._rotate_z(p, self._z_angle) for p in self._shape]
+        z_angle = self._z_angle + rotation
+        self._shape = [self._rotate_z(p, z_angle) for p in self._shape]
         return self
 
     def add_total_angle_rotation(self, rotation: float):
-        self._x_angle += rotation
-        self._y_angle += rotation
-        self._z_angle += rotation
-
-        self._shape = [self._rotate_x(p, self._x_angle) for p in self._shape]
-        self._shape = [self._rotate_y(p, self._y_angle) for p in self._shape]
-        self._shape = [self._rotate_z(p, self._z_angle) for p in self._shape]
+        self.add_x_angle_rotation(rotation)
+        self.add_y_angle_rotation(rotation)
+        self.add_z_angle_rotation(rotation)
         return self
 
 
@@ -146,70 +141,7 @@ def get_circle_position(radius: float, step: float):
 
 
 projector = ShapeProjector(shape)
-projector1 = ShapeProjector(shape)
-projector2 = ShapeProjector(shape)
-projector3 = ShapeProjector(shape)
-projector4 = ShapeProjector(shape)
-projector5 = ShapeProjector(shape)
-
-
-projector1.set_color((0.9, 0.1, 0.4))
-projector2.set_color((0.1, 0.5, 0.9))
-projector3.set_color((0.8, 0.7, 0.4))
-projector4.set_color((0.1, 0.4, 0.1))
-projector5.set_color((0.5, 0.3, 0.9))
-
-
-radius1 = 300
-radius2 = 280
-radius3 = 350
-radius4 = 320
-radius5 = 400
-
-n1 = 0
-n2 = 0.7
-n3 = 2.5
-n4 = 1.5
-n5 = 3
-
-point1 = get_circle_position(radius1, n1)
-point2 = get_circle_position(radius2, n2)
-point3 = get_circle_position(radius3, n3)
-point4 = get_circle_position(radius4, n4)
-point5 = get_circle_position(radius5, n5)
-
 
 while True:
-
     projector.draw_shape(0, 0)
-    projector1.draw_shape(*point1)
-    projector2.draw_shape(*point2)
-    projector3.draw_shape(*point3)
-    projector4.draw_shape(*point4)
-    projector5.draw_shape(*point5)
-
-    projector.add_total_angle_rotation(0.00001)
-
-    projector1.add_total_angle_rotation(0.00001)
-    projector2.add_total_angle_rotation(0.00001)
-    projector3.add_total_angle_rotation(0.00001)
-    projector4.add_total_angle_rotation(0.00001)
-    projector5.add_total_angle_rotation(0.00001)
-
-    n1 += random.randrange(50, 100) / 2000
-    n2 += random.randrange(50, 100) / 1500
-    n3 += random.randrange(50, 100) / 3000
-    n4 += random.randrange(50, 100) / 2000
-    n5 += random.randrange(50, 100) / 2000
-
-    radius1 += random.randrange(-100, 100) / 100
-    radius2 += random.randrange(-100, 100) / 100
-    radius3 += random.randrange(-100, 100) / 100
-    radius4 += random.randrange(-100, 100) / 100
-    radius5 += random.randrange(-100, 100) / 100
-
-    point1 = get_circle_position(radius1, n1)
-    point2 = get_circle_position(radius2, n2)
-    point3 = get_circle_position(radius3, n3)
-    point4 = get_circle_position(radius4, n4)
-    point5 = get_circle_position(radius5, n5)
+    projector.add_total_angle_rotation(0.001)
