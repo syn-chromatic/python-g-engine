@@ -150,22 +150,21 @@ class Simulation:
                     pl1.attraction(pl2)
             pl1.update()
 
-    def timestep_adjustment(self, time_taken: float) -> None:
-        self.timestep = time_taken
-        print(f"ADJUSTING TIMESTEP TO {self.timestep}")
-        self.turtle_screen.update()
+    def timestep_adjustment(self, frame_en: float) -> int:
+        self.timestep = frame_en
+        return 0
 
     def start_simulation(self) -> NoReturn:
-        input("ENTER")
         while True:
-            start_time = time.process_time()
+            frame_st = time.perf_counter()
             self.calculate_particle_forces()
-            time_taken = time.process_time() - start_time
-            wait_time = self.timestep - time_taken
-            if wait_time < 0:
-                self.timestep_adjustment(time_taken)
-                continue
-            time.sleep(wait_time)
+            frame_en = time.perf_counter() - frame_st
+            frame_hold = self.timestep - frame_en
+
+            if frame_hold < 0 or frame_hold > 0.01:
+                frame_hold = self.timestep_adjustment(frame_en)
+
+            time.sleep(frame_hold)
             self.turtle_screen.update()
 
 

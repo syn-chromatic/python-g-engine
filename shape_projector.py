@@ -3,7 +3,7 @@ import math
 
 
 class ShapeProjectorBase:
-    def __init__(self, shape: list[tuple[float, float, float]]):
+    def __init__(self, shape: list[tuple[float, float, float]], x: float, y: float):
         self._shape = shape
         self._turtle_screen = turtle.Screen()
         self._turtle_object = turtle.Turtle()
@@ -14,8 +14,8 @@ class ShapeProjectorBase:
         self._y_angle = 0
         self._z_angle = 0
         self._scale = 50
-        self._center_x = 0
-        self._center_y = 0
+        self._position_x = x
+        self._position_y = y
 
     def _setup_turtle(self):
         self._turtle_screen.bgcolor((0, 0, 0))
@@ -61,10 +61,10 @@ class ShapeProjectorBase:
         return (x, y, z)
 
     def _draw_line(self, a: tuple[float, float, float], b: tuple[float, float, float]):
-        x1 = a[0] * self._scale + self._center_x
-        y1 = a[1] * self._scale + self._center_y
-        x2 = b[0] * self._scale + self._center_x
-        y2 = b[1] * self._scale + self._center_y
+        x1 = a[0] * self._scale + self._position_x
+        y1 = a[1] * self._scale + self._position_y
+        x2 = b[0] * self._scale + self._position_x
+        y2 = b[1] * self._scale + self._position_y
         self._turtle_object.penup()
         self._turtle_object.goto(x1, y1)
         self._turtle_object.pendown()
@@ -72,14 +72,16 @@ class ShapeProjectorBase:
 
 
 class ShapeProjector(ShapeProjectorBase):
-    def __init__(self, shape: list[tuple[float, float, float]]):
-        super().__init__(shape)
+    def __init__(self, shape: list[tuple[float, float, float]], x: float, y: float):
+        super().__init__(shape, x, y)
 
-    def set_color(self, color):
+    def set_color(self, color: tuple[float, float, float]):
         self._turtle_object.pencolor(color)
 
-    def draw_shape(self, x: float, y: float):
-        self._center_x, self._center_y = x, y
+    def set_scale(self, scale: float):
+        self._scale = scale
+
+    def draw_shape(self):
         self._turtle_object.clear()
         for i in range(4):
             s1 = (i + 1) % 4
@@ -116,25 +118,23 @@ class ShapeProjector(ShapeProjectorBase):
         return self
 
 
-shape = [
-    (-1, -1, -1),
-    (1, -1, -1),
-    (1, 1, -1),
-    (-1, 1, -1),
-    (-1, -1, 1),
-    (1, -1, 1),
-    (1, 1, 1),
-    (-1, 1, 1),
-]
+if __name__ == "__main__":
+    shape = [
+        (-1, -1, -1),
+        (1, -1, -1),
+        (1, 1, -1),
+        (-1, 1, -1),
+        (-1, -1, 1),
+        (1, -1, 1),
+        (1, 1, 1),
+        (-1, 1, 1),
+    ]
 
+    x = 0
+    y = 0
+    projector = ShapeProjector(shape, x, y)
+    projector.set_scale(100)
 
-def get_circle_position(radius: float, step: float):
-    point = ((radius * math.cos(step) + 2), (radius * math.sin(step) + 2))
-    return point
-
-
-projector = ShapeProjector(shape)
-
-while True:
-    projector.draw_shape(0, 0)
-    projector.add_total_angle_rotation(0.001)
+    while True:
+        projector.draw_shape()
+        projector.add_total_angle_rotation(0.001)

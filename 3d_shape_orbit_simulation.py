@@ -133,14 +133,13 @@ class ShapeBase:
         self,
         a: tuple[float, float, float],
         b: tuple[float, float, float],
-        position: tuple[float, float, float],
         scale: float,
         color_shading: float,
     ):
-        x1 = a[0] * scale + position[0]
-        y1 = a[1] * scale + position[1]
-        x2 = b[0] * scale + position[0]
-        y2 = b[1] * scale + position[1]
+        x1 = a[0] * scale + self._position.x
+        y1 = a[1] * scale + self._position.y
+        x2 = b[0] * scale + self._position.x
+        y2 = b[1] * scale + self._position.y
 
         color = tuple((i * color_shading for i in self._color))
         self._set_color(color)
@@ -151,13 +150,12 @@ class ShapeBase:
         self,
         a: tuple[float, float, float],
         b: tuple[float, float, float],
-        position: tuple[float, float, float],
         scale: float,
         color_shading: float,
     ):
         a = self._perspective_projection(*a)
         b = self._perspective_projection(*b)
-        self._draw_edge(a, b, position, scale, color_shading)
+        self._draw_edge(a, b, scale, color_shading)
 
 
 class Shape(ShapeBase):
@@ -168,7 +166,7 @@ class Shape(ShapeBase):
     ):
         super().__init__(shape, x, y, z)
 
-    def draw_shape(self, position, scale):
+    def draw_shape(self, scale):
         self._turtle_object.clear()
         for i in range(4):
             s1 = (i + 1) % 4
@@ -178,9 +176,9 @@ class Shape(ShapeBase):
             shape_s1 = self._shape[s1]
             shape_s2 = self._shape[s2]
             shape_s3 = self._shape[s3]
-            self._draw_edge(shape_i, shape_s1, position, scale, 1.0)
-            self._draw_edge(shape_i, shape_s2, position, scale, 0.85)
-            self._draw_edge(shape_s2, shape_s3, position, scale, 0.75)
+            self._draw_edge(shape_i, shape_s1,  scale, 1.0)
+            self._draw_edge(shape_i, shape_s2,  scale, 0.85)
+            self._draw_edge(shape_s2, shape_s3, scale, 0.75)
 
     def add_x_angle_rotation(self, rotation: float):
         x_angle = self._x_angle + rotation
@@ -237,8 +235,7 @@ class Shape(ShapeBase):
     def move_object(self):
         scale = self._scale + self._position.z
         scale = min(float("inf"), max(0, scale))
-        position = self._position.get_tuple()
-        self.draw_shape(position, scale)
+        self.draw_shape(scale)
 
     def update_object(self) -> Self:
         self._position = self._position.add_vector(self._velocity)
@@ -256,10 +253,9 @@ class Shape(ShapeBase):
         self._acceleration = self._acceleration.add_vector(force)
 
     def apply_angular_force(self, force: Vector3D):
-        xf, yf, zf = force.get_tuple()
-        self.add_x_angle_rotation(xf / 100000)
-        self.add_y_angle_rotation(yf / 100000)
-        self.add_z_angle_rotation(zf / 100000)
+        self.add_x_angle_rotation(force.x / 100000)
+        self.add_y_angle_rotation(force.y / 100000)
+        self.add_z_angle_rotation(force.z / 100000)
 
     def apply_attraction(self, target: Self) -> None:
         force = target._position.subtract_vector(self._position)
@@ -370,7 +366,6 @@ class Simulation:
         self.turtle_object.write(fps, font=("Arial", 24, "normal"))
 
     def start_simulation(self):
-        input()
         while True:
             frame_st = time.perf_counter()
             self.compute_all_objects()
