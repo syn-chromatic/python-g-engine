@@ -26,7 +26,6 @@ class ShapeProjectorBase:
 
     @staticmethod
     def _rotate_z(xyz_point, theta) -> tuple[float, float, float]:
-        """Rotate point p by theta radians around the z-axis."""
         cs = math.cos(theta)
         sn = math.sin(theta)
         x = cs * xyz_point[0] - sn * xyz_point[1]
@@ -36,7 +35,6 @@ class ShapeProjectorBase:
 
     @staticmethod
     def _rotate_x(xyz_point, theta) -> tuple[float, float, float]:
-        """Rotate xyz_pointp by theta radians around the x-axis."""
         cs = math.cos(theta)
         sn = math.sin(theta)
         x = xyz_point[0]
@@ -46,7 +44,6 @@ class ShapeProjectorBase:
 
     @staticmethod
     def _rotate_y(xyz_point, theta) -> tuple[float, float, float]:
-        """Rotate xyz_point by theta radians around the y-axis."""
         cs = math.cos(theta)
         sn = math.sin(theta)
         x = cs * xyz_point[0] + sn * xyz_point[2]
@@ -56,7 +53,6 @@ class ShapeProjectorBase:
 
     @staticmethod
     def _perspective_projection(xyz_point) -> tuple[float, float, float]:
-        """Project perspective onto points by distance."""
         distance = 5
 
         z = 1 / (distance - xyz_point[2])
@@ -65,7 +61,6 @@ class ShapeProjectorBase:
         return (x, y, z)
 
     def _draw_line(self, a: tuple[float, float, float], b: tuple[float, float, float]):
-        """Draw a line between points a and b."""
         x1 = a[0] * self._scale + self._center_x
         y1 = a[1] * self._scale + self._center_y
         x2 = b[0] * self._scale + self._center_x
@@ -83,22 +78,20 @@ class ShapeProjector(ShapeProjectorBase):
     def set_color(self, color):
         self._turtle_object.pencolor(color)
 
-    def draw_shape(self, x, y):
-        """Draw the cube using the current point positions."""
+    def draw_shape(self, x: float, y: float):
         self._center_x, self._center_y = x, y
         self._turtle_object.clear()
-        self._draw_line(self._shape[0], self._shape[1])
-        self._draw_line(self._shape[1], self._shape[2])
-        self._draw_line(self._shape[2], self._shape[3])
-        self._draw_line(self._shape[3], self._shape[0])
-        self._draw_line(self._shape[4], self._shape[5])
-        self._draw_line(self._shape[5], self._shape[6])
-        self._draw_line(self._shape[6], self._shape[7])
-        self._draw_line(self._shape[7], self._shape[4])
-        self._draw_line(self._shape[0], self._shape[4])
-        self._draw_line(self._shape[1], self._shape[5])
-        self._draw_line(self._shape[2], self._shape[6])
-        self._draw_line(self._shape[3], self._shape[7])
+        for i in range(4):
+            s1 = (i + 1) % 4
+            s2 = i + 4
+            s3 = s1 + 4
+            shape_i = self._shape[i]
+            shape_s1 = self._shape[s1]
+            shape_s2 = self._shape[s2]
+            shape_s3 = self._shape[s3]
+            self._draw_line(shape_i, shape_s1)
+            self._draw_line(shape_i, shape_s2)
+            self._draw_line(shape_s2, shape_s3)
         self._turtle_screen.update()
 
     def add_x_angle_rotation(self, rotation: float):
