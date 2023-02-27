@@ -1,5 +1,5 @@
 import math
-from vector_3d import Vector3D
+from components.vector_3d import Vector3D
 
 from typing_extensions import Self
 

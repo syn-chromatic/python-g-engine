@@ -1,6 +1,6 @@
-from body import Body
-from physics import Physics
-from graphics import Graphics
+from components.body import Body
+from components.physics import Physics
+from components.graphics import Graphics
 
 
 class Shape(Body):

@@ -1,5 +1,5 @@
-from physics import Physics
-from graphics import Graphics
+from components.physics import Physics
+from components.graphics import Graphics
 
 from abc import ABC, abstractmethod
 

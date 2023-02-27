@@ -1,10 +1,10 @@
 import time
 import random
 
-from graphics import Graphics, GraphicsScreen
-from body import Body
-from shape import Shape
-from particle import Particle
+from components.graphics import Graphics, GraphicsScreen
+from components.body import Body
+from components.shape import Shape
+from components.particle import Particle
 
 
 class Simulation:

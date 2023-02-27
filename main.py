@@ -1,5 +1,5 @@
-from graphics import Graphics, GraphicsScreen
-from simulation import Simulation
+from components.graphics import Graphics, GraphicsScreen
+from components.simulation import Simulation
 
 
 def main():
