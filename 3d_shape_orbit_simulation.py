@@ -3,6 +3,7 @@ import math
 import random
 import time
 
+from abc import ABC, abstractmethod
 from turtle import Turtle, Screen
 from typing_extensions import Self
 
@@ -29,6 +30,20 @@ class Graphics:
     def __init__(self):
         self.turtle_object = Turtle()
         self.turtle_object.hideturtle()
+
+    def draw_circle(
+        self,
+        p: tuple[float, float],
+        radius: float,
+        color: tuple[float, float, float],
+    ):
+        self.turtle_object.pencolor(*color)
+        self.turtle_object.fillcolor(*color)
+        self.turtle_object.penup()
+        self.turtle_object.goto(*p)
+        self.turtle_object.begin_fill()
+        self.turtle_object.circle(radius)
+        self.turtle_object.end_fill()
 
     def draw_line(
         self,
@@ -192,7 +207,21 @@ class Physics:
         self.spin_acceleration = self.spin_acceleration.multiply(0)
 
 
-class Shape:
+class Body(ABC):
+    def __init__(self):
+        self.physics: Physics
+        self.color: tuple[float, float, float]
+
+    @abstractmethod
+    def set_color(self, color: tuple[float, float, float]) -> None:
+        return
+
+    @abstractmethod
+    def draw_shape(self, graphics: Graphics) -> None:
+        return
+
+
+class Shape(Body):
     def __init__(self, shape: list[tuple[float, float, float]]):
         self.physics = Physics(shape)
         self.color = (1.0, 1.0, 1.0)
@@ -256,29 +285,55 @@ class Shape:
             self._draw_edge(shape_s2, shape_s3, 0.75, graphics)
 
 
+class Particle(Body):
+    def __init__(self, shape: list[tuple[float, float, float]]):
+        self.physics = Physics(shape)
+        self.color = (1.0, 1.0, 1.0)
+
+    def _draw_circle(
+        self,
+        graphics: Graphics,
+    ):
+
+        x = self.physics.position.x
+        y = self.physics.position.y
+        z = self.physics.position.z
+
+        scale = self.physics.scale
+        relative_z = scale + z
+        relative_z = min(float("inf"), max(0.5, relative_z))
+        graphics.draw_circle((x, y), relative_z, self.color)
+
+    def set_color(self, color: tuple[float, float, float]):
+        self.color = color
+
+    def draw_shape(self, graphics: Graphics):
+        self._draw_circle(graphics)
+
+
 class Simulation:
     def __init__(self, graphics: Graphics) -> None:
         self.graphics = graphics
         self.fps_txp = (-300, 300)
         self.fps_txc = (0.8, 0.8, 0.8)
-        self.objects: list[Shape] = []
+        self.objects: list[Body] = []
         self.timestep = 0.1
 
     @staticmethod
     def get_shape():
         shape = [
-            (-1, -1, -1),
-            (1, -1, -1),
-            (1, 1, -1),
-            (-1, 1, -1),
-            (-1, -1, 1),
-            (1, -1, 1),
-            (1, 1, 1),
-            (-1, 1, 1),
+            (-1.0, -1.0, -1.0),
+            (1.0, -1.0, -1.0),
+            (1.0, 1.0, -1.0),
+            (-1.0, 1.0, -1.0),
+            (-1.0, -1.0, 1.0),
+            (1.0, -1.0, 1.0),
+            (1.0, 1.0, 1.0),
+            (-1.0, 1.0, 1.0),
         ]
         return shape
 
-    def add_center_object(self) -> None:
+    def add_center_cube(self) -> None:
         mass = 10_000_000
         shape = self.get_shape()
         color = (0.8, 0.3, 0.3)
@@ -291,7 +346,7 @@ class Simulation:
         p.physics.set_spin_velocity(0, 0, 0)
         self.objects.append(p)
 
-    def add_orbiting_object(self) -> None:
+    def add_orbiting_cube(self) -> None:
         x = random.uniform(-50, -40)
         y = random.uniform(-50, -40)
         z = 0
@@ -307,10 +362,30 @@ class Simulation:
         p.physics.set_scale(scale)
         self.objects.append(p)
 
+    def add_orbiting_particle(self) -> None:
+        x = random.uniform(-100, -60)
+        y = random.uniform(-50, -60)
+        z = 0
+
+        mass = random.uniform(10, 40)
+        # shape = self.get_shape()
+        shape = [(0.0, 0.0, 0.0)]
+        scale = mass / 20
+
+        p = Particle(shape)
+        p.physics.set_position(x, y, z)
+        p.physics.set_velocity(-10, -30, 0)
+        p.physics.set_mass(mass)
+        p.physics.set_scale(scale)
+        self.objects.append(p)
+
     def setup_objects(self) -> None:
-        self.add_center_object()
+        self.add_center_cube()
         for _ in range(15):
-            self.add_orbiting_object()
+            self.add_orbiting_cube()
+
+        for _ in range(15):
+            self.add_orbiting_particle()
 
     def compute_all_objects(self) -> None:
         for pl1 in self.objects:
