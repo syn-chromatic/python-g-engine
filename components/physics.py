@@ -166,8 +166,8 @@ class Physics:
             direction = self.position.subtract_vector(target.position).normalize()
             # self_edge_pos = self.position.add_vector(direction.multiply(-self_radius))
             # target_edge_pos = target.position.add_vector(direction.multiply(target_radius))
-            shift_pos = self.position.add_vector(direction.multiply(-diff))
-            target_Shift_pos = target.position.add_vector(direction.multiply(diff))
+            shift_pos = self.position.add_vector(direction.multiply(-diff/2 + delta_t))
+            target_Shift_pos = target.position.add_vector(direction.multiply(diff/2 + delta_t))
 
             # shape = [(0.0, 0.0, 0.0)]
             # test = Particle(shape)
@@ -183,10 +183,15 @@ class Physics:
             # test.draw_shape(graphics)
 
 
-
+            print(self.position.__dict__)
             # print(shift_pos.__dict__, target_Shift_pos.__dict__)
-            # self.position = shift_pos
+            self.position = shift_pos
             target.position = target_Shift_pos
+            # print(self.position.__dict__)
+            # print("shift position")
+            self.velocity = Vector3D()
+            target.velocity = Vector3D()
+
 
             # input()
 

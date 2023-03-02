@@ -13,7 +13,7 @@ class Simulation:
         self.fps_txp = (-300, 300)
         self.fps_txc = (0.8, 0.8, 0.8)
         self.objects: list[Body] = []
-        self.timestep = 1 / 1000
+        self.timestep = 1 / 10_000
 
     @staticmethod
     def get_cube_shape():
@@ -207,7 +207,7 @@ class Simulation:
     def start_simulation(self, graphics_screen: GraphicsScreen):
         counter = 0
 
-        while counter < 100:
+        while counter < 20:
 
             self.graphics.clear_screen()
             frame_st = time.perf_counter()
@@ -216,7 +216,7 @@ class Simulation:
             self.write_fps(frame_time)
 
             graphics_screen.update()
-            time.sleep(0.05)
+            time.sleep(0.5)
             counter += 1
-            if counter == 1:
-                input()
+            # if counter == 1:
+            #     input()
