@@ -13,7 +13,7 @@ class Simulation:
         self.fps_txp = (-300, 300)
         self.fps_txc = (0.8, 0.8, 0.8)
         self.objects: list[Body] = []
-        self.timestep = 0.1
+        self.timestep = 1/200
 
     @staticmethod
     def get_cube_shape():
@@ -74,8 +74,107 @@ class Simulation:
         p.physics.set_scale(scale)
         self.objects.append(p)
 
+    def add_particle_right(self):
+        x = 0
+        y = 10
+        z = 0
+
+        mass = 30
+        shape = [(0.0, 0.0, 0.0)]
+        scale = mass
+
+
+        vx = 1000
+        vy = 0
+
+        p = Particle(shape)
+        p.physics.set_position(x, y, z)
+        p.physics.set_velocity(vx, vy, 0)
+        p.physics.set_mass(mass)
+        p.physics.set_scale(scale)
+        p.physics.name = "WHITE BALL"
+        self.objects.append(p)
+
+
+
+
+    def add_particle_right2(self):
+        x = -300
+        y = -20
+        z = 0
+
+        mass = 30
+        shape = [(0.0, 0.0, 0.0)]
+        scale = mass
+
+
+        vx = 1000
+        vy = 0
+
+        p = Particle(shape)
+        p.physics.set_position(x, y, z)
+        p.physics.set_velocity(vx, vy, 0)
+        p.physics.set_mass(mass)
+        p.physics.set_scale(scale)
+        p.physics.name = "WHITE BALL"
+        self.objects.append(p)
+
+
+
+
+
+
+
+    def add_particle_left(self):
+        x = 300
+        y = 10
+        z = 0
+
+        mass = 30
+        # shape = [(0.0, 0.0, 0.0)}
+        shape = self.get_cube_shape()
+        scale = mass
+
+        p = Shape(shape)
+        p.physics.set_position(x, y, z)
+        p.physics.set_velocity(-5000, 0, 0)
+        # p.physics.set_spin_velocity(0, 1000, 0)
+        p.physics.set_mass(mass)
+        p.physics.set_scale(scale)
+        p.set_color((0.8, 0.2, 0.2))
+        p.physics.name = "RED BALL"
+        self.objects.append(p)
+
+    def add_ball(self, x, y):
+        z = 0
+
+        mass = 30
+        shape = [(0.0, 0.0, 0.0)]
+        scale = mass
+
+
+        vx = 500
+        vy = 0
+
+        p = Particle(shape)
+        p.physics.set_position(x, y, z)
+        p.physics.set_velocity(vx, vy, 0)
+        p.physics.set_mass(mass)
+        p.physics.set_scale(scale)
+        p.physics.name = "WHITE BALL"
+        self.objects.append(p)
+
+
+
     def setup_objects(self) -> None:
-        self.add_center_cube()
+        # self.add_center_cube()
+
+        # for _ in range(15):
+        self.add_particle_right()
+        self.add_particle_right2()
+        self.add_particle_left()
+        self.add_ball(-200, 20)
+
         for _ in range(15):
             self.add_orbiting_cube()
 
@@ -83,14 +182,31 @@ class Simulation:
             self.add_orbiting_particle()
 
     def compute_all_objects(self) -> None:
-        for pl1 in self.objects:
-            for pl2 in self.objects:
-                if pl1 == pl2:
-                    continue
-                pl1.physics.apply_attraction(pl2.physics)
 
-            pl1.physics.move_object()
+        time = 0
+        # while time < 0:
+
+        for idx, pl1 in enumerate(self.objects):
+            for pl2 in self.objects[:idx] + self.objects[idx+1:]:
+                pl1.physics.apply_forces(pl2.physics, self.timestep)
+                time += self.timestep
+
+            # time += self.timestep
+            pl1.physics.move_object(self.timestep)
             pl1.draw_shape(self.graphics)
+            # input("INPUT BRO")
+
+
+
+
+        # for pl1 in self.objects:
+        #     for pl2 in self.objects:
+        #         if pl1 == pl2:
+        #             continue
+            #     pl1.physics.apply_attraction(pl2.physics)
+
+            # pl1.physics.move_object()
+            # pl1.draw_shape(self.graphics)
 
     def timestep_adjustment(self, frame_en: float) -> int:
         self.timestep = frame_en
@@ -101,10 +217,17 @@ class Simulation:
         self.graphics.draw_text(self.fps_txp, self.fps_txc, fps)
 
     def start_simulation(self, graphics_screen: GraphicsScreen):
-        while True:
+        counter = 0
+        while counter < 1000:
+
             self.graphics.clear_screen()
             frame_st = time.perf_counter()
             self.compute_all_objects()
             frame_time = time.perf_counter() - frame_st
             self.write_fps(frame_time)
+
             graphics_screen.update()
+            # time.sleep(1)
+            counter += 1
+            # if counter == 1:
+            #     input()

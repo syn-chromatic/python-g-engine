@@ -30,13 +30,32 @@ class Graphics:
         radius: float,
         color: tuple[float, float, float],
     ):
+        x, y = p
+        # print(x, y, radius)
+        # input()
+        y -= radius
+
+        # y -= radius - y / 2
+
+
+
         self.turtle_object.pencolor(*color)
         self.turtle_object.fillcolor(*color)
         self.turtle_object.penup()
-        self.turtle_object.goto(*p)
+        self.turtle_object.goto(x, y)
         self.turtle_object.begin_fill()
         self.turtle_object.circle(radius)
         self.turtle_object.end_fill()
+
+        # self.turtle_object.goto(*p)
+
+        # self.turtle_object.pencolor((0.0, 1.0, 0.0))
+        # self.turtle_object.fillcolor((0.0, 1.0, 0.0))
+        # self.turtle_object.begin_fill()
+        # self.turtle_object.circle(1)
+        # self.turtle_object.end_fill()
+
+
 
     def draw_line(
         self,
