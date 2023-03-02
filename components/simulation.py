@@ -1,5 +1,6 @@
 import time
 import random
+import math
 
 from components.graphics import Graphics, GraphicsScreen
 from components.body import Body
@@ -29,17 +30,35 @@ class Simulation:
         ]
         return shape
 
+
+    @staticmethod
+    def get_sphere_shape():
+        radius = 1.0
+        num_points = 20
+
+        points = []
+        for i in range(num_points):
+            theta = math.pi * i / (num_points - 1)
+            for j in range(num_points):
+                phi = 2 * math.pi * j / (num_points - 1)
+                x = radius * math.sin(theta) * math.cos(phi)
+                y = radius * math.sin(theta) * math.sin(phi)
+                z = radius * math.cos(theta)
+                points.append((x, y, z))
+        return points
+
     def add_center_cube(self) -> None:
         mass = 10_000_000
-        shape = self.get_cube_shape()
+        # shape = self.get_cube_shape()
+        shape = self.get_sphere_shape()
         color = (0.8, 0.3, 0.3)
         scale = mass / 250_000
 
         p = Shape(shape)
         p.set_color(color)
         p.physics.set_mass(mass)
-        p.physics.set_scale(scale)
-        p.physics.set_spin_velocity(0, 0, 0)
+        p.physics.set_scale(100)
+        p.physics.set_spin_velocity(50, 50, 0)
         self.objects.append(p)
 
     def add_orbiting_cube(self) -> None:
