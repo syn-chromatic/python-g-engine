@@ -164,27 +164,29 @@ class Physics:
         if diff <= 0:
 
             direction = self.position.subtract_vector(target.position).normalize()
-            self_edge_pos = self.position.add_vector(direction.multiply(-self_radius))
-            target_edge_pos = target.position.add_vector(direction.multiply(target_radius))
+            # self_edge_pos = self.position.add_vector(direction.multiply(-self_radius))
+            # target_edge_pos = target.position.add_vector(direction.multiply(target_radius))
+            shift_pos = self.position.add_vector(direction.multiply(-diff))
+            target_Shift_pos = target.position.add_vector(direction.multiply(diff))
 
-            shape = [(0.0, 0.0, 0.0)]
-            test = Particle(shape)
-            test.physics.set_position(self_edge_pos.x, self_edge_pos.y, self_edge_pos.z)
-            test.set_color((0.5, 0.8, 0.2))
-            test.physics.set_scale(5)
-            test.draw_shape(graphics)
+            # shape = [(0.0, 0.0, 0.0)]
+            # test = Particle(shape)
+            # test.physics.set_position(shift_pos.x, shift_pos.y, shift_pos.z)
+            # test.set_color((0.5, 0.8, 0.2))
+            # test.physics.set_scale(5)
+            # test.draw_shape(graphics)
 
-            test = Particle(shape)
-            test.physics.set_position(target_edge_pos.x, target_edge_pos.y, target_edge_pos.z)
-            test.set_color((0.5, 0.2, 0.9))
-            test.physics.set_scale(5)
-            test.draw_shape(graphics)
+            # test = Particle(shape)
+            # test.physics.set_position(target_Shift_pos.x, target_Shift_pos.y, target_Shift_pos.z)
+            # test.set_color((0.5, 0.2, 0.9))
+            # test.physics.set_scale(5)
+            # test.draw_shape(graphics)
 
 
 
-            print(self_edge_pos.__dict__, target_edge_pos.__dict__)
-            self.position = self_edge_pos
-            target.position = target_edge_pos
+            # print(shift_pos.__dict__, target_Shift_pos.__dict__)
+            # self.position = shift_pos
+            target.position = target_Shift_pos
 
             # input()
 

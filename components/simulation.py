@@ -13,7 +13,7 @@ class Simulation:
         self.fps_txp = (-300, 300)
         self.fps_txc = (0.8, 0.8, 0.8)
         self.objects: list[Body] = []
-        self.timestep = 1 / 250
+        self.timestep = 1 / 1000
 
     @staticmethod
     def get_cube_shape():
@@ -59,13 +59,13 @@ class Simulation:
         self.objects.append(p)
 
     def add_orbiting_particle(self) -> None:
-        x = random.uniform(-100, -60)
-        y = random.uniform(-50, -60)
+        x = random.uniform(-200, -60)
+        y = random.uniform(-50, -100)
         z = 0
 
-        mass = random.uniform(10, 40)
+        mass = random.uniform(1, 5)
         shape = [(0.0, 0.0, 0.0)]
-        scale = mass / 20
+        scale = mass
 
         p = Particle(shape)
         p.physics.set_position(x, y, z)
@@ -126,7 +126,7 @@ class Simulation:
 
         p = Particle(shape)
         p.physics.set_position(x, y, z)
-        p.physics.set_velocity(-5000, 0, 0)
+        p.physics.set_velocity(-10000, 0, 0)
         # p.physics.set_spin_velocity(0, 1000, 0)
         p.physics.set_mass(mass)
         p.physics.set_scale(scale)
@@ -159,8 +159,8 @@ class Simulation:
         shape = [(0.0, 0.0, 0.0)]
         scale = mass
 
-        vx = -5_000
-        vy = 20_000
+        vx = -10_000
+        vy = 40_000
 
         p = Particle(shape)
         p.physics.set_position(x, y, z)
@@ -178,13 +178,13 @@ class Simulation:
         self.add_particle_right2()
         self.add_particle_left()
         self.add_ball(-200, 20)
-        # self.add_ball2(100, -400)
+        self.add_ball2(10, -500)
 
         # for _ in range(15):
         #     self.add_orbiting_cube()
 
-        # for _ in range(15):
-        #     self.add_orbiting_particle()
+        for _ in range(50):
+            self.add_orbiting_particle()
 
     def compute_all_objects(self) -> None:
         for pl1 in self.objects:
@@ -206,7 +206,8 @@ class Simulation:
 
     def start_simulation(self, graphics_screen: GraphicsScreen):
         counter = 0
-        while counter < 50:
+
+        while counter < 100:
 
             self.graphics.clear_screen()
             frame_st = time.perf_counter()
@@ -215,7 +216,7 @@ class Simulation:
             self.write_fps(frame_time)
 
             graphics_screen.update()
-            time.sleep(0.1)
+            time.sleep(0.05)
             counter += 1
-            # if counter == 1:
-            #     input()
+            if counter == 1:
+                input()
