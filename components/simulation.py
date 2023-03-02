@@ -13,7 +13,7 @@ class Simulation:
         self.fps_txp = (-300, 300)
         self.fps_txc = (0.8, 0.8, 0.8)
         self.objects: list[Body] = []
-        self.timestep = 1 / 10_000
+        self.timestep = 1/1000
 
     @staticmethod
     def get_cube_shape():
@@ -191,7 +191,7 @@ class Simulation:
             for pl2 in self.objects:
                 if pl1 == pl2:
                     continue
-                pl1.physics.apply_forces(pl2.physics, self.timestep, self.graphics)
+                pl1.physics.apply_forces(pl2.physics, self.timestep)
 
             pl1.physics.move_object(self.timestep)
             pl1.draw_shape(self.graphics)
@@ -207,7 +207,7 @@ class Simulation:
     def start_simulation(self, graphics_screen: GraphicsScreen):
         counter = 0
 
-        while counter < 20:
+        while counter < 100:
 
             self.graphics.clear_screen()
             frame_st = time.perf_counter()
@@ -216,7 +216,7 @@ class Simulation:
             self.write_fps(frame_time)
 
             graphics_screen.update()
-            time.sleep(0.5)
+            time.sleep(0.05)
             counter += 1
             # if counter == 1:
             #     input()
