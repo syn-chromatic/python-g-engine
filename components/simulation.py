@@ -178,7 +178,7 @@ class Simulation:
         self.add_particle_right2()
         self.add_particle_left()
         self.add_ball(-200, 20)
-        self.add_ball2(10, -500)
+        self.add_ball2(0, -300)
 
         # for _ in range(15):
         #     self.add_orbiting_cube()
@@ -207,7 +207,7 @@ class Simulation:
     def start_simulation(self, graphics_screen: GraphicsScreen):
         counter = 0
 
-        while counter < 500:
+        while counter < 200:
 
             self.graphics.clear_screen()
             frame_st = time.perf_counter()

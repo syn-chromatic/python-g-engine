@@ -15,10 +15,6 @@ class Physics:
         self.spin_acceleration = Vector3D()
         self.mass = 1.0
         self.scale = 1.0
-        self.collision = False
-        self.collision_fc = 0
-
-        self.center_of_mass = Vector3D(0, 0, 0).set_magnitude(self.mass)
 
     @staticmethod
     def _rotate_x(
@@ -97,9 +93,10 @@ class Physics:
     def correct_shift_collision(
         self, target: Self, timestep: float, edge_distance: float
     ):
-        edge = (edge_distance / 2) - timestep**2
+        edge = edge_distance + timestep
 
         direction = self.position.subtract_vector(target.position).normalize()
+
         self_shifted = self.position.add_vector(direction.multiply(-edge))
         target_shifted = target.position.add_vector(direction.multiply(edge))
 
@@ -109,6 +106,21 @@ class Physics:
         # Freeze upon collision
         # self.velocity = Vector3D()
         # target.velocity = Vector3D()
+
+        from components.graphics import Graphics
+        from components.particle import Particle
+
+        p1 = Particle([(0.0, 0.0, 0.0)])
+        p1.set_color((0.4, 0.8, 0.4))
+        p1.physics.set_scale(3)
+        p1.physics.position = self_shifted
+        p1.draw_shape(Graphics())
+
+        p2 = Particle([(0.0, 0.0, 0.0)])
+        p2.set_color((0.8, 0.4, 0.4))
+        p2.physics.set_scale(3)
+        p2.physics.position = target_shifted
+        p2.draw_shape(Graphics())
 
     def calculate_collision_velocities(self, target: Self, centers_distance: Vector3D):
         centers_distance_n = centers_distance.normalize()
@@ -158,8 +170,8 @@ class Physics:
         edge_distance = centers_distance.get_length() - total_radius
 
         if edge_distance <= 0:
-            self.correct_shift_collision(target, timestep, edge_distance)
             self.calculate_collision_velocities(target, centers_distance)
+            self.correct_shift_collision(target, timestep, edge_distance)
 
     def move_object(self, delta_t: float):
         self._calculate_position(delta_t)
