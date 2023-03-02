@@ -174,8 +174,8 @@ class Physics:
             # test = test.dot_product(self_centers_distnace)
 
 
-            self.position = self.position.add_vector(self_centers_distnace.divide(self_centers_distnace.get_length() - self_radius))
-            target.position = target.position.subtract_vector(self_centers_distnace.divide(self_centers_distnace.get_length() - target_radius))
+            # self.position = self.position.add_vector(self_centers_distnace.divide(self_centers_distnace.get_length() - self_radius))
+            # target.position = target.position.subtract_vector(self_centers_distnace.divide(self_centers_distnace.get_length() - target_radius))
             # self.collision = True
             # target.collision = True
 

@@ -13,7 +13,7 @@ class Simulation:
         self.fps_txp = (-300, 300)
         self.fps_txc = (0.8, 0.8, 0.8)
         self.objects: list[Body] = []
-        self.timestep = 1/200
+        self.timestep = 1 / 1000
 
     @staticmethod
     def get_cube_shape():
@@ -83,7 +83,6 @@ class Simulation:
         shape = [(0.0, 0.0, 0.0)]
         scale = mass
 
-
         vx = 1000
         vy = 0
 
@@ -94,9 +93,6 @@ class Simulation:
         p.physics.set_scale(scale)
         p.physics.name = "WHITE BALL"
         self.objects.append(p)
-
-
-
 
     def add_particle_right2(self):
         x = -300
@@ -107,7 +103,6 @@ class Simulation:
         shape = [(0.0, 0.0, 0.0)]
         scale = mass
 
-
         vx = 1000
         vy = 0
 
@@ -118,12 +113,6 @@ class Simulation:
         p.physics.set_scale(scale)
         p.physics.name = "WHITE BALL"
         self.objects.append(p)
-
-
-
-
-
-
 
     def add_particle_left(self):
         x = 300
@@ -152,7 +141,6 @@ class Simulation:
         shape = [(0.0, 0.0, 0.0)]
         scale = mass
 
-
         vx = 500
         vy = 0
 
@@ -164,7 +152,23 @@ class Simulation:
         p.physics.name = "WHITE BALL"
         self.objects.append(p)
 
+    def add_ball2(self, x, y):
+        z = 0
 
+        mass = 30
+        shape = [(0.0, 0.0, 0.0)]
+        scale = mass
+
+        vx = -5_000
+        vy = 20_000
+
+        p = Particle(shape)
+        p.physics.set_position(x, y, z)
+        p.physics.set_velocity(vx, vy, 0)
+        p.physics.set_mass(mass)
+        p.physics.set_scale(scale)
+        p.physics.name = "WHITE BALL"
+        self.objects.append(p)
 
     def setup_objects(self) -> None:
         # self.add_center_cube()
@@ -174,39 +178,23 @@ class Simulation:
         self.add_particle_right2()
         self.add_particle_left()
         self.add_ball(-200, 20)
+        self.add_ball2(100, -400)
 
-        for _ in range(15):
-            self.add_orbiting_cube()
+        # for _ in range(15):
+        #     self.add_orbiting_cube()
 
-        for _ in range(15):
-            self.add_orbiting_particle()
+        # for _ in range(15):
+        #     self.add_orbiting_particle()
 
     def compute_all_objects(self) -> None:
+        for pl1 in self.objects:
+            for pl2 in self.objects:
+                if pl1 == pl2:
+                    continue
+                pl1.physics.apply_attraction(pl2.physics, self.timestep)
 
-        time = 0
-        # while time < 0:
-
-        for idx, pl1 in enumerate(self.objects):
-            for pl2 in self.objects[:idx] + self.objects[idx+1:]:
-                pl1.physics.apply_forces(pl2.physics, self.timestep)
-                time += self.timestep
-
-            # time += self.timestep
             pl1.physics.move_object(self.timestep)
             pl1.draw_shape(self.graphics)
-            # input("INPUT BRO")
-
-
-
-
-        # for pl1 in self.objects:
-        #     for pl2 in self.objects:
-        #         if pl1 == pl2:
-        #             continue
-            #     pl1.physics.apply_attraction(pl2.physics)
-
-            # pl1.physics.move_object()
-            # pl1.draw_shape(self.graphics)
 
     def timestep_adjustment(self, frame_en: float) -> int:
         self.timestep = frame_en
@@ -227,7 +215,7 @@ class Simulation:
             self.write_fps(frame_time)
 
             graphics_screen.update()
-            # time.sleep(1)
+            time.sleep(0.1)
             counter += 1
             # if counter == 1:
             #     input()
