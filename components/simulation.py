@@ -13,7 +13,7 @@ class Simulation:
         self.fps_txp = (-300, 300)
         self.fps_txc = (0.8, 0.8, 0.8)
         self.objects: list[Body] = []
-        self.timestep = 1/5_000
+        self.timestep = 1/10_000
 
     @staticmethod
     def get_cube_shape():
