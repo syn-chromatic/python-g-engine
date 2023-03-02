@@ -97,7 +97,7 @@ class Physics:
     def correct_shift_collision(
         self, target: Self, timestep: float, edge_distance: float
     ):
-        edge = edge_distance / 2 + timestep
+        edge = (edge_distance / 2) - timestep**2
 
         direction = self.position.subtract_vector(target.position).normalize()
         self_shifted = self.position.add_vector(direction.multiply(-edge))
