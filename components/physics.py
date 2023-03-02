@@ -94,7 +94,7 @@ class Physics:
     def set_scale(self, scale: float):
         self.scale = scale
 
-    def apply_forces(self, target: Self, delta_t: float):
+    def apply_forces(self, target: Self, delta_t: float, graphics):
 
         force = target.position.subtract_vector(self.position)
         distance = force.get_length()
@@ -103,7 +103,7 @@ class Physics:
             return
 
         # self.apply_attraction(target, delta_t)
-        self.apply_collision(target, delta_t)
+        self.apply_collision(target, delta_t, graphics)
 
     def apply_attraction(self, target: Self, delta_t: float):
         force = target.position.subtract_vector(self.position)
@@ -138,12 +138,20 @@ class Physics:
 
 
 
-    def apply_collision(self, target: Self, delta_t: float):
+    def apply_collision(self, target: Self, delta_t: float, graphics):
         self_radius = self.scale + self.position.get_length() * delta_t
         target_radius = target.scale + target.position.get_length() * delta_t
 
         total_radius = (self_radius + target_radius)
         self_centers_distnace = self.position.subtract_vector(target.position)
+        from components.particle import Particle
+
+
+
+
+
+
+
         # target_centers_distance = target.position.subtract_vector(self.position)
 
         # if self.collision or target.collision:
@@ -151,8 +159,39 @@ class Physics:
         #     return
 
         diff = self_centers_distnace.get_length() - total_radius
+        # print(diff)
 
         if diff <= 0:
+
+            direction = self.position.subtract_vector(target.position).normalize()
+            self_edge_pos = self.position.add_vector(direction.multiply(-self_radius))
+            target_edge_pos = target.position.add_vector(direction.multiply(target_radius))
+
+            shape = [(0.0, 0.0, 0.0)]
+            test = Particle(shape)
+            test.physics.set_position(self_edge_pos.x, self_edge_pos.y, self_edge_pos.z)
+            test.set_color((0.5, 0.8, 0.2))
+            test.physics.set_scale(5)
+            test.draw_shape(graphics)
+
+            test = Particle(shape)
+            test.physics.set_position(target_edge_pos.x, target_edge_pos.y, target_edge_pos.z)
+            test.set_color((0.5, 0.2, 0.9))
+            test.physics.set_scale(5)
+            test.draw_shape(graphics)
+
+
+
+            print(self_edge_pos.__dict__, target_edge_pos.__dict__)
+            self.position = self_edge_pos
+            target.position = target_edge_pos
+
+            # input()
+
+
+
+
+
             collision_n = self_centers_distnace.normalize()
             # collision_n = (self.position.subtract_vector(target.position)).normalize()
 

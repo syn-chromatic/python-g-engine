@@ -13,7 +13,7 @@ class Simulation:
         self.fps_txp = (-300, 300)
         self.fps_txc = (0.8, 0.8, 0.8)
         self.objects: list[Body] = []
-        self.timestep = 1 / 1000
+        self.timestep = 1 / 250
 
     @staticmethod
     def get_cube_shape():
@@ -124,7 +124,7 @@ class Simulation:
         shape = self.get_cube_shape()
         scale = mass
 
-        p = Shape(shape)
+        p = Particle(shape)
         p.physics.set_position(x, y, z)
         p.physics.set_velocity(-5000, 0, 0)
         # p.physics.set_spin_velocity(0, 1000, 0)
@@ -178,7 +178,7 @@ class Simulation:
         self.add_particle_right2()
         self.add_particle_left()
         self.add_ball(-200, 20)
-        self.add_ball2(100, -400)
+        # self.add_ball2(100, -400)
 
         # for _ in range(15):
         #     self.add_orbiting_cube()
@@ -191,7 +191,7 @@ class Simulation:
             for pl2 in self.objects:
                 if pl1 == pl2:
                     continue
-                pl1.physics.apply_attraction(pl2.physics, self.timestep)
+                pl1.physics.apply_forces(pl2.physics, self.timestep, self.graphics)
 
             pl1.physics.move_object(self.timestep)
             pl1.draw_shape(self.graphics)
@@ -206,7 +206,7 @@ class Simulation:
 
     def start_simulation(self, graphics_screen: GraphicsScreen):
         counter = 0
-        while counter < 1000:
+        while counter < 50:
 
             self.graphics.clear_screen()
             frame_st = time.perf_counter()
