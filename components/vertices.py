@@ -21,9 +21,9 @@ class SphereShape:
             self.shape.append((x, y, z))
 
     def create_lat_points(self) -> None:
-        for i in range(self.points - 1):
+        for i in range(self.points):
             theta = math.pi * i / (self.points)
-            for j in range(self.points):
+            for j in range(self.points + 1):
                 phi = 2 * math.pi * j / (self.points)
                 x = 1 * math.sin(theta) * math.cos(phi)
                 y = 1 * math.sin(theta) * math.sin(phi)

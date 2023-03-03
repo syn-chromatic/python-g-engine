@@ -30,16 +30,16 @@ class Simulation:
         self.objects.append(p)
 
     def add_center_sphere(self) -> None:
-        mass = 50
+        mass = 50000
         shape = SphereShape(10, 10, 10).get_shape()
         color = (0.8, 0.3, 0.3)
-        scale = mass
+        scale = mass / 500
 
         p = Shape(shape)
         p.set_color(color)
         p.physics.set_mass(mass)
         p.physics.set_scale(scale)
-        # p.physics.set_spin_velocity(50, 50, 0)
+        p.physics.set_spin_velocity(50, 50, 0)
         p.physics.set_position(-10, 0, 0)
         self.objects.append(p)
 
