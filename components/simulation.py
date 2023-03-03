@@ -30,16 +30,17 @@ class Simulation:
         self.objects.append(p)
 
     def add_center_sphere(self) -> None:
-        mass = 10_000_000
+        mass = 50
         shape = SphereShape(10, 10, 10).get_shape()
         color = (0.8, 0.3, 0.3)
-        scale = mass / 250_000
+        scale = mass
 
         p = Shape(shape)
         p.set_color(color)
         p.physics.set_mass(mass)
         p.physics.set_scale(scale)
-        p.physics.set_spin_velocity(50, 50, 0)
+        # p.physics.set_spin_velocity(50, 50, 0)
+        p.physics.set_position(-10, 0, 0)
         self.objects.append(p)
 
     def add_orbiting_cube(self) -> None:
@@ -159,8 +160,8 @@ class Simulation:
         shape = [(0.0, 0.0, 0.0)]
         scale = mass
 
-        vx = -10_000
-        vy = 40_000
+        vx = -20_000
+        vy = 80_000
 
         p = Particle(shape)
         p.physics.set_position(x, y, z)
