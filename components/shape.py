@@ -54,17 +54,20 @@ class Shape(Body):
         self.color = color
 
     def draw_shape(self, graphics: Graphics):
-        for point in self.physics.shape:
-            self._draw_edge(point, point, 1.0, graphics)
+        shape = self.physics.shape
+        len_shape = len(self.physics.shape)
 
-        # for i in range(4):
-        #     s1 = (i + 1) % 4
-        #     s2 = i + 4
-        #     s3 = s1 + 4
-        #     shape_i = self.physics.shape[i]
-        #     shape_s1 = self.physics.shape[s1]
-        #     shape_s2 = self.physics.shape[s2]
-        #     shape_s3 = self.physics.shape[s3]
-        #     self._draw_edge(shape_i, shape_s1, 1.0, graphics)
-        #     self._draw_edge(shape_i, shape_s2, 0.85, graphics)
-        #     self._draw_edge(shape_s2, shape_s3, 0.75, graphics)
+        for idx in range(0, len_shape):
+            nxt_idx = idx + 1
+            if nxt_idx < len_shape:
+                p1 = shape[idx]
+                p2 = shape[nxt_idx]
+                self._draw_edge(p1, p2, 1.0, graphics)
+                continue
+
+            p1 = shape[idx]
+            p2 = shape[0]
+            self._draw_edge(p1, p2, 1.0, graphics)
+
+
+

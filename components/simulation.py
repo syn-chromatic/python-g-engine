@@ -1,6 +1,7 @@
 import time
 import random
 import math
+import itertools
 
 from components.graphics import Graphics, GraphicsScreen
 from components.body import Body
@@ -14,7 +15,7 @@ class Simulation:
         self.fps_txp = (-300, 300)
         self.fps_txc = (0.8, 0.8, 0.8)
         self.objects: list[Body] = []
-        self.timestep = 1/10_000
+        self.timestep = 1 / 5_000
 
     @staticmethod
     def get_cube_shape():
@@ -30,17 +31,57 @@ class Simulation:
         ]
         return shape
 
+    @staticmethod
+    def get_cube_shape_2():
+        shape = [
+            (-1, -1, -1),
+            (1, -1, -1),
+            (-1, -1, -1),
+            (-1, -1, 1),
+            (-1, -1, 1),
+            (1, -1, 1),
+            (1, -1, -1),
+            (1, 1, -1),
+            (1, -1, -1),
+            (1, -1, 1),
+            (1, -1, 1),
+            (1, 1, 1),
+            (1, 1, -1),
+            (-1, 1, -1),
+            (1, 1, -1),
+            (1, 1, 1),
+            (1, 1, 1),
+            (-1, 1, 1),
+            (-1, 1, -1),
+            (-1, -1, -1),
+            (-1, 1, -1),
+            (-1, 1, 1),
+            (-1, 1, 1),
+            (-1, -1, 1),
+        ]
+        return shape
 
     @staticmethod
     def get_sphere_shape():
+        num_long = 20
+        num_lat = 10
+        num_points = 10
+
         radius = 1.0
-        num_points = 20
 
         points = []
-        for i in range(num_points):
-            theta = math.pi * i / (num_points - 1)
+        for i, j in itertools.product(range(num_long), range(num_lat)):
+            theta = 2 * math.pi * i / num_long
+            phi = math.pi * j / (num_lat - 1)
+            x = radius * math.sin(phi) * math.cos(theta)
+            y = radius * math.sin(phi) * math.sin(theta)
+            z = radius * math.cos(phi)
+            points.append((x, y, z))
+
+        for i in range(num_points - 1):
+            theta = math.pi * i / (num_points)
             for j in range(num_points):
-                phi = 2 * math.pi * j / (num_points - 1)
+                phi = 2 * math.pi * j / (num_points)
                 x = radius * math.sin(theta) * math.cos(phi)
                 y = radius * math.sin(theta) * math.sin(phi)
                 z = radius * math.cos(theta)
@@ -50,6 +91,7 @@ class Simulation:
     def add_center_cube(self) -> None:
         mass = 10_000_000
         # shape = self.get_cube_shape()
+        # shape = self.get_cube_shape_2()
         shape = self.get_sphere_shape()
         color = (0.8, 0.3, 0.3)
         scale = mass / 250_000
@@ -190,7 +232,7 @@ class Simulation:
         self.objects.append(p)
 
     def setup_objects(self) -> None:
-        # self.add_center_cube()
+        self.add_center_cube()
 
         # for _ in range(15):
         self.add_particle_right()
