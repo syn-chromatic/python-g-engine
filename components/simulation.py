@@ -40,7 +40,7 @@ class Simulation:
         p.physics.set_mass(mass)
         p.physics.set_scale(scale)
         p.physics.set_spin_velocity(50, 50, 0)
-        p.physics.set_position(-10, 0, 0)
+        p.physics.set_position(50, -60, 0)
         self.objects.append(p)
 
     def add_orbiting_cube(self) -> None:
