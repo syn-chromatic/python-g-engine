@@ -1,12 +1,11 @@
 import time
 import random
-import math
-import itertools
 
 from components.graphics import Graphics, GraphicsScreen
 from components.body import Body
 from components.shape import Shape
 from components.particle import Particle
+from components.vertices import CubeShape, SphereShape
 
 
 class Simulation:
@@ -17,89 +16,29 @@ class Simulation:
         self.objects: list[Body] = []
         self.timestep = 1 / 5_000
 
-    @staticmethod
-    def get_cube_shape():
-        shape = [
-            (-1.0, -1.0, -1.0),
-            (1.0, -1.0, -1.0),
-            (1.0, 1.0, -1.0),
-            (-1.0, 1.0, -1.0),
-            (-1.0, -1.0, 1.0),
-            (1.0, -1.0, 1.0),
-            (1.0, 1.0, 1.0),
-            (-1.0, 1.0, 1.0),
-        ]
-        return shape
-
-    @staticmethod
-    def get_cube_shape_2():
-        shape = [
-            (-1, -1, -1),
-            (1, -1, -1),
-            (-1, -1, -1),
-            (-1, -1, 1),
-            (-1, -1, 1),
-            (1, -1, 1),
-            (1, -1, -1),
-            (1, 1, -1),
-            (1, -1, -1),
-            (1, -1, 1),
-            (1, -1, 1),
-            (1, 1, 1),
-            (1, 1, -1),
-            (-1, 1, -1),
-            (1, 1, -1),
-            (1, 1, 1),
-            (1, 1, 1),
-            (-1, 1, 1),
-            (-1, 1, -1),
-            (-1, -1, -1),
-            (-1, 1, -1),
-            (-1, 1, 1),
-            (-1, 1, 1),
-            (-1, -1, 1),
-        ]
-        return shape
-
-    @staticmethod
-    def get_sphere_shape():
-        num_long = 20
-        num_lat = 10
-        num_points = 10
-
-        radius = 1.0
-
-        points = []
-        for i, j in itertools.product(range(num_long), range(num_lat)):
-            theta = 2 * math.pi * i / num_long
-            phi = math.pi * j / (num_lat - 1)
-            x = radius * math.sin(phi) * math.cos(theta)
-            y = radius * math.sin(phi) * math.sin(theta)
-            z = radius * math.cos(phi)
-            points.append((x, y, z))
-
-        for i in range(num_points - 1):
-            theta = math.pi * i / (num_points)
-            for j in range(num_points):
-                phi = 2 * math.pi * j / (num_points)
-                x = radius * math.sin(theta) * math.cos(phi)
-                y = radius * math.sin(theta) * math.sin(phi)
-                z = radius * math.cos(theta)
-                points.append((x, y, z))
-        return points
-
     def add_center_cube(self) -> None:
         mass = 10_000_000
-        # shape = self.get_cube_shape()
-        # shape = self.get_cube_shape_2()
-        shape = self.get_sphere_shape()
+        shape = CubeShape().get_shape()
         color = (0.8, 0.3, 0.3)
         scale = mass / 250_000
 
         p = Shape(shape)
         p.set_color(color)
         p.physics.set_mass(mass)
-        p.physics.set_scale(100)
+        p.physics.set_scale(scale)
+        p.physics.set_spin_velocity(50, 50, 0)
+        self.objects.append(p)
+
+    def add_center_sphere(self) -> None:
+        mass = 10_000_000
+        shape = SphereShape(10, 10, 10).get_shape()
+        color = (0.8, 0.3, 0.3)
+        scale = mass / 250_000
+
+        p = Shape(shape)
+        p.set_color(color)
+        p.physics.set_mass(mass)
+        p.physics.set_scale(scale)
         p.physics.set_spin_velocity(50, 50, 0)
         self.objects.append(p)
 
@@ -109,7 +48,7 @@ class Simulation:
         z = 0
 
         mass = random.uniform(50, 100)
-        shape = self.get_cube_shape()
+        shape = CubeShape().get_shape()
         scale = mass / 20
 
         p = Shape(shape)
@@ -182,7 +121,7 @@ class Simulation:
 
         mass = 30
         # shape = [(0.0, 0.0, 0.0)}
-        shape = self.get_cube_shape()
+        shape = CubeShape().get_shape()
         scale = mass
 
         p = Particle(shape)
@@ -232,7 +171,8 @@ class Simulation:
         self.objects.append(p)
 
     def setup_objects(self) -> None:
-        self.add_center_cube()
+        # self.add_center_cube()
+        self.add_center_sphere()
 
         # for _ in range(15):
         self.add_particle_right()
