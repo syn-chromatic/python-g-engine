@@ -1,4 +1,3 @@
-import itertools
 import math
 
 
@@ -12,13 +11,14 @@ class SphereShape:
     def create_long_points(self) -> None:
         range_long = range(self.long_num)
         range_lat = range(self.lat_num)
-        for i, j in itertools.product(range_long, range_lat):
-            theta = 2 * math.pi * i / self.long_num
-            phi = math.pi * j / (self.lat_num - 1)
-            x = 1 * math.sin(phi) * math.cos(theta)
-            y = 1 * math.sin(phi) * math.sin(theta)
-            z = 1 * math.cos(phi)
-            self.shape.append((x, y, z))
+        for i in range_long:
+            for j in range_lat:
+                theta = 2 * math.pi * i / self.long_num
+                phi = math.pi * j / (self.lat_num - 1)
+                x = 1 * math.sin(phi) * math.cos(theta)
+                y = 1 * math.sin(phi) * math.sin(theta)
+                z = 1 * math.cos(phi)
+                self.shape.append((x, y, z))
 
     def create_lat_points(self) -> None:
         for i in range(self.points):
