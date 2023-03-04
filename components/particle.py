@@ -8,11 +8,7 @@ class Particle(Body):
         self.physics = Physics(shape)
         self.color = (1.0, 1.0, 1.0)
 
-    def _draw_circle(
-        self,
-        graphics: Graphics,
-    ):
-
+    def _draw_circle(self, graphics: Graphics):
         x = self.physics.position.x
         y = self.physics.position.y
         z = self.physics.position.z
@@ -21,7 +17,6 @@ class Particle(Body):
 
         relative_z = min(float("inf"), max(0.5, relative_z))
         graphics.draw_circle((x, y), relative_z, self.color)
-        # graphics.draw_text((x, y), (1, 1, 1), f"VX: {self.physics.velocity.x}\nVY: {self.physics.velocity.y}")
 
     def set_color(self, color: tuple[float, float, float]):
         self.color = color

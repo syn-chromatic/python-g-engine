@@ -6,7 +6,6 @@ from typing_extensions import Self
 
 class Physics:
     def __init__(self, shape: list[tuple[float, float, float]]):
-        self.name = ""
         self.shape = shape
         self.position = Vector3D()
         self.velocity = Vector3D()
@@ -90,6 +89,28 @@ class Physics:
     def set_scale(self, scale: float):
         self.scale = scale
 
+    def _debug_freeze_on_collision(self, target: Self):
+        self.velocity = Vector3D()
+        target.velocity = Vector3D()
+
+    def _debug_show_position_shifts(
+        self, self_shifted: Vector3D, target_shifted: Vector3D
+    ):
+        from components.graphics import Graphics
+        from components.particle import Particle
+
+        p1 = Particle([(0.0, 0.0, 0.0)])
+        p1.set_color((0.4, 0.8, 0.4))
+        p1.physics.set_scale(3)
+        p1.physics.position = self_shifted
+        p1.draw_shape(Graphics())
+
+        p2 = Particle([(0.0, 0.0, 0.0)])
+        p2.set_color((0.8, 0.4, 0.4))
+        p2.physics.set_scale(3)
+        p2.physics.position = target_shifted
+        p2.draw_shape(Graphics())
+
     def correct_shift_collision(
         self, target: Self, timestep: float, edge_distance: float
     ):
@@ -102,25 +123,6 @@ class Physics:
 
         self.position = self_shifted
         target.position = target_shifted
-
-        # Freeze upon collision
-        # self.velocity = Vector3D()
-        # target.velocity = Vector3D()
-
-        # from components.graphics import Graphics
-        # from components.particle import Particle
-
-        # p1 = Particle([(0.0, 0.0, 0.0)])
-        # p1.set_color((0.4, 0.8, 0.4))
-        # p1.physics.set_scale(3)
-        # p1.physics.position = self_shifted
-        # p1.draw_shape(Graphics())
-
-        # p2 = Particle([(0.0, 0.0, 0.0)])
-        # p2.set_color((0.8, 0.4, 0.4))
-        # p2.physics.set_scale(3)
-        # p2.physics.position = target_shifted
-        # p2.draw_shape(Graphics())
 
     def calculate_collision_velocities(self, target: Self, centers_distance: Vector3D):
         centers_distance_n = centers_distance.normalize()
@@ -148,7 +150,7 @@ class Physics:
         if distance <= 0:
             return
 
-        # self.apply_attraction(target)
+        self.apply_attraction(target)
         self.apply_collision(target, timestep)
 
     def apply_attraction(self, target: Self):
