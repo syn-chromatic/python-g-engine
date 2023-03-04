@@ -2,9 +2,12 @@ from turtle import Turtle, Screen
 
 
 class GraphicsScreen:
-    def __init__(self):
-        self.turtle_screen = Screen()
-        self.turtle_screen.tracer(0)
+    def __new__(cls) -> "GraphicsScreen":
+        if not hasattr(cls, "instance"):
+            cls.instance = super(GraphicsScreen, cls).__new__(cls)
+            cls.turtle_screen = Screen()
+            cls.turtle_screen.tracer(0)
+        return cls.instance
 
     def set_screensize(self, width: int, height: int):
         self.turtle_screen.screensize(width, height)
@@ -20,9 +23,12 @@ class GraphicsScreen:
 
 
 class Graphics:
-    def __init__(self):
-        self.turtle_object = Turtle()
-        self.turtle_object.hideturtle()
+    def __new__(cls) -> "Graphics":
+        if not hasattr(cls, "instance"):
+            cls.instance = super(Graphics, cls).__new__(cls)
+            cls.turtle_object = Turtle()
+            cls.turtle_object.hideturtle()
+        return cls.instance
 
     def draw_circle(
         self,
@@ -30,10 +36,12 @@ class Graphics:
         radius: float,
         color: tuple[float, float, float],
     ):
+        x, y = p
+        y -= radius
         self.turtle_object.pencolor(*color)
         self.turtle_object.fillcolor(*color)
         self.turtle_object.penup()
-        self.turtle_object.goto(*p)
+        self.turtle_object.goto(x, y)
         self.turtle_object.begin_fill()
         self.turtle_object.circle(radius)
         self.turtle_object.end_fill()
