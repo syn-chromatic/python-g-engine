@@ -143,7 +143,6 @@ class Physics:
         target.velocity = v2
 
     def apply_forces(self, target: Self, timestep: float):
-
         force = target.position.subtract_vector(self.position)
         distance = force.get_length()
 
