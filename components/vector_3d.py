@@ -24,7 +24,7 @@ class Vector3D:
         return self.x**2.0 + self.y**2.0 + self.z**2.0
 
     def get_length(self) -> float:
-        return math.sqrt(self.x**2.0 + self.y**2.0 + self.z**2.0)
+        return math.sqrt(self.get_length_squared())
 
     def normalize(self) -> Self:
         length = self.get_length()
@@ -34,9 +34,6 @@ class Vector3D:
 
     def dot_product(self, vec: Self) -> float:
         return (self.x * vec.x) + (self.y * vec.y) + (self.z * vec.z)
-
-    def dot_product_vector(self, vec: Self) -> Self:
-        return Vector3D(self.x * vec.x, self.y * vec.y, self.z * vec.z)
 
     def cross_product(self, vec: Self) -> Self:
         x = self.y * vec.z - self.z * vec.y
