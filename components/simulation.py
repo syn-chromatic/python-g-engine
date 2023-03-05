@@ -2,7 +2,7 @@ import time
 import random
 
 from components.graphics import Graphics, GraphicsScreen
-from components.body import Body
+from components.body import BodyType
 from components.shape import Shape
 from components.particle import Particle
 from components.vertices import CubeShape, SphereShape, ParticleCircle
@@ -13,7 +13,7 @@ class Simulation:
         self.graphics = graphics
         self.fps_txp = (-300, 300)
         self.fps_txc = (0.8, 0.8, 0.8)
-        self.objects: list[Body] = []
+        self.objects: list[BodyType] = []
         self.timestep = 1 / 5_000
 
     def add_center_cube(self) -> None:
@@ -195,7 +195,7 @@ class Simulation:
                 pl1.physics.apply_forces(pl2.physics, self.timestep)
 
             pl1.physics.update(self.timestep)
-            pl1.draw_shape(self.graphics)
+            pl1.draw(self.graphics)
 
     def timestep_adjustment(self, frame_en: float) -> int:
         self.timestep = frame_en
