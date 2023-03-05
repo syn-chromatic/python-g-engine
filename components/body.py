@@ -4,7 +4,7 @@ from components.graphics import Graphics
 from abc import ABC, abstractmethod
 
 
-class BodyType(ABC):
+class Body(ABC):
     def __init__(self):
         self.physics: Physics
         self.color: tuple[float, float, float]

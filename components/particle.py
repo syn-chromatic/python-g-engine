@@ -1,9 +1,9 @@
-from components.body import BodyType
+from components.body import Body
 from components.physics import Physics
 from components.graphics import Graphics
 
 
-class Particle(BodyType):
+class Particle(Body):
     def __init__(self, shape: list[tuple[float, float, float]]):
         self.physics = Physics(shape)
         self.color = (1.0, 1.0, 1.0)
