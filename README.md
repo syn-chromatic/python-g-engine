@@ -11,8 +11,5 @@ https://user-images.githubusercontent.com/68112904/221572327-ffb9d2fb-e025-46a3-
 
 
 
-### Collision Simulation ~150 objects
+### Collision Simulation ~150 objects (Particles)
 https://user-images.githubusercontent.com/68112904/222963578-858a5a60-f47b-41aa-b9cb-ddd21c583262.mp4
-
-
-
