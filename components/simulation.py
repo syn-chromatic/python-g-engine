@@ -185,7 +185,6 @@ class Simulation:
     def setup_objects(self) -> None:
         self.add_particle_t3()
         self.add_particle_t7(0, 0)
-        self.add_particle_t7(50, 50)
 
     def compute_all_objects(self) -> None:
         for pl1 in self.objects:
