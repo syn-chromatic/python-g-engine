@@ -124,12 +124,10 @@ class Physics:
         self,
         target: Self,
         timestep: float,
-        center_distance: Vector3D,
+        direction: Vector3D,
         edge_distance: float,
     ):
         edge = edge_distance + timestep
-        direction = center_distance.normalize()
-
         if direction.get_length_squared() == 0.0:
             direction = self.get_random_direction()
 
@@ -142,9 +140,7 @@ class Physics:
         self.position = self_shifted
         target.position = target_shifted
 
-    def calculate_collision_velocities(self, target: Self, center_distance: Vector3D):
-        direction = center_distance.normalize()
-
+    def calculate_collision_velocities(self, target: Self, direction: Vector3D):
         v1i = self.velocity.dot_product(direction)
         v2i = target.velocity.dot_product(direction)
 
@@ -169,33 +165,35 @@ class Physics:
         target.velocity = v2
 
     def apply_forces(self, target: Self, timestep: float):
-        self.apply_attraction(target)
-        self.apply_collision(target, timestep)
+        # Target-To-Self Distance
+        tts_distance = target.position.subtract_vector(self.position)
 
-    def apply_attraction(self, target: Self):
-        force = target.position.subtract_vector(self.position)
-        distance = force.get_length()
+        self.apply_attraction(target, tts_distance)
+        self.apply_collision(target, tts_distance, timestep)
+
+    def apply_attraction(self, target: Self, tts_distance: Vector3D):
+        distance = tts_distance.get_length()
 
         if distance > 0.0:
             strength = self.g_const * ((self.mass * target.mass) / distance)
-            force = force.set_magnitude(strength)
+            force = tts_distance.set_magnitude(strength)
             force = force.divide(self.mass)
             self.acceleration = self.acceleration.add_vector(force)
             self.spin_acceleration = self.spin_acceleration.add_vector(force)
 
-    def apply_collision(self, target: Self, timestep: float):
+    def apply_collision(self, target: Self, tts_distance: Vector3D, timestep: float):
         self_radius = self.scale + self.position.get_length() * timestep
         target_radius = target.scale + target.position.get_length() * timestep
 
         total_radius = self_radius + target_radius
-        center_distance = self.position.subtract_vector(target.position)
-        edge_distance = center_distance.get_length() - total_radius
+        edge_distance = tts_distance.get_length() - total_radius
 
         if edge_distance <= 0:
-            self.calculate_collision_velocities(target, center_distance)
-            self.correct_shift_collision(
-                target, timestep, center_distance, edge_distance
-            )
+            # Self-To-Target Distance
+            stt_distance = tts_distance.multiply(-1)
+            stt_direction = stt_distance.normalize()
+            self.calculate_collision_velocities(target, stt_direction)
+            self.correct_shift_collision(target, timestep, stt_direction, edge_distance)
 
     def update(self, timestep: float):
         self._calculate_position(timestep)
