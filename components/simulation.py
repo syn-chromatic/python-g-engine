@@ -5,7 +5,7 @@ from components.graphics import Graphics, GraphicsScreen
 from components.body import Body
 from components.shape import Shape
 from components.particle import Particle
-from components.vertices import CubeShape, SphereShape
+from components.vertices import CubeShape, SphereShape, ParticleCircle
 
 
 class Simulation:
@@ -163,18 +163,29 @@ class Simulation:
         p.physics.set_scale(scale)
         self.objects.append(p)
 
+    def add_particle_t7(self, px: float, py: float) -> None:
+        particles = ParticleCircle(20).generate(px, py)
+
+        for particle in particles:
+            px = particle[0]
+            py = particle[1]
+            pz = 0
+
+            mass = particle[2]
+            shape = [(0.0, 0.0, 0.0)]
+            scale = particle[2]
+
+            p = Particle(shape)
+            p.physics.set_position(px, py, pz)
+            p.physics.set_velocity(0, 0, 0)
+            p.physics.set_mass(mass)
+            p.physics.set_scale(scale)
+            self.objects.append(p)
+
     def setup_objects(self) -> None:
-        # self.add_center_cube()
-        # self.add_center_sphere()
-
-        self.add_particle_t1()
-        self.add_particle_t2()
         self.add_particle_t3()
-        self.add_particle_t4(-200, 20)
-        self.add_particle_t5(-40, -300)
-
-        for _ in range(50):
-            self.add_particle_t6()
+        self.add_particle_t7(0, 0)
+        self.add_particle_t7(50, 50)
 
     def compute_all_objects(self) -> None:
         for pl1 in self.objects:

@@ -24,7 +24,10 @@ class Vector3D:
         return self.x**2.0 + self.y**2.0 + self.z**2.0
 
     def get_length(self) -> float:
-        return math.sqrt(self.get_length_squared())
+        length_squared = self.get_length_squared()
+        if length_squared == 0.0:
+            return 0.0
+        return math.sqrt(length_squared)
 
     def normalize(self) -> Self:
         length = self.get_length()

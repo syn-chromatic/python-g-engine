@@ -62,7 +62,7 @@ class Shape(Body):
 
     def draw_shape(self, graphics: Graphics):
         shape = self.physics.shape
-        shape_length = len(self.physics.shape)
+        shape_length = len(shape)
         shading = self._get_static_shading_sequence(shape_length)
 
         for idx in range(0, shape_length):

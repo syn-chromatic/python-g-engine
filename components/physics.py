@@ -1,4 +1,5 @@
 import math
+import random
 from components.vector_3d import Vector3D
 
 from typing_extensions import Self
@@ -52,17 +53,17 @@ class Physics:
     def _constrain(val: float, min_val: float, max_val: float) -> float:
         return min(max_val, max(min_val, val))
 
-    def _calculate_position(self, delta_t: float) -> None:
-        self.position = self.position.add_vector(self.velocity.multiply(delta_t))
-        self.velocity = self.velocity.add_vector(self.acceleration.multiply(delta_t))
+    def _calculate_position(self, timestep: float) -> None:
+        self.position = self.position.add_vector(self.velocity.multiply(timestep))
+        self.velocity = self.velocity.add_vector(self.acceleration.multiply(timestep))
 
-    def _calculate_spin(self, delta_t: float):
+    def _calculate_spin(self, timestep: float):
         self.spin_velocity = self.spin_velocity.add_vector(
-            self.spin_acceleration.multiply(delta_t)
+            self.spin_acceleration.multiply(timestep)
         )
-        x_rotation = self.spin_velocity.x * delta_t
-        y_rotation = self.spin_velocity.y * delta_t
-        z_rotation = self.spin_velocity.z * delta_t
+        x_rotation = self.spin_velocity.x * timestep
+        y_rotation = self.spin_velocity.y * timestep
+        z_rotation = self.spin_velocity.z * timestep
         shape = []
         for point in self.shape:
             point = self._rotate_x(point, x_rotation)
@@ -115,67 +116,78 @@ class Physics:
         self, target: Self, timestep: float, edge_distance: float
     ):
         edge = edge_distance + timestep
-
         direction = self.position.subtract_vector(target.position).normalize()
 
-        self_shifted = self.position.add_vector(direction.multiply(-edge))
-        target_shifted = target.position.add_vector(direction.multiply(edge))
+        if direction.get_length_squared() == 0.0:
+            x_rnd = random.uniform(-1.0, 1.0)
+            y_rnd = random.uniform(-1.0, 1.0)
+            direction = Vector3D(x_rnd, y_rnd, 0.0)
+
+        self_edge_vec = direction.multiply(-edge)
+        target_edge_vec = direction.multiply(edge)
+
+        self_shifted = self.position.add_vector(self_edge_vec)
+        target_shifted = target.position.add_vector(target_edge_vec)
 
         self.position = self_shifted
         target.position = target_shifted
 
-    def calculate_collision_velocities(self, target: Self, centers_distance: Vector3D):
-        centers_distance_n = centers_distance.normalize()
+    def calculate_collision_velocities(self, target: Self, center_distance: Vector3D):
+        direction = center_distance.normalize()
 
-        v1i = self.velocity.dot_product(centers_distance_n)
-        v2i = target.velocity.dot_product(centers_distance_n)
-        v1p = self.velocity.subtract_vector(centers_distance_n.multiply(v1i))
-        v2p = target.velocity.subtract_vector(centers_distance_n.multiply(v2i))
+        v1i = self.velocity.dot_product(direction)
+        v2i = target.velocity.dot_product(direction)
+
+        v1i_vec = direction.multiply(v1i)
+        v2i_vec = direction.multiply(v2i)
+
+        v1p = self.velocity.subtract_vector(v1i_vec)
+        v2p = target.velocity.subtract_vector(v2i_vec)
 
         m1 = self.mass
         m2 = target.mass
         v1f = ((v1i * (m1 - m2)) + 2 * (m2 * v2i)) / (m1 + m2)
         v2f = ((v2i * (m2 - m1)) + 2 * (m1 * v1i)) / (m1 + m2)
-        v1 = v1p.add_vector(centers_distance_n.multiply(v1f))
-        v2 = v2p.add_vector(centers_distance_n.multiply(v2f))
+
+        v1f_vec = direction.multiply(v1f)
+        v2f_vec = direction.multiply(v2f)
+
+        v1 = v1p.add_vector(v1f_vec)
+        v2 = v2p.add_vector(v2f_vec)
 
         self.velocity = v1
         target.velocity = v2
 
     def apply_forces(self, target: Self, timestep: float):
-        force = target.position.subtract_vector(self.position)
-        distance = force.get_length()
-
-        if distance <= 0:
-            return
-
         self.apply_attraction(target)
         self.apply_collision(target, timestep)
 
     def apply_attraction(self, target: Self):
         force = target.position.subtract_vector(self.position)
         distance = force.get_length()
-        g_const = 0.0001
-        strength = g_const * ((self.mass * target.mass) / distance)
-        force = force.set_magnitude(strength)
-        force = force.divide(self.mass)
-        self.acceleration = self.acceleration.add_vector(force)
-        self.spin_acceleration = self.spin_acceleration.add_vector(force)
+
+        if distance > 0.0:
+            g_const = 0.0001
+            strength = g_const * ((self.mass * target.mass) / distance)
+            force = force.set_magnitude(strength)
+            force = force.divide(self.mass)
+            self.acceleration = self.acceleration.add_vector(force)
+            self.spin_acceleration = self.spin_acceleration.add_vector(force)
 
     def apply_collision(self, target: Self, timestep: float):
         self_radius = self.scale + self.position.get_length() * timestep
         target_radius = target.scale + target.position.get_length() * timestep
 
         total_radius = self_radius + target_radius
-        centers_distance = self.position.subtract_vector(target.position)
-        edge_distance = centers_distance.get_length() - total_radius
+        center_distance = self.position.subtract_vector(target.position)
+        edge_distance = center_distance.get_length() - total_radius
 
         if edge_distance <= 0:
-            self.calculate_collision_velocities(target, centers_distance)
+            self.calculate_collision_velocities(target, center_distance)
             self.correct_shift_collision(target, timestep, edge_distance)
 
-    def move_object(self, delta_t: float):
-        self._calculate_position(delta_t)
-        self._calculate_spin(delta_t)
+    def move_object(self, timestep: float):
+        self._calculate_position(timestep)
+        self._calculate_spin(timestep)
         self.acceleration = self.acceleration.multiply(0)
         self.spin_acceleration = self.spin_acceleration.multiply(0)

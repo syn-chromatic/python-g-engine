@@ -68,3 +68,31 @@ class CubeShape:
             (-1, -1, 1),
         ]
         return shape
+
+
+class ParticleCircle:
+    def __init__(self, circle_radius: int):
+        self.circle_radius = circle_radius
+
+    def generate(self, px: float, py: float):
+        particles = []
+        max_particle_size = 0.0
+
+        circle_radius = self.circle_radius
+        while circle_radius > 1:
+            size = 1.0
+            angle_increment = 2.0 * math.pi / circle_radius
+
+            for i in range(circle_radius):
+                angle = i * angle_increment
+                x = px + circle_radius * math.cos(angle)
+                y = py + circle_radius * math.sin(angle)
+
+                if size > max_particle_size:
+                    max_particle_size = size
+
+                particle = [x, y, size]
+                particles.append(particle)
+            circle_radius -= int(max_particle_size * math.pi)
+            max_particle_size = 0.0
+        return particles
