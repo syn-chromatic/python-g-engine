@@ -15,6 +15,7 @@ class Physics:
         self.spin_acceleration = Vector3D()
         self.mass = 1.0
         self.scale = 1.0
+        self.g_const = 0.0001
 
     @staticmethod
     def _rotate_x(
@@ -54,13 +55,14 @@ class Physics:
         return min(max_val, max(min_val, val))
 
     def _calculate_position(self, timestep: float) -> None:
-        self.position = self.position.add_vector(self.velocity.multiply(timestep))
-        self.velocity = self.velocity.add_vector(self.acceleration.multiply(timestep))
+        timestep_velocity = self.velocity.multiply(timestep)
+        timestep_acceleration = self.acceleration.multiply(timestep)
+        self.position = self.position.add_vector(timestep_velocity)
+        self.velocity = self.velocity.add_vector(timestep_acceleration)
 
     def _calculate_spin(self, timestep: float):
-        self.spin_velocity = self.spin_velocity.add_vector(
-            self.spin_acceleration.multiply(timestep)
-        )
+        timestep_spin_acc = self.spin_acceleration.multiply(timestep)
+        self.spin_velocity = self.spin_velocity.add_vector(timestep_spin_acc)
         x_rotation = self.spin_velocity.x * timestep
         y_rotation = self.spin_velocity.y * timestep
         z_rotation = self.spin_velocity.z * timestep
@@ -119,10 +121,14 @@ class Physics:
         p2.draw(Graphics())
 
     def correct_shift_collision(
-        self, target: Self, timestep: float, edge_distance: float
+        self,
+        target: Self,
+        timestep: float,
+        center_distance: Vector3D,
+        edge_distance: float,
     ):
         edge = edge_distance + timestep
-        direction = self.position.subtract_vector(target.position).normalize()
+        direction = center_distance.normalize()
 
         if direction.get_length_squared() == 0.0:
             direction = self.get_random_direction()
@@ -171,8 +177,7 @@ class Physics:
         distance = force.get_length()
 
         if distance > 0.0:
-            g_const = 0.0001
-            strength = g_const * ((self.mass * target.mass) / distance)
+            strength = self.g_const * ((self.mass * target.mass) / distance)
             force = force.set_magnitude(strength)
             force = force.divide(self.mass)
             self.acceleration = self.acceleration.add_vector(force)
@@ -188,7 +193,9 @@ class Physics:
 
         if edge_distance <= 0:
             self.calculate_collision_velocities(target, center_distance)
-            self.correct_shift_collision(target, timestep, edge_distance)
+            self.correct_shift_collision(
+                target, timestep, center_distance, edge_distance
+            )
 
     def update(self, timestep: float):
         self._calculate_position(timestep)
