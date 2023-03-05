@@ -72,6 +72,12 @@ class Physics:
             shape.append(point)
         self.shape = shape
 
+    def get_random_direction(self):
+        x_rnd = random.uniform(-1.0, 1.0)
+        y_rnd = random.uniform(-1.0, 1.0)
+        direction = Vector3D(x_rnd, y_rnd, 0.0)
+        return direction
+
     def set_position(self, x: float, y: float, z: float):
         self.position = Vector3D(x, y, z)
 
@@ -119,9 +125,7 @@ class Physics:
         direction = self.position.subtract_vector(target.position).normalize()
 
         if direction.get_length_squared() == 0.0:
-            x_rnd = random.uniform(-1.0, 1.0)
-            y_rnd = random.uniform(-1.0, 1.0)
-            direction = Vector3D(x_rnd, y_rnd, 0.0)
+            direction = self.get_random_direction()
 
         self_edge_vec = direction.multiply(-edge)
         target_edge_vec = direction.multiply(edge)
@@ -186,7 +190,7 @@ class Physics:
             self.calculate_collision_velocities(target, center_distance)
             self.correct_shift_collision(target, timestep, edge_distance)
 
-    def move_object(self, timestep: float):
+    def update(self, timestep: float):
         self._calculate_position(timestep)
         self._calculate_spin(timestep)
         self.acceleration = self.acceleration.multiply(0)

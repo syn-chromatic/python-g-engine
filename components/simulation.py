@@ -97,7 +97,7 @@ class Simulation:
         self.objects.append(p)
 
     def add_particle_t3(self):
-        px = 300
+        px = 150
         py = 10
         pz = 0
 
@@ -194,7 +194,7 @@ class Simulation:
                     continue
                 pl1.physics.apply_forces(pl2.physics, self.timestep)
 
-            pl1.physics.move_object(self.timestep)
+            pl1.physics.update(self.timestep)
             pl1.draw_shape(self.graphics)
 
     def timestep_adjustment(self, frame_en: float) -> int:
