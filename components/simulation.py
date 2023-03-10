@@ -11,8 +11,7 @@ from components.color import RGBA
 
 
 class Simulation:
-    def __init__(self, graphics: Graphics, camera: Camera) -> None:
-        self.graphics = graphics
+    def __init__(self, camera: Camera) -> None:
         self.camera = camera
         self.fps_txp = (-300, 300)
         self.fps_txc = RGBA(0.8, 0.8, 0.8, 1.0)
@@ -191,7 +190,7 @@ class Simulation:
         self.add_particle_t3()
         self.add_particle_t7(0, 0)
 
-    def compute_all_objects(self) -> None:
+    def compute_all_objects(self, graphics: Graphics) -> None:
         for obj1 in self.objects:
             obj1_physics = obj1.physics
             for obj2 in self.objects:
@@ -201,20 +200,19 @@ class Simulation:
                 obj1_physics.apply_forces(obj2_physics, self.timestep)
 
             obj1_physics.update(self.timestep)
-            obj1.draw(self.graphics, self.camera)
+            obj1.draw(graphics, self.camera)
 
     def timestep_adjustment(self, frame_en: float) -> int:
         self.timestep = frame_en
         return 0
 
-    def write_fps(self, frame_time: float):
+    def write_fps(self, graphics: Graphics, frame_time: float):
         fps = f"{1 / frame_time:.2f} FPS"
-        self.graphics.draw_text(self.fps_txp, self.fps_txc, fps)
+        graphics.draw_text(self.fps_txp, self.fps_txc, fps)
 
     def simulate(self, graphics: Graphics):
-        self.graphics.clear_screen()
+        graphics.clear_screen()
         frame_st = time.perf_counter()
-        self.compute_all_objects()
+        self.compute_all_objects(graphics)
         frame_time = time.perf_counter() - frame_st
-        self.write_fps(frame_time)
-        graphics.update()
+        self.write_fps(graphics, frame_time)

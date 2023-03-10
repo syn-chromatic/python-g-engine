@@ -18,7 +18,7 @@ def main():
     graphics.set_screensize(width, height)
     graphics.set_background_color(background_color)
 
-    simulation = Simulation(graphics, camera)
+    simulation = Simulation(camera)
     simulation.setup_objects()
     GraphicsHandler(graphics, simulation)
 
@@ -59,6 +59,7 @@ class GraphicsHandler:
 
     def on_draw(self) -> None:
         self.simulation.simulate(self.graphics)
+        self.graphics.update()
 
     def draw_loop(self) -> None:
         while True:
