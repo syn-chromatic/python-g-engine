@@ -9,9 +9,6 @@ from components.vertices import CubeShape, SphereShape, ParticleCircle
 from components.camera import Camera
 from components.color import RGBA
 
-# from components.shared_dcs import PhysicsProperties
-# from components.debug import debug_show_collision_shifts
-
 
 class Simulation:
     def __init__(self, graphics: Graphics, camera: Camera) -> None:
