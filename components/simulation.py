@@ -109,7 +109,7 @@ class Simulation:
 
         mass = 30
         shape = CubeShape().get_shape()
-        scale = mass
+        scale = 10
 
         color = RGBA(0.8, 0.2, 0.2, 1.0)
 
@@ -193,16 +193,6 @@ class Simulation:
     def setup_objects(self) -> None:
         self.add_particle_t3()
         self.add_particle_t7(0, 0)
-        self.add_particle_t7(50, 50)
-
-    # def handle_physics_properties(self, physics_properties: PhysicsProperties):
-    # collision_properties = physics_properties.collision
-    # if collision_properties:
-    #     graphics = self.graphics
-    #     camera = self.camera
-    #     self_shifted = collision_properties.self_shifted
-    #     target_shifted = collision_properties.target_shifted
-    #     debug_show_collision_shifts(graphics, camera, self_shifted, target_shifted)
 
     def compute_all_objects(self) -> None:
         for obj1 in self.objects:
@@ -212,7 +202,6 @@ class Simulation:
                     continue
                 obj2_physics = obj2.physics
                 obj1_physics.apply_forces(obj2_physics, self.timestep)
-                # self.handle_physics_properties(properties)
 
             obj1_physics.update(self.timestep)
             obj1.draw(self.graphics, self.camera)

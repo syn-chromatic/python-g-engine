@@ -9,8 +9,8 @@ class CameraBase:
         self._width = width
         self._height = height
         self._camera_position = Vector3D()
-        self.near_plane = 60.0
-        self.far_plane = 160.0
+        self.near_plane = 100.0
+        self.far_plane = 200.0
         self.yaw = 0.0
         self.pitch = 0.0
         self.previous_pointer = (width / 2.0, height / 2.0)
