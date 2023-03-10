@@ -8,7 +8,7 @@ from components.particle import Particle
 from components.vertices import CubeShape, SphereShape, ParticleCircle
 from components.camera import Camera
 from components.shared_dcs import PhysicsProperties
-from components.vector_3d import Vector3D
+from components.debug import debug_show_collision_shifts
 
 
 class Simulation:
@@ -190,31 +190,15 @@ class Simulation:
         self.add_particle_t3()
         self.add_particle_t7(0, 0)
 
-    # def _debug_freeze_on_collision(self, target: Physics):
-    #     self.velocity = Vector3D()
-    #     target.velocity = Vector3D()
-
-    def _debug_show_position_shifts(
-        self, self_shifted: Vector3D, target_shifted: Vector3D
-    ):
-        p1 = Particle([(0.0, 0.0, 0.0)])
-        p1.set_color((0.4, 0.8, 0.4))
-        p1.physics.set_scale(3)
-        p1.physics.position = self_shifted
-        p1.draw(self.graphics, self.camera)
-
-        p2 = Particle([(0.0, 0.0, 0.0)])
-        p2.set_color((0.8, 0.4, 0.4))
-        p2.physics.set_scale(3)
-        p2.physics.position = target_shifted
-        p2.draw(self.graphics, self.camera)
-
     def handle_physics_properties(self, physics_properties: PhysicsProperties):
         collision_properties = physics_properties.collision
         if collision_properties:
+            graphics = self.graphics
+            camera = self.camera
             self_shifted = collision_properties.self_shifted
             target_shifted = collision_properties.target_shifted
-            self._debug_show_position_shifts(self_shifted, target_shifted)
+
+            debug_show_collision_shifts(graphics, camera, self_shifted, target_shifted)
 
     def compute_all_objects(self) -> None:
         for obj1 in self.objects:
