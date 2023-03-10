@@ -20,7 +20,7 @@ class Camera(CameraBase):
     def __init__(self, width: int, height: int) -> None:
         super().__init__(width, height)
 
-    def hande_mouse_movement(self, x: float, y: float) -> None:
+    def handle_mouse_movement(self, x: float, y: float) -> None:
         px = self.previous_pointer[0]
         py = self.previous_pointer[1]
 

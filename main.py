@@ -45,7 +45,7 @@ class GraphicsHandler:
         if px != nx or py != ny:
             dx, dy = self.graphics.get_pointer_xy()
             camera = self.simulation.camera
-            camera.hande_mouse_movement(dx, dy)
+            camera.handle_mouse_movement(dx, dy)
 
     def on_key_down(self) -> None:
         screen = self.graphics.turtle_screen
