@@ -3,6 +3,7 @@ from components.physics import Physics
 from components.graphics import Graphics
 from components.camera import Camera
 
+
 class Shape(Body):
     def __init__(self, shape: list[tuple[float, float, float]]):
         self.physics = Physics(shape)
@@ -25,7 +26,6 @@ class Shape(Body):
         b: tuple[float, float, float],
         color: tuple[float, float, float],
         graphics: Graphics,
-
     ):
         scale = self.physics.scale
         z = self.physics.position.z

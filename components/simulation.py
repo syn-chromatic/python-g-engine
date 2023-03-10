@@ -7,6 +7,8 @@ from components.shape import Shape
 from components.particle import Particle
 from components.vertices import CubeShape, SphereShape, ParticleCircle
 from components.camera import Camera
+from components.shared_dcs import PhysicsProperties
+from components.vector_3d import Vector3D
 
 
 class Simulation:
@@ -188,15 +190,44 @@ class Simulation:
         self.add_particle_t3()
         self.add_particle_t7(0, 0)
 
-    def compute_all_objects(self) -> None:
-        for pl1 in self.objects:
-            for pl2 in self.objects:
-                if pl1 == pl2:
-                    continue
-                pl1.physics.apply_forces(pl2.physics, self.timestep)
+    # def _debug_freeze_on_collision(self, target: Physics):
+    #     self.velocity = Vector3D()
+    #     target.velocity = Vector3D()
 
-            pl1.physics.update(self.timestep)
-            pl1.draw(self.graphics, self.camera)
+    def _debug_show_position_shifts(
+        self, self_shifted: Vector3D, target_shifted: Vector3D
+    ):
+        p1 = Particle([(0.0, 0.0, 0.0)])
+        p1.set_color((0.4, 0.8, 0.4))
+        p1.physics.set_scale(3)
+        p1.physics.position = self_shifted
+        p1.draw(self.graphics, self.camera)
+
+        p2 = Particle([(0.0, 0.0, 0.0)])
+        p2.set_color((0.8, 0.4, 0.4))
+        p2.physics.set_scale(3)
+        p2.physics.position = target_shifted
+        p2.draw(self.graphics, self.camera)
+
+    def handle_physics_properties(self, physics_properties: PhysicsProperties):
+        collision_properties = physics_properties.collision
+        if collision_properties:
+            self_shifted = collision_properties.self_shifted
+            target_shifted = collision_properties.target_shifted
+            self._debug_show_position_shifts(self_shifted, target_shifted)
+
+    def compute_all_objects(self) -> None:
+        for obj1 in self.objects:
+            obj1_physics = obj1.physics
+            for obj2 in self.objects:
+                if obj1 == obj2:
+                    continue
+                obj2_physics = obj2.physics
+                properties = obj1_physics.apply_forces(obj2_physics, self.timestep)
+                self.handle_physics_properties(properties)
+
+            obj1_physics.update(self.timestep)
+            obj1.draw(self.graphics, self.camera)
 
     def timestep_adjustment(self, frame_en: float) -> int:
         self.timestep = frame_en
