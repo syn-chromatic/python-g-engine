@@ -1,16 +1,18 @@
 import time
 import random
 
-from components.graphics import Graphics, GraphicsScreen
+from components.graphics import Graphics
 from components.body import Body
 from components.shape import Shape
 from components.particle import Particle
 from components.vertices import CubeShape, SphereShape, ParticleCircle
+from components.camera import Camera
 
 
 class Simulation:
-    def __init__(self, graphics: Graphics) -> None:
+    def __init__(self, graphics: Graphics, camera: Camera) -> None:
         self.graphics = graphics
+        self.camera = camera
         self.fps_txp = (-300, 300)
         self.fps_txc = (0.8, 0.8, 0.8)
         self.objects: list[Body] = []
@@ -194,7 +196,7 @@ class Simulation:
                 pl1.physics.apply_forces(pl2.physics, self.timestep)
 
             pl1.physics.update(self.timestep)
-            pl1.draw(self.graphics)
+            pl1.draw(self.graphics, self.camera)
 
     def timestep_adjustment(self, frame_en: float) -> int:
         self.timestep = frame_en
@@ -204,11 +206,10 @@ class Simulation:
         fps = f"{1 / frame_time:.2f} FPS"
         self.graphics.draw_text(self.fps_txp, self.fps_txc, fps)
 
-    def start_simulation(self, graphics_screen: GraphicsScreen):
-        while True:
-            self.graphics.clear_screen()
-            frame_st = time.perf_counter()
-            self.compute_all_objects()
-            frame_time = time.perf_counter() - frame_st
-            self.write_fps(frame_time)
-            graphics_screen.update()
+    def simulate(self, graphics: Graphics):
+        self.graphics.clear_screen()
+        frame_st = time.perf_counter()
+        self.compute_all_objects()
+        frame_time = time.perf_counter() - frame_st
+        self.write_fps(frame_time)
+        graphics.update()

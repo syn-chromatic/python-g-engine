@@ -1,5 +1,6 @@
 from components.physics import Physics
 from components.graphics import Graphics
+from components.camera import Camera
 
 from abc import ABC, abstractmethod
 
@@ -14,5 +15,5 @@ class Body(ABC):
         return
 
     @abstractmethod
-    def draw(self, graphics: Graphics) -> None:
+    def draw(self, graphics: Graphics, camera: Camera) -> None:
         return

@@ -1,6 +1,7 @@
 from components.body import Body
 from components.physics import Physics
 from components.graphics import Graphics
+from components.camera import Camera
 
 
 class Particle(Body):
@@ -8,18 +9,33 @@ class Particle(Body):
         self.physics = Physics(shape)
         self.color = (1.0, 1.0, 1.0)
 
-    def _draw_circle(self, graphics: Graphics):
-        x = self.physics.position.x
-        y = self.physics.position.y
-        z = self.physics.position.z
-        scale = self.physics.scale
-        relative_z = scale + z
+    def get_scale_alpha(self):
+        pass
 
-        relative_z = min(float("inf"), max(0.5, relative_z))
-        graphics.draw_circle((x, y), relative_z, self.color)
+    def get_rgb_values(self):
+        pass
+
+    def get_particle_position(self):
+        return self.physics.position
+
+    def get_particle_scale(self):
+        return self.physics.scale
+
+    def _draw_circle(self, graphics: Graphics, camera: Camera):
+        position = self.get_particle_position()
+        scale = self.get_particle_scale()
+
+        projected = camera.get_perspective_projection(position)
+        radius = camera.interpolate_radius(projected, scale)
+
+        # rgb = self.get_rgb_values()
+        # alpha = self.get_scale_alpha()
+
+        p = projected.x, projected.y
+        graphics.draw_circle(p, radius, self.color)
 
     def set_color(self, color: tuple[float, float, float]):
         self.color = color
 
-    def draw(self, graphics: Graphics):
-        self._draw_circle(graphics)
+    def draw(self, graphics: Graphics, camera: Camera):
+        self._draw_circle(graphics, camera)

@@ -1,12 +1,15 @@
 from turtle import Turtle, Screen
 
 
-class GraphicsScreen:
-    def __new__(cls) -> "GraphicsScreen":
+class Graphics:
+    def __new__(cls) -> "Graphics":
         if not hasattr(cls, "instance"):
-            cls.instance = super(GraphicsScreen, cls).__new__(cls)
+            cls.instance = super(Graphics, cls).__new__(cls)
+            cls.turtle_object = Turtle()
             cls.turtle_screen = Screen()
             cls.turtle_screen.tracer(0)
+            cls.turtle_screen.listen()
+            cls.turtle_object.hideturtle()
         return cls.instance
 
     def set_screensize(self, width: int, height: int):
@@ -21,22 +24,21 @@ class GraphicsScreen:
     def update(self):
         self.turtle_screen.update()
 
+    def get_canvas(self):
+        canvas = self.turtle_screen.getcanvas()
+        return canvas
 
-class Graphics:
-    def __new__(cls) -> "Graphics":
-        if not hasattr(cls, "instance"):
-            cls.instance = super(Graphics, cls).__new__(cls)
-            cls.turtle_object = Turtle()
-            cls.turtle_object.hideturtle()
-        return cls.instance
+    def get_pointer_xy(self) -> tuple[int, int]:
+        canvas = self.get_canvas()
+        return canvas.winfo_pointerxy()
 
     def draw_circle(
         self,
-        p: tuple[float, float],
+        point: tuple[float, float],
         radius: float,
         color: tuple[float, float, float],
     ):
-        x, y = p
+        x, y = point
         y -= radius
         self.turtle_object.pencolor(*color)
         self.turtle_object.fillcolor(*color)
@@ -48,8 +50,8 @@ class Graphics:
 
     def draw_line(
         self,
-        p1: tuple[float, float],
-        p2: tuple[float, float],
+        point1: tuple[float, float],
+        point2: tuple[float, float],
         thickness: int,
         color: tuple[float, float, float],
     ):
@@ -57,9 +59,9 @@ class Graphics:
         self.turtle_object.pencolor(*color)
         self.turtle_object.fillcolor(*color)
         self.turtle_object.penup()
-        self.turtle_object.goto(*p1)
+        self.turtle_object.goto(*point1)
         self.turtle_object.pendown()
-        self.turtle_object.goto(*p2)
+        self.turtle_object.goto(*point2)
         self.turtle_object.penup()
 
     def draw_text(

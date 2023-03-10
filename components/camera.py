@@ -1,6 +1,7 @@
 import math
 
-from vector_3d import Vector3D
+from components.vector_3d import Vector3D
+from components.utils import clamp_float
 
 
 class CameraBase:
@@ -12,7 +13,7 @@ class CameraBase:
         self.far_plane = 160.0
         self.yaw = 0.0
         self.pitch = 0.0
-        self.prev_mouse_pos = (width / 2.0, height / 2.0)
+        self.previous_pointer = (width / 2.0, height / 2.0)
 
 
 class Camera(CameraBase):
@@ -20,8 +21,8 @@ class Camera(CameraBase):
         super().__init__(width, height)
 
     def hande_mouse_movement(self, x: float, y: float) -> None:
-        px = self.prev_mouse_pos[0]
-        py = self.prev_mouse_pos[1]
+        px = self.previous_pointer[0]
+        py = self.previous_pointer[1]
 
         dx = x - px
         dy = y - py
@@ -29,7 +30,7 @@ class Camera(CameraBase):
         sensitivity = 0.5
         self.yaw += dx * sensitivity
         self.pitch += dy * sensitivity
-        self.prev_mouse_pos = (x, y)
+        self.previous_pointer = (x, y)
 
     def interpolate_radius(self, position: Vector3D, radius: float) -> float:
         z = position.z
@@ -37,57 +38,75 @@ class Camera(CameraBase):
         radius_scaled = radius * interpolation_value
         return radius_scaled
 
-    def yaw_projection(self, position: Vector3D) -> Vector3D:
+    def calculate_yaw_projection(self, position: Vector3D) -> Vector3D:
         yaw_radians = math.radians(self.yaw)
         yaw_cos = math.cos(yaw_radians)
         yaw_sin = math.sin(yaw_radians)
 
-        yaw_x = position.x * yaw_cos - position.z * yaw_sin
-        yaw_y = position.y
-        yaw_z = position.x * yaw_sin + position.z * yaw_cos
+        px = position.x
+        py = position.y
+        pz = position.z
+
+        yaw_x = px * yaw_cos - pz * yaw_sin
+        yaw_y = py
+        yaw_z = px * yaw_sin + pz * yaw_cos
 
         yaw_vector = Vector3D(yaw_x, yaw_y, yaw_z)
         return yaw_vector
 
-    def pitch_projection(self, position: Vector3D) -> Vector3D:
+    def calculate_pitch_projection(self, position: Vector3D) -> Vector3D:
         pitch_radians = math.radians(self.pitch)
         pitch_cos = math.cos(pitch_radians)
         pitch_sin = math.sin(pitch_radians)
 
-        pitch_x = position.x
-        pitch_y = (position.y * pitch_cos) - (position.z * pitch_sin)
-        pitch_z = (position.y * pitch_sin) + (position.z * pitch_cos)
+        px = position.x
+        py = position.y
+        pz = position.z
+
+        pitch_x = px
+        pitch_y = (py * pitch_cos) - (pz * pitch_sin)
+        pitch_z = (py * pitch_sin) + (pz * pitch_cos)
 
         pitch_vector = Vector3D(pitch_x, pitch_y, pitch_z)
         return pitch_vector
 
-    def perspective_projection(self, position: Vector3D):
-        position = self.yaw_projection(position)
-        position = self.pitch_projection(position)
+    def calculate_perspective_projection(self, position: Vector3D):
+        near_plane = self.near_plane
+        far_plane = self.far_plane
 
-        x = (position.x * self.near_plane) / position.z
-        y = (position.y * self.near_plane) / position.z
+        px = position.x
+        py = position.y
+        pz = position.z
 
-        z = (self.far_plane + self.near_plane) / (self.near_plane - self.far_plane)
-        w = -position.z / (self.far_plane - self.near_plane)
+        x = (px * near_plane) / pz
+        y = (py * near_plane) / pz
 
-        half_w = self._width / 2.0
-        half_h = self._height / 2.0
-        xp = (x * w) + half_w
-        yp = (y * w) + half_h
-        zp = z * w
+        z = (far_plane + near_plane) / (near_plane - far_plane)
+        w = -pz / (far_plane - near_plane)
 
-        position = Vector3D(xp, yp, zp)
+        xprj = x * w
+        yprj = y * w
+        zprj = z * w
+
+        projected_vector = Vector3D(xprj, yprj, zprj)
+        return projected_vector
+
+    def get_perspective_projection(self, position: Vector3D):
+        position = self.calculate_yaw_projection(position)
+        position = self.calculate_pitch_projection(position)
+
+        if position.z == 0.0:
+            return position
+
+        position = self.calculate_perspective_projection(position)
         return position
 
-    @staticmethod
-    def clamp(num, min_value, max_value):
-        num = max(min(num, max_value), min_value)
-        return num
-
     def increment_distance(self, increment: float):
-        if (self.near_plane + increment) >= 0.0:
-            self.near_plane += increment
-            self.far_plane += increment
-            self.near_plane = self.clamp(self.near_plane, 0.0, float("inf"))
-            self.far_plane = self.clamp(self.far_plane, 0.0, float("inf"))
+        near_plane = self.near_plane
+        far_plane = self.far_plane
+
+        if (near_plane + increment) >= 0.0:
+            near_plane += increment
+            far_plane += increment
+            self.near_plane = clamp_float(near_plane, 0.0, float("inf"))
+            self.far_plane = clamp_float(far_plane, 0.0, float("inf"))

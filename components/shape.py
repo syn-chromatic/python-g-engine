@@ -1,7 +1,7 @@
 from components.body import Body
 from components.physics import Physics
 from components.graphics import Graphics
-
+from components.camera import Camera
 
 class Shape(Body):
     def __init__(self, shape: list[tuple[float, float, float]]):
@@ -60,7 +60,7 @@ class Shape(Body):
     def set_color(self, color: tuple[float, float, float]):
         self.color = color
 
-    def draw(self, graphics: Graphics):
+    def draw(self, graphics: Graphics, camera: Camera):
         shape = self.physics.shape
         shape_length = len(shape)
         shading = self._get_static_shading_sequence(shape_length)
