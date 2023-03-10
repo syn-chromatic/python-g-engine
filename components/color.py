@@ -9,9 +9,16 @@ class RGBA:
     alpha: float
 
     def __new__(cls, *args, **kwargs) -> "RGBA":
-        instance = super(RGBA, cls).__new__(cls)
-        instance.__set_data__(*args, **kwargs)
+        cls.__set_data__(*args, **kwargs)
+        instance = super(RGBA, cls).__new__(RGBA)
         return instance
+
+    @classmethod
+    def __set_data__(cls, red: float, green: float, blue: float, alpha: float) -> None:
+        cls.red = red
+        cls.green = green
+        cls.blue = blue
+        cls.alpha = alpha
 
     @property
     def rgb_tuple(self) -> tuple[float, float, float]:
@@ -20,13 +27,6 @@ class RGBA:
     @property
     def rgba_tuple(self) -> tuple[float, float, float, float]:
         return (self.red, self.green, self.blue, self.alpha)
-
-    @classmethod
-    def __set_data__(cls, red: float, green: float, blue: float, alpha: float) -> None:
-        cls.red = red
-        cls.green = green
-        cls.blue = blue
-        cls.alpha = alpha
 
     @classmethod
     def from_tuple(cls, rgba: tuple[float, float, float, float]) -> "RGBA":
