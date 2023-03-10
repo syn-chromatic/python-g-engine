@@ -3,6 +3,8 @@ from typing_extensions import Self
 
 
 class Vector3D:
+    __slots__ = ("x", "y", "z")
+
     def __init__(self, x: float = 0.0, y: float = 0.0, z: float = 0.0) -> None:
         self.x = x
         self.y = y

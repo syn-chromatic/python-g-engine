@@ -1,25 +1,31 @@
 import time
 import random
 
-from components.graphics import Graphics, GraphicsScreen
+from components.graphics import Graphics
 from components.body import Body
 from components.shape import Shape
 from components.particle import Particle
 from components.vertices import CubeShape, SphereShape, ParticleCircle
+from components.camera import Camera
+from components.color import RGBA
+
+# from components.shared_dcs import PhysicsProperties
+# from components.debug import debug_show_collision_shifts
 
 
 class Simulation:
-    def __init__(self, graphics: Graphics) -> None:
+    def __init__(self, graphics: Graphics, camera: Camera) -> None:
         self.graphics = graphics
+        self.camera = camera
         self.fps_txp = (-300, 300)
-        self.fps_txc = (0.8, 0.8, 0.8)
+        self.fps_txc = RGBA(0.8, 0.8, 0.8, 1.0)
         self.objects: list[Body] = []
-        self.timestep = 1 / 5_000
+        self.timestep = 1 / 10_000
 
     def add_center_cube(self) -> None:
         mass = 10_000_000
         shape = CubeShape().get_shape()
-        color = (0.8, 0.3, 0.3)
+        color = RGBA(0.8, 0.3, 0.3, 1.0)
         scale = mass / 250_000
 
         p = Shape(shape)
@@ -32,7 +38,7 @@ class Simulation:
     def add_center_sphere(self) -> None:
         mass = 10_000_000
         shape = SphereShape(10, 10, 10).get_shape()
-        color = (0.8, 0.3, 0.3)
+        color = RGBA(0.8, 0.3, 0.3, 1.0)
         scale = mass / 250_000
 
         p = Shape(shape)
@@ -103,14 +109,16 @@ class Simulation:
 
         mass = 30
         shape = CubeShape().get_shape()
-        scale = mass
+        scale = 10
+
+        color = RGBA(0.8, 0.2, 0.2, 1.0)
 
         p = Particle(shape)
         p.physics.set_position(px, py, pz)
         p.physics.set_velocity(-10000, 0, 0)
         p.physics.set_mass(mass)
         p.physics.set_scale(scale)
-        p.set_color((0.8, 0.2, 0.2))
+        p.set_color(color)
         self.objects.append(p)
 
     def add_particle_t4(self, px, py):
@@ -187,14 +195,16 @@ class Simulation:
         self.add_particle_t7(0, 0)
 
     def compute_all_objects(self) -> None:
-        for pl1 in self.objects:
-            for pl2 in self.objects:
-                if pl1 == pl2:
+        for obj1 in self.objects:
+            obj1_physics = obj1.physics
+            for obj2 in self.objects:
+                if obj1 == obj2:
                     continue
-                pl1.physics.apply_forces(pl2.physics, self.timestep)
+                obj2_physics = obj2.physics
+                obj1_physics.apply_forces(obj2_physics, self.timestep)
 
-            pl1.physics.update(self.timestep)
-            pl1.draw(self.graphics)
+            obj1_physics.update(self.timestep)
+            obj1.draw(self.graphics, self.camera)
 
     def timestep_adjustment(self, frame_en: float) -> int:
         self.timestep = frame_en
@@ -204,11 +214,10 @@ class Simulation:
         fps = f"{1 / frame_time:.2f} FPS"
         self.graphics.draw_text(self.fps_txp, self.fps_txc, fps)
 
-    def start_simulation(self, graphics_screen: GraphicsScreen):
-        while True:
-            self.graphics.clear_screen()
-            frame_st = time.perf_counter()
-            self.compute_all_objects()
-            frame_time = time.perf_counter() - frame_st
-            self.write_fps(frame_time)
-            graphics_screen.update()
+    def simulate(self, graphics: Graphics):
+        self.graphics.clear_screen()
+        frame_st = time.perf_counter()
+        self.compute_all_objects()
+        frame_time = time.perf_counter() - frame_st
+        self.write_fps(frame_time)
+        graphics.update()

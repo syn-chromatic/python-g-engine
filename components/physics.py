@@ -1,7 +1,10 @@
 import math
 import random
 from components.vector_3d import Vector3D
+from components.shared_dcs import PhysicsProperties, CollisionProperties
 
+
+from typing import Optional
 from typing_extensions import Self
 
 
@@ -98,27 +101,29 @@ class Physics:
     def set_scale(self, scale: float):
         self.scale = scale
 
-    def _debug_freeze_on_collision(self, target: Self):
-        self.velocity = Vector3D()
-        target.velocity = Vector3D()
+    def create_physics_properties(
+        self, collision_properties: Optional[CollisionProperties]
+    ) -> PhysicsProperties:
+        physics_properties = PhysicsProperties(collision_properties)
+        return physics_properties
 
-    def _debug_show_position_shifts(
-        self, self_shifted: Vector3D, target_shifted: Vector3D
-    ):
-        from components.graphics import Graphics
-        from components.particle import Particle
-
-        p1 = Particle([(0.0, 0.0, 0.0)])
-        p1.set_color((0.4, 0.8, 0.4))
-        p1.physics.set_scale(3)
-        p1.physics.position = self_shifted
-        p1.draw(Graphics())
-
-        p2 = Particle([(0.0, 0.0, 0.0)])
-        p2.set_color((0.8, 0.4, 0.4))
-        p2.physics.set_scale(3)
-        p2.physics.position = target_shifted
-        p2.draw(Graphics())
+    def create_collision_properties(
+        self,
+        target: Self,
+        self_shifted: Vector3D,
+        target_shifted: Vector3D,
+        direction: Vector3D,
+    ) -> CollisionProperties:
+        self_position = self.position
+        target_position = target.position
+        collision_properties = CollisionProperties(
+            self_position=self_position,
+            target_position=target_position,
+            self_shifted=self_shifted,
+            target_shifted=target_shifted,
+            direction=direction,
+        )
+        return collision_properties
 
     def correct_shift_collision(
         self,
@@ -126,7 +131,7 @@ class Physics:
         timestep: float,
         direction: Vector3D,
         edge_distance: float,
-    ):
+    ) -> tuple[Vector3D, Vector3D]:
         edge = edge_distance + timestep
         if direction.get_length_squared() == 0.0:
             direction = self.get_random_direction()
@@ -139,6 +144,7 @@ class Physics:
 
         self.position = self_shifted
         target.position = target_shifted
+        return self_shifted, target_shifted
 
     def calculate_collision_velocities(self, target: Self, direction: Vector3D):
         v1i = self.velocity.dot_product(direction)
@@ -164,12 +170,15 @@ class Physics:
         self.velocity = v1
         target.velocity = v2
 
-    def apply_forces(self, target: Self, timestep: float):
+    def apply_forces(self, target: Self, timestep: float) -> PhysicsProperties:
         # Target-To-Self Distance
         tts_distance = target.position.subtract_vector(self.position)
 
         self.apply_attraction(target, tts_distance)
-        self.apply_collision(target, tts_distance, timestep)
+        collision_properties = self.apply_collision(target, tts_distance, timestep)
+        physics_properties = self.create_physics_properties(collision_properties)
+
+        return physics_properties
 
     def apply_attraction(self, target: Self, tts_distance: Vector3D):
         distance = tts_distance.get_length()
@@ -181,7 +190,9 @@ class Physics:
             self.acceleration = self.acceleration.add_vector(force)
             self.spin_acceleration = self.spin_acceleration.add_vector(force)
 
-    def apply_collision(self, target: Self, tts_distance: Vector3D, timestep: float):
+    def apply_collision(
+        self, target: Self, tts_distance: Vector3D, timestep: float
+    ) -> Optional[CollisionProperties]:
         self_radius = self.scale + self.position.get_length() * timestep
         target_radius = target.scale + target.position.get_length() * timestep
 
@@ -193,7 +204,13 @@ class Physics:
             stt_distance = tts_distance.multiply(-1)
             stt_direction = stt_distance.normalize()
             self.calculate_collision_velocities(target, stt_direction)
-            self.correct_shift_collision(target, timestep, stt_direction, edge_distance)
+
+            shift_args = (target, timestep, stt_direction, edge_distance)
+            self_shifted, target_shifted = self.correct_shift_collision(*shift_args)
+
+            properties_args = (target, self_shifted, target_shifted, stt_direction)
+            collision_properties = self.create_collision_properties(*properties_args)
+            return collision_properties
 
     def update(self, timestep: float):
         self._calculate_position(timestep)
