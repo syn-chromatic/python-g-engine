@@ -193,6 +193,7 @@ class Simulation:
     def setup_objects(self) -> None:
         self.add_particle_t3()
         self.add_particle_t7(0, 0)
+        self.add_particle_t7(50, 50)
 
     # def handle_physics_properties(self, physics_properties: PhysicsProperties):
     # collision_properties = physics_properties.collision

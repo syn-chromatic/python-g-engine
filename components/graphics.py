@@ -4,36 +4,18 @@ from components.color import RGBA
 from components.utils import clamp_float
 
 
-class Graphics:
-    def __new__(cls) -> "Graphics":
+class GraphicsScreen:
+    def __new__(cls) -> "GraphicsScreen":
         if not hasattr(cls, "instance"):
-            cls.instance = super(Graphics, cls).__new__(cls)
-            cls.turtle_object = Turtle()
+            cls.instance = super(GraphicsScreen, cls).__new__(cls)
             cls.turtle_screen = Screen()
             cls.turtle_screen.tracer(0)
             cls.turtle_screen.listen()
+
+            cls.turtle_object = Turtle()
             cls.turtle_object.hideturtle()
+
         return cls.instance
-
-    # Turtle doesn't support alpha channel.
-    # This is a limited (in functionality) workaround.
-    def handle_alpha_component(self, color: RGBA) -> RGBA:
-        bgcolor: tuple[float, float, float] = self.turtle_screen.bgcolor()
-        rgba = color.rgba_tuple
-        alpha_channel = color.alpha
-        rgb = []
-        for bg_channel, channel in zip(bgcolor, rgba[:3]):
-            channel *= alpha_channel
-
-            norm_dividend = channel - bg_channel
-            norm_divisor = 1.0 - bg_channel
-
-            ch_normalized = norm_dividend / norm_divisor
-            ch_clamped = clamp_float(ch_normalized, bg_channel, 1.0)
-            rgb.append(ch_clamped)
-
-        color = RGBA.from_rgb_tuple(tuple(rgb))
-        return color
 
     def set_screensize(self, width: int, height: int) -> None:
         self.turtle_screen.screensize(width, height)
@@ -56,17 +38,42 @@ class Graphics:
         canvas = self.get_canvas()
         return canvas.winfo_pointerxy()
 
-    def goto_point(self, point: tuple[float, float]) -> None:
-        self.turtle_object.penup()
-        self.turtle_object.goto(point)
 
-    def set_turtle_color(self, color: RGBA) -> None:
+class Graphics(GraphicsScreen):
+    def __init__(self):
+        super().__init__()
+
+    # Turtle doesn't support alpha channel.
+    # This is a limited (in functionality) workaround.
+    def handle_alpha_component(self, color: RGBA) -> RGBA:
+        bgcolor: tuple[float, float, float] = self.turtle_screen.bgcolor()
+        rgba = color.rgba_tuple
+        alpha_channel = color.alpha
+        rgb = []
+        for bg_channel, channel in zip(bgcolor, rgba[:3]):
+            channel *= alpha_channel
+
+            norm_dividend = channel - bg_channel
+            norm_divisor = 1.0 - bg_channel
+
+            ch_normalized = norm_dividend / norm_divisor
+            ch_clamped = clamp_float(ch_normalized, bg_channel, 1.0)
+            rgb.append(ch_clamped)
+
+        color = RGBA.from_rgb_tuple(tuple(rgb))
+        return color
+
+    def set_draw_color(self, color: RGBA) -> None:
         rgb = color.rgb_tuple
         self.turtle_object.pencolor(*rgb)
         self.turtle_object.fillcolor(*rgb)
 
-    def set_turtle_pensize(self, size: int) -> None:
+    def set_draw_thickness(self, size: int) -> None:
         self.turtle_object.pensize(size)
+
+    def goto_point(self, point: tuple[float, float]) -> None:
+        self.turtle_object.penup()
+        self.turtle_object.goto(point)
 
     def draw_begin_fill(self, point: tuple[float, float]) -> None:
         self.turtle_object.penup()
@@ -95,7 +102,7 @@ class Graphics:
         point = x, y - radius
 
         color = self.handle_alpha_component(color)
-        self.set_turtle_color(color)
+        self.set_draw_color(color)
         self.draw_begin_fill(point)
         self.turtle_object.circle(radius)
         self.draw_end_fill()
@@ -108,8 +115,8 @@ class Graphics:
         color: RGBA,
     ) -> None:
         color = self.handle_alpha_component(color)
-        self.set_turtle_pensize(thickness)
-        self.set_turtle_color(color)
+        self.set_draw_thickness(thickness)
+        self.set_draw_color(color)
         self.draw_point_to_point(point1, point2)
 
     def draw_text(
@@ -118,7 +125,7 @@ class Graphics:
         color: RGBA,
         text: str,
     ) -> None:
-        self.set_turtle_color(color)
+        self.set_draw_color(color)
         self.goto_point(point)
         self.turtle_object.write(text, font=("Arial", 24, "normal"))
 
