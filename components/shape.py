@@ -51,6 +51,7 @@ class Shape(Body):
 
         projected = camera.get_perspective_projection(position)
         intr_scale = camera.interpolate_scale(projected, scale)
+        intr_scale = clamp_float(intr_scale, 0.5, float("inf"))
 
         x1 = a[0] * intr_scale + projected.x
         y1 = a[1] * intr_scale + projected.y
@@ -74,7 +75,7 @@ class Shape(Body):
         return shading
 
     def _get_scale_alpha(self, scale: float) -> float:
-        max_scale = 50.0
+        max_scale = 300.0
         min_scale = max_scale / 2.0
 
         if scale < min_scale:

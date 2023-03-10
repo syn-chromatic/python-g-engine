@@ -24,6 +24,7 @@ class Particle(Body):
 
         projected = camera.get_perspective_projection(position)
         intr_scale = camera.interpolate_scale(projected, scale)
+        intr_scale = clamp_float(intr_scale, 0.5, float("inf"))
 
         alpha = self._get_scale_alpha(intr_scale)
         rgb = self.color.rgb_tuple

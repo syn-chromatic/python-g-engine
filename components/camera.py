@@ -37,8 +37,11 @@ class Camera(CameraBase):
         near_plane = self.near_plane
         far_plane = self.far_plane
 
+        if (pz + scale) < 0:
+            return 0
+
         interpolation_value = (pz + near_plane) / (far_plane - near_plane)
-        interpolated_scale = scale * interpolation_value
+        interpolated_scale = (pz + scale) * interpolation_value
         return interpolated_scale
 
     def calculate_yaw_projection(self, position: Vector3D) -> Vector3D:

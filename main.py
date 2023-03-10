@@ -28,12 +28,12 @@ class GraphicsHandler:
         self.graphics = graphics
         self.simulation = simulation
         self.previous_pointer = graphics.get_pointer_xy()
+        self.register_keys()
         self.draw_loop()
 
     def handle_events(self) -> None:
         self.on_mouse_move()
         self.on_mouse_wheel_scroll()
-        self.on_key_down()
 
     def on_mouse_wheel_scroll(self) -> None:
         pass
@@ -47,7 +47,7 @@ class GraphicsHandler:
             camera = self.simulation.camera
             camera.handle_mouse_movement(dx, dy)
 
-    def on_key_down(self) -> None:
+    def register_keys(self) -> None:
         screen = self.graphics.turtle_screen
         camera = self.simulation.camera
 
