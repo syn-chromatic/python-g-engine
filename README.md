@@ -17,4 +17,6 @@ https://user-images.githubusercontent.com/68112904/222963578-858a5a60-f47b-41aa-
 ___
 
 ### Camera Projection and Mouse Controls
-https://user-images.githubusercontent.com/68112904/224436387-8a533911-6682-4fa4-8f50-ca5628c7e68d.mp4
+https://user-images.githubusercontent.com/68112904/224444553-2adc66f0-874c-4fcf-be2b-799e9468d499.mp4
+
+
