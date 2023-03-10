@@ -9,8 +9,8 @@ class CameraBase:
         self._width = width
         self._height = height
         self._camera_position = Vector3D()
-        self.near_plane = 60.0
-        self.far_plane = 160.0
+        self.near_plane = 160.0
+        self.far_plane = 260.0
         self.yaw = 0.0
         self.pitch = 0.0
         self.previous_pointer = (width / 2.0, height / 2.0)
@@ -32,11 +32,14 @@ class Camera(CameraBase):
         self.pitch += dy * sensitivity
         self.previous_pointer = (x, y)
 
-    def interpolate_radius(self, position: Vector3D, radius: float) -> float:
-        z = position.z
-        interpolation_value = (z + self.near_plane) / (self.far_plane - self.near_plane)
-        radius_scaled = radius * interpolation_value
-        return radius_scaled
+    def interpolate_scale(self, position: Vector3D, scale: float) -> float:
+        pz = position.z
+        near_plane = self.near_plane
+        far_plane = self.far_plane
+
+        interpolation_value = (pz + near_plane) / (far_plane - near_plane)
+        interpolated_scale = scale * interpolation_value
+        return interpolated_scale
 
     def calculate_yaw_projection(self, position: Vector3D) -> Vector3D:
         yaw_radians = math.radians(self.yaw)
@@ -47,9 +50,9 @@ class Camera(CameraBase):
         py = position.y
         pz = position.z
 
-        yaw_x = px * yaw_cos - pz * yaw_sin
+        yaw_x = (px * yaw_cos) - (pz * yaw_sin)
         yaw_y = py
-        yaw_z = px * yaw_sin + pz * yaw_cos
+        yaw_z = (px * yaw_sin) + (pz * yaw_cos)
 
         yaw_vector = Vector3D(yaw_x, yaw_y, yaw_z)
         return yaw_vector

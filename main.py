@@ -3,18 +3,20 @@ from functools import partial
 from components.graphics import Graphics
 from components.simulation import Simulation
 from components.camera import Camera
+from components.color import RGBA
 
 
 def main():
     width = 640
     height = 640
+    background_color = RGBA(0.15, 0.15, 0.15, 1.0)
 
     graphics = Graphics()
     camera = Camera(width, height)
 
     graphics.set_title("Physics System")
     graphics.set_screensize(width, height)
-    graphics.set_background_color(0.15, 0.15, 0.15)
+    graphics.set_background_color(background_color)
 
     simulation = Simulation(graphics, camera)
     simulation.setup_objects()
@@ -26,7 +28,7 @@ class GraphicsHandler:
         self.graphics = graphics
         self.simulation = simulation
         self.previous_pointer = graphics.get_pointer_xy()
-        self.request_draw()
+        self.draw_loop()
 
     def handle_events(self) -> None:
         self.on_mouse_move()
@@ -57,11 +59,11 @@ class GraphicsHandler:
 
     def on_draw(self) -> None:
         self.simulation.simulate(self.graphics)
-        self.request_draw()
 
-    def request_draw(self) -> None:
-        self.handle_events()
-        self.on_draw()
+    def draw_loop(self) -> None:
+        while True:
+            self.handle_events()
+            self.on_draw()
 
 
 if __name__ == "__main__":

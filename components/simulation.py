@@ -7,8 +7,10 @@ from components.shape import Shape
 from components.particle import Particle
 from components.vertices import CubeShape, SphereShape, ParticleCircle
 from components.camera import Camera
-from components.shared_dcs import PhysicsProperties
-from components.debug import debug_show_collision_shifts
+from components.color import RGBA
+
+# from components.shared_dcs import PhysicsProperties
+# from components.debug import debug_show_collision_shifts
 
 
 class Simulation:
@@ -16,14 +18,14 @@ class Simulation:
         self.graphics = graphics
         self.camera = camera
         self.fps_txp = (-300, 300)
-        self.fps_txc = (0.8, 0.8, 0.8)
+        self.fps_txc = RGBA(0.8, 0.8, 0.8, 1.0)
         self.objects: list[Body] = []
-        self.timestep = 1 / 5_000
+        self.timestep = 1 / 10_000
 
     def add_center_cube(self) -> None:
         mass = 10_000_000
         shape = CubeShape().get_shape()
-        color = (0.8, 0.3, 0.3)
+        color = RGBA(0.8, 0.3, 0.3, 1.0)
         scale = mass / 250_000
 
         p = Shape(shape)
@@ -36,7 +38,7 @@ class Simulation:
     def add_center_sphere(self) -> None:
         mass = 10_000_000
         shape = SphereShape(10, 10, 10).get_shape()
-        color = (0.8, 0.3, 0.3)
+        color = RGBA(0.8, 0.3, 0.3, 1.0)
         scale = mass / 250_000
 
         p = Shape(shape)
@@ -109,12 +111,14 @@ class Simulation:
         shape = CubeShape().get_shape()
         scale = mass
 
+        color = RGBA(0.8, 0.2, 0.2, 1.0)
+
         p = Particle(shape)
         p.physics.set_position(px, py, pz)
         p.physics.set_velocity(-10000, 0, 0)
         p.physics.set_mass(mass)
         p.physics.set_scale(scale)
-        p.set_color((0.8, 0.2, 0.2))
+        p.set_color(color)
         self.objects.append(p)
 
     def add_particle_t4(self, px, py):
@@ -190,15 +194,14 @@ class Simulation:
         self.add_particle_t3()
         self.add_particle_t7(0, 0)
 
-    def handle_physics_properties(self, physics_properties: PhysicsProperties):
-        collision_properties = physics_properties.collision
-        if collision_properties:
-            graphics = self.graphics
-            camera = self.camera
-            self_shifted = collision_properties.self_shifted
-            target_shifted = collision_properties.target_shifted
-
-            debug_show_collision_shifts(graphics, camera, self_shifted, target_shifted)
+    # def handle_physics_properties(self, physics_properties: PhysicsProperties):
+    # collision_properties = physics_properties.collision
+    # if collision_properties:
+    #     graphics = self.graphics
+    #     camera = self.camera
+    #     self_shifted = collision_properties.self_shifted
+    #     target_shifted = collision_properties.target_shifted
+    #     debug_show_collision_shifts(graphics, camera, self_shifted, target_shifted)
 
     def compute_all_objects(self) -> None:
         for obj1 in self.objects:
@@ -207,8 +210,8 @@ class Simulation:
                 if obj1 == obj2:
                     continue
                 obj2_physics = obj2.physics
-                properties = obj1_physics.apply_forces(obj2_physics, self.timestep)
-                self.handle_physics_properties(properties)
+                obj1_physics.apply_forces(obj2_physics, self.timestep)
+                # self.handle_physics_properties(properties)
 
             obj1_physics.update(self.timestep)
             obj1.draw(self.graphics, self.camera)

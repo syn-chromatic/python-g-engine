@@ -1,54 +1,70 @@
 from components.body import Body
 from components.physics import Physics
+from components.vector_3d import Vector3D
 from components.graphics import Graphics
 from components.camera import Camera
+from components.color import RGBA
+from components.utils import clamp_float
 
 
 class Shape(Body):
     def __init__(self, shape: list[tuple[float, float, float]]):
         self.physics = Physics(shape)
-        self.color = (1.0, 1.0, 1.0)
+        self.color = RGBA(1.0, 1.0, 1.0, 1.0)
         self.line_thickness = 3
 
-    @staticmethod
-    def _perspective_projection(
-        xyz_point: tuple[float, float, float]
-    ) -> tuple[float, float, float]:
-        distance = 5
-        zp = 1 / (distance - xyz_point[2])
-        xp = xyz_point[0] * zp
-        yp = xyz_point[1] * zp
-        return (xp, yp, zp)
+    def set_color(self, color: RGBA):
+        self.color = color
+
+    def draw(self, graphics: Graphics, camera: Camera):
+        shape = self.physics.shape
+        shape_length = len(shape)
+        shading = self._get_static_shading_sequence(shape_length)
+        rgb = self.color.rgb_tuple
+
+        for idx in range(0, shape_length):
+            nxt_idx = idx + 1
+            rgb = tuple((i * shading[idx] for i in rgb))
+            color = RGBA.from_rgb_tuple(rgb)
+            if nxt_idx < shape_length:
+                p1 = shape[idx]
+                p2 = shape[nxt_idx]
+
+                self._draw_edge(p1, p2, color, graphics, camera)
+                continue
+
+            p1 = shape[idx]
+            p2 = shape[0]
+            self._draw_edge(p1, p2, color, graphics, camera)
 
     def _draw_edge(
         self,
         a: tuple[float, float, float],
         b: tuple[float, float, float],
-        color: tuple[float, float, float],
+        color: RGBA,
         graphics: Graphics,
+        camera: Camera,
     ):
-        scale = self.physics.scale
-        z = self.physics.position.z
-        relative_z = scale + z
-        relative_z = min(float("inf"), max(0, relative_z))
 
-        x1 = a[0] * relative_z + self.physics.position.x
-        y1 = a[1] * relative_z + self.physics.position.y
-        x2 = b[0] * relative_z + self.physics.position.x
-        y2 = b[1] * relative_z + self.physics.position.y
+        position = self._get_particle_position()
+        scale = self._get_particle_scale()
 
-        graphics.draw_line((x1, y1), (x2, y2), self.line_thickness, color)
+        projected = camera.get_perspective_projection(position)
+        intr_scale = camera.interpolate_scale(projected, scale)
 
-    def _draw_edge_perspective(
-        self,
-        a: tuple[float, float, float],
-        b: tuple[float, float, float],
-        color: tuple[float, float, float],
-        graphics: Graphics,
-    ):
-        a = self._perspective_projection(a)
-        b = self._perspective_projection(b)
-        self._draw_edge(a, b, color, graphics)
+        x1 = a[0] * intr_scale + projected.x
+        y1 = a[1] * intr_scale + projected.y
+        x2 = b[0] * intr_scale + projected.x
+        y2 = b[1] * intr_scale + projected.y
+
+        alpha = self._get_scale_alpha(intr_scale)
+        rgb = self.color.rgb_tuple
+        color = RGBA(*rgb, alpha)
+
+        point1 = (x1, y1)
+        point2 = (x2, y2)
+        thickness = self.line_thickness
+        graphics.draw_line(point1, point2, thickness, color)
 
     def _get_static_shading_sequence(self, shape_length: int):
         shading = []
@@ -57,24 +73,26 @@ class Shape(Body):
             shading.append(value)
         return shading
 
-    def set_color(self, color: tuple[float, float, float]):
-        self.color = color
+    def _get_scale_alpha(self, scale: float) -> float:
+        max_scale = 50.0
+        min_scale = max_scale / 2.0
 
-    def draw(self, graphics: Graphics, camera: Camera):
-        shape = self.physics.shape
-        shape_length = len(shape)
-        shading = self._get_static_shading_sequence(shape_length)
+        if scale < min_scale:
+            return 1.0
 
-        for idx in range(0, shape_length):
-            nxt_idx = idx + 1
-            color = tuple((i * shading[idx] for i in self.color))
-            if nxt_idx < shape_length:
-                p1 = shape[idx]
-                p2 = shape[nxt_idx]
+        alpha_normalized = (scale - min_scale) / (max_scale - min_scale)
+        alpha_clamped = clamp_float(alpha_normalized, 0.0, 1.0)
+        alpha = 1.0 - alpha_clamped
+        return alpha
 
-                self._draw_edge(p1, p2, color, graphics)
-                continue
+    def get_shaded_rgb(
+        self, rgb: tuple[float, float, float], shade_value: float
+    ) -> tuple[float, float, float]:
+        rgb = tuple(ch * shade_value for ch in rgb)
+        return rgb
 
-            p1 = shape[idx]
-            p2 = shape[0]
-            self._draw_edge(p1, p2, color, graphics)
+    def _get_particle_position(self) -> Vector3D:
+        return self.physics.position
+
+    def _get_particle_scale(self) -> float:
+        return self.physics.scale
