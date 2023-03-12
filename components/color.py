@@ -29,12 +29,13 @@ class RGBA:
         return (self.red, self.green, self.blue, self.alpha)
 
     @classmethod
-    def from_tuple(cls, rgba: tuple[float, float, float, float]) -> "RGBA":
-        "Create the RGBA dataclass from a tuple."
+    def from_rgba_tuple(cls, rgba: tuple[float, float, float, float]) -> "RGBA":
+        "Create the RGBA dataclass from an (R, G, B, A) tuple."
         return cls.__new__(cls, *rgba)
 
     @classmethod
     def from_rgb_tuple(cls, rgb: tuple[float, float, float]) -> "RGBA":
-        "Create the RGBA dataclass from a tuple with the alpha channel set to 1.0."
+        """Create the RGBA dataclass from an (R, G, B) tuple
+        with the alpha channel set to 1.0."""
         rgba = (*rgb, 1.0)
         return cls.__new__(cls, *rgba)
