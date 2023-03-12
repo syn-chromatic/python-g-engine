@@ -1,13 +1,14 @@
 import time
-import random
 
 from components.graphics import Graphics
 from components.body import Body
-from components.shape import Shape
-from components.particle import Particle
-from components.vertices import CubeShape, SphereShape, ParticleCircle
 from components.camera import Camera
 from components.color import RGBA
+
+from components.body_configurations import (
+    get_particle_t3,
+    get_particle_t7,
+)
 
 
 class Simulation:
@@ -18,177 +19,11 @@ class Simulation:
         self.objects: list[Body] = []
         self.timestep = 1 / 10_000
 
-    def add_center_cube(self) -> None:
-        mass = 10_000_000
-        shape = CubeShape().get_shape()
-        color = RGBA(0.8, 0.3, 0.3, 1.0)
-        scale = mass / 250_000
-
-        p = Shape(shape)
-        p.set_color(color)
-        p.physics.set_mass(mass)
-        p.physics.set_scale(scale)
-        p.physics.set_spin_velocity(50, 50, 0)
-        self.objects.append(p)
-
-    def add_center_sphere(self) -> None:
-        mass = 10_000_000
-        shape = SphereShape(10, 10, 10).get_shape()
-        color = RGBA(0.8, 0.3, 0.3, 1.0)
-        scale = mass / 250_000
-
-        p = Shape(shape)
-        p.set_color(color)
-        p.physics.set_mass(mass)
-        p.physics.set_scale(scale)
-        p.physics.set_spin_velocity(50, 50, 0)
-        self.objects.append(p)
-
-    def add_cube_t1(self) -> None:
-        px = random.uniform(-50, -40)
-        py = random.uniform(-50, -40)
-        pz = 0
-
-        mass = random.uniform(50, 100)
-        shape = CubeShape().get_shape()
-        scale = mass / 20
-
-        p = Shape(shape)
-        p.physics.set_position(px, py, pz)
-        p.physics.set_velocity(10, 30, 5)
-        p.physics.set_mass(mass)
-        p.physics.set_scale(scale)
-        self.objects.append(p)
-
-    def add_particle_t1(self):
-        px = 0
-        py = 10
-        pz = 0
-
-        mass = 30
-        shape = [(0.0, 0.0, 0.0)]
-        scale = mass
-
-        vx = 1000
-        vy = 0
-
-        p = Particle(shape)
-        p.physics.set_position(px, py, pz)
-        p.physics.set_velocity(vx, vy, 0)
-        p.physics.set_mass(mass)
-        p.physics.set_scale(scale)
-        self.objects.append(p)
-
-    def add_particle_t2(self):
-        px = -300
-        py = -20
-        pz = 0
-
-        mass = 30
-        shape = [(0.0, 0.0, 0.0)]
-        scale = mass
-
-        vx = 1000
-        vy = 0
-
-        p = Particle(shape)
-        p.physics.set_position(px, py, pz)
-        p.physics.set_velocity(vx, vy, 0)
-        p.physics.set_mass(mass)
-        p.physics.set_scale(scale)
-        self.objects.append(p)
-
-    def add_particle_t3(self):
-        px = 150
-        py = 10
-        pz = 0
-
-        mass = 30
-        shape = CubeShape().get_shape()
-        scale = 10
-
-        color = RGBA(0.8, 0.2, 0.2, 1.0)
-
-        p = Particle(shape)
-        p.physics.set_position(px, py, pz)
-        p.physics.set_velocity(-10000, 0, 0)
-        p.physics.set_mass(mass)
-        p.physics.set_scale(scale)
-        p.set_color(color)
-        self.objects.append(p)
-
-    def add_particle_t4(self, px, py):
-        pz = 0
-
-        mass = 30
-        shape = [(0.0, 0.0, 0.0)]
-        scale = mass
-
-        vx = 500
-        vy = 0
-
-        p = Particle(shape)
-        p.physics.set_position(px, py, pz)
-        p.physics.set_velocity(vx, vy, 0)
-        p.physics.set_mass(mass)
-        p.physics.set_scale(scale)
-        self.objects.append(p)
-
-    def add_particle_t5(self, px, py):
-        pz = 0
-
-        mass = 30
-        shape = [(0.0, 0.0, 0.0)]
-        scale = mass
-
-        vx = -20_000
-        vy = 80_000
-
-        p = Particle(shape)
-        p.physics.set_position(px, py, pz)
-        p.physics.set_velocity(vx, vy, 0)
-        p.physics.set_mass(mass)
-        p.physics.set_scale(scale)
-        self.objects.append(p)
-
-    def add_particle_t6(self) -> None:
-        px = random.uniform(-200, -60)
-        py = random.uniform(-50, -100)
-        pz = 0
-
-        mass = random.uniform(1, 5)
-        shape = [(0.0, 0.0, 0.0)]
-        scale = mass
-
-        p = Particle(shape)
-        p.physics.set_position(px, py, pz)
-        p.physics.set_velocity(-10, -30, 0)
-        p.physics.set_mass(mass)
-        p.physics.set_scale(scale)
-        self.objects.append(p)
-
-    def add_particle_t7(self, px: float, py: float) -> None:
-        particles = ParticleCircle(20).generate(px, py)
-
-        for particle in particles:
-            px = particle[0]
-            py = particle[1]
-            pz = 0
-
-            mass = particle[2]
-            shape = [(0.0, 0.0, 0.0)]
-            scale = particle[2]
-
-            p = Particle(shape)
-            p.physics.set_position(px, py, pz)
-            p.physics.set_velocity(0, 0, 0)
-            p.physics.set_mass(mass)
-            p.physics.set_scale(scale)
-            self.objects.append(p)
-
     def setup_objects(self) -> None:
-        self.add_particle_t3()
-        self.add_particle_t7(0, 0)
+        p3 = get_particle_t3()
+        p7_list = get_particle_t7(0, 0)
+        self.objects.append(p3)
+        self.objects.extend(p7_list)
 
     def compute_all_objects(self, graphics: Graphics) -> None:
         for obj1 in self.objects:
