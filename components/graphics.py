@@ -5,33 +5,66 @@ from components.utils import clamp_float
 
 
 class GraphicsScreen:
-    def __new__(cls) -> "GraphicsScreen":
-        if not hasattr(cls, "instance"):
-            cls.instance = super(GraphicsScreen, cls).__new__(cls)
-            cls.turtle_screen = Screen()
-            cls.turtle_screen.tracer(0)
-            cls.turtle_screen.listen()
+    def __init__(self, width: int, height: int) -> None:
+        self.width = width
+        self.height = height
+        self.screen = Screen()
+        self.turtle = Turtle()
+        self.setup_coordinates(width, height)
 
-            cls.turtle_object = Turtle()
-            cls.turtle_object.hideturtle()
+    def get_screen_coordinates(
+        self, width: int, height: int
+    ) -> tuple[float, float, float, float]:
+        h_width = width / 2
+        h_height = height / 2
 
-        return cls.instance
+        llx = -h_width
+        lly = -h_height
+        urx = h_width
+        ury = h_height
+        return (llx, lly, urx, ury)
+
+    def setup(self):
+        self.screen.tracer(0)
+        self.screen.listen()
+        self.turtle.hideturtle()
+
+    def setup_coordinates(self, width: int, height: int):
+        coordinates = self.get_screen_coordinates(width, height)
+        self.screen.setup(width, height)
+        self.screen.setworldcoordinates(*coordinates)
+        self.setup()
 
     def set_screensize(self, width: int, height: int) -> None:
-        self.turtle_screen.screensize(width, height)
+        self.setup_coordinates(width, height)
+        self.width = width
+        self.height = height
 
     def set_background_color(self, color: RGBA) -> None:
         rgb = color.rgb_tuple
-        self.turtle_screen.bgcolor(*rgb)
+        self.screen.bgcolor(*rgb)
 
     def set_title(self, title: str) -> None:
-        self.turtle_screen.title(title)
+        self.screen.title(title)
 
     def update(self) -> None:
-        self.turtle_screen.update()
+        self.screen.update()
+
+    def get_screensize(self) -> tuple[int, int]:
+        width = self.screen.window_width()
+        height = self.screen.window_height()
+        return width, height
+
+    def get_width(self) -> int:
+        width = self.screen.window_width()
+        return width
+
+    def get_height(self) -> int:
+        height = self.screen.window_height()
+        return height
 
     def get_canvas(self) -> ScrolledCanvas:
-        canvas = self.turtle_screen.getcanvas()
+        canvas = self.screen.getcanvas()
         return ScrolledCanvas(canvas)
 
     def get_pointer_xy(self) -> tuple[int, int]:
@@ -40,13 +73,13 @@ class GraphicsScreen:
 
 
 class Graphics(GraphicsScreen):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, width: int, height: int):
+        super().__init__(width, height)
 
     # Turtle doesn't support alpha channel.
     # This is a limited (in functionality) workaround.
     def handle_alpha_component(self, color: RGBA) -> RGBA:
-        bgcolor: tuple[float, float, float] = self.turtle_screen.bgcolor()
+        bgcolor: tuple[float, float, float] = self.screen.bgcolor()
         rgba = color.rgba_tuple
         alpha_channel = color.alpha
         rgb = []
@@ -65,32 +98,31 @@ class Graphics(GraphicsScreen):
 
     def set_draw_color(self, color: RGBA) -> None:
         rgb = color.rgb_tuple
-        self.turtle_object.pencolor(*rgb)
-        self.turtle_object.fillcolor(*rgb)
+        self.turtle.pencolor(*rgb)
+        self.turtle.fillcolor(*rgb)
 
     def set_draw_thickness(self, size: int) -> None:
-        self.turtle_object.pensize(size)
+        self.turtle.pensize(size)
 
     def goto_point(self, point: tuple[float, float]) -> None:
-        self.turtle_object.penup()
-        self.turtle_object.goto(point)
+        self.turtle.penup()
+        self.turtle.goto(point)
 
     def draw_begin_fill(self, point: tuple[float, float]) -> None:
-        self.turtle_object.penup()
-        self.turtle_object.goto(*point)
-        self.turtle_object.begin_fill()
+        self.turtle.penup()
+        self.turtle.goto(*point)
+        self.turtle.begin_fill()
 
     def draw_end_fill(self) -> None:
-        self.turtle_object.end_fill()
+        self.turtle.end_fill()
 
     def draw_point_to_point(
         self, point1: tuple[float, float], point2: tuple[float, float]
     ) -> None:
-        self.turtle_object.penup()
-        self.turtle_object.goto(*point1)
-        self.turtle_object.pendown()
-        self.turtle_object.goto(*point2)
-        self.turtle_object.penup()
+        self.turtle.penup()
+        self.turtle.goto(*point1)
+        self.turtle.pendown()
+        self.turtle.goto(*point2)
 
     def draw_circle(
         self,
@@ -104,7 +136,7 @@ class Graphics(GraphicsScreen):
         color = self.handle_alpha_component(color)
         self.set_draw_color(color)
         self.draw_begin_fill(point)
-        self.turtle_object.circle(radius)
+        self.turtle.circle(radius)
         self.draw_end_fill()
 
     def draw_line(
@@ -124,10 +156,11 @@ class Graphics(GraphicsScreen):
         point: tuple[float, float],
         color: RGBA,
         text: str,
+        font: tuple[str, int, str],
     ) -> None:
         self.set_draw_color(color)
         self.goto_point(point)
-        self.turtle_object.write(text, font=("Arial", 24, "normal"))
+        self.turtle.write(arg=text, font=font, align="left")
 
     def clear_screen(self) -> None:
-        self.turtle_object.clear()
+        self.turtle.clear()

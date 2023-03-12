@@ -7,15 +7,14 @@ from components.color import RGBA
 
 
 def main():
-    width = 640
-    height = 640
+    width = 1200
+    height = 800
     background_color = RGBA(0.15, 0.15, 0.15, 1.0)
 
-    graphics = Graphics()
+    graphics = Graphics(width, height)
     camera = Camera(width, height)
 
     graphics.set_title("Physics System")
-    graphics.set_screensize(width, height)
     graphics.set_background_color(background_color)
 
     simulation = Simulation(camera)
@@ -34,6 +33,17 @@ class GraphicsHandler:
     def handle_events(self) -> None:
         self.on_mouse_move()
         self.on_mouse_wheel_scroll()
+        self.on_window_resize()
+
+    def on_window_resize(self):
+        g_width = self.graphics.width
+        g_height = self.graphics.height
+
+        width = self.graphics.get_width()
+        height = self.graphics.get_height()
+
+        if g_width != width or g_height != height:
+            self.graphics.setup_coordinates(width, height)
 
     def on_mouse_wheel_scroll(self) -> None:
         pass
@@ -48,7 +58,7 @@ class GraphicsHandler:
             camera.handle_mouse_movement(dx, dy)
 
     def register_keys(self) -> None:
-        screen = self.graphics.turtle_screen
+        screen = self.graphics.screen
         camera = self.simulation.camera
 
         increase_distance = partial(camera.increment_distance, 1.0)
@@ -58,6 +68,7 @@ class GraphicsHandler:
         screen.onkeypress(decrease_distance, "s")
 
     def on_draw(self) -> None:
+        self.graphics.clear_screen()
         self.simulation.simulate(self.graphics)
         self.graphics.update()
 
