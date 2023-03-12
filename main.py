@@ -38,12 +38,17 @@ class GraphicsHandler:
     def register_keys(self) -> None:
         screen = self.graphics.screen
         camera = self.simulation.camera
+        simulation = self.simulation
 
         increase_distance = partial(camera.increment_distance, 1.0)
         decrease_distance = partial(camera.increment_distance, -1.0)
+        increase_timestep = partial(simulation.increment_timestep, 100)
+        decrease_timestep = partial(simulation.increment_timestep, -100)
 
         screen.onkeypress(increase_distance, "w")
         screen.onkeypress(decrease_distance, "s")
+        screen.onkeypress(increase_timestep, ".")
+        screen.onkeypress(decrease_timestep, ",")
 
     def on_window_resize(self):
         g_width = self.graphics.width

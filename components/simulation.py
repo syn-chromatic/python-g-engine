@@ -33,6 +33,10 @@ class Simulation:
         text_writer = TextWriter(font)
         return text_writer
 
+    def increment_timestep(self, increment: int):
+        if (self.timestep_hz + increment) > 1:
+            self.timestep_hz += increment
+
     def setup_objects(self) -> None:
         p3 = get_particle_t3()
         p7_list = get_particle_t7(0, 0)
