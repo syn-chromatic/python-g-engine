@@ -35,6 +35,16 @@ class GraphicsHandler:
         self.on_mouse_wheel_scroll()
         self.on_window_resize()
 
+    def register_keys(self) -> None:
+        screen = self.graphics.screen
+        camera = self.simulation.camera
+
+        increase_distance = partial(camera.increment_distance, 1.0)
+        decrease_distance = partial(camera.increment_distance, -1.0)
+
+        screen.onkeypress(increase_distance, "w")
+        screen.onkeypress(decrease_distance, "s")
+
     def on_window_resize(self):
         g_width = self.graphics.width
         g_height = self.graphics.height
@@ -56,16 +66,6 @@ class GraphicsHandler:
             dx, dy = self.graphics.get_pointer_xy()
             camera = self.simulation.camera
             camera.handle_mouse_movement(dx, dy)
-
-    def register_keys(self) -> None:
-        screen = self.graphics.screen
-        camera = self.simulation.camera
-
-        increase_distance = partial(camera.increment_distance, 1.0)
-        decrease_distance = partial(camera.increment_distance, -1.0)
-
-        screen.onkeypress(increase_distance, "w")
-        screen.onkeypress(decrease_distance, "s")
 
     def on_draw(self) -> None:
         self.graphics.clear_screen()
