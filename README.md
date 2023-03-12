@@ -1,8 +1,14 @@
 # Python Physics Simulation
 
 Python is too slow for these types of simulations, see the Rust implementation (being worked on)
-
 https://github.com/syn-chromatic/rust-physics-simulation
+
+___
+
+# Setup
+No external libraries are required, other than typing-extensions.
+
+```pip install typing-extensions```
 
 ___
 
