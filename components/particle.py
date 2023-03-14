@@ -1,6 +1,6 @@
 from components.body import Body
 from components.physics import Physics
-from components.vector_3d import Vector3D
+from components.vectors import Vector3D
 from components.graphics import Graphics
 from components.camera import Camera
 from components.color import RGBA
@@ -24,7 +24,9 @@ class Particle(Body):
 
         projected = camera.get_perspective_projection(position)
         intr_scale = camera.interpolate_scale(projected, scale)
-        intr_scale = clamp_float(intr_scale, 0.5, float("inf"))
+
+        # intr_scale = scale
+        # intr_scale = clamp_float(intr_scale, 0.5, float("inf"))
 
         alpha = self._get_scale_alpha(intr_scale)
         rgb = self.color.rgb_tuple

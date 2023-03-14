@@ -8,18 +8,6 @@ class RGBA:
     blue: float
     alpha: float
 
-    def __new__(cls, *args, **kwargs) -> "RGBA":
-        cls.__set_data__(*args, **kwargs)
-        instance = super(RGBA, cls).__new__(RGBA)
-        return instance
-
-    @classmethod
-    def __set_data__(cls, red: float, green: float, blue: float, alpha: float) -> None:
-        cls.red = red
-        cls.green = green
-        cls.blue = blue
-        cls.alpha = alpha
-
     @property
     def rgb_tuple(self) -> tuple[float, float, float]:
         return (self.red, self.green, self.blue)
@@ -31,11 +19,10 @@ class RGBA:
     @classmethod
     def from_rgba_tuple(cls, rgba: tuple[float, float, float, float]) -> "RGBA":
         "Create the RGBA dataclass from an (R, G, B, A) tuple."
-        return cls.__new__(cls, *rgba)
+        return RGBA(rgba[0], rgba[1], rgba[2], rgba[3])
 
     @classmethod
     def from_rgb_tuple(cls, rgb: tuple[float, float, float]) -> "RGBA":
         """Create the RGBA dataclass from an (R, G, B) tuple
         with the alpha channel set to 1.0."""
-        rgba = (*rgb, 1.0)
-        return cls.__new__(cls, *rgba)
+        return RGBA(rgb[0], rgb[1], rgb[2], 1.0)

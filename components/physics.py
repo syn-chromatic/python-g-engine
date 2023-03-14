@@ -1,7 +1,7 @@
 import math
 import random
-from components.vector_3d import Vector3D
-from components.shared_dcs import PhysicsProperties, CollisionProperties
+from components.vectors import Vector3D
+from components.shared_dcs import PhysicsProperties, CollisionProperties, CollisionVel
 
 
 from typing import Optional
@@ -11,14 +11,17 @@ from typing_extensions import Self
 class Physics:
     def __init__(self, shape: list[tuple[float, float, float]]):
         self.shape = shape
-        self.position = Vector3D()
-        self.velocity = Vector3D()
-        self.acceleration = Vector3D()
-        self.spin_velocity = Vector3D()
-        self.spin_acceleration = Vector3D()
+        self.position = Vector3D(0.0, 0.0, 0.0)
+        self.velocity = Vector3D(0.0, 0.0, 0.0)
+        self.acceleration = Vector3D(0.0, 0.0, 0.0)
+        self.spin_velocity = Vector3D(0.0, 0.0, 0.0)
+        self.spin_acceleration = Vector3D(0.0, 0.0, 0.0)
+        self.temperature = 0
+        self.specific_heat = 0.5
+        self.melting_point = 1500
         self.mass = 1.0
         self.scale = 1.0
-        self.g_const = 0.0001
+        self.g_const = 0.001
 
     @staticmethod
     def _rotate_x(
@@ -146,7 +149,44 @@ class Physics:
         target.position = target_shifted
         return self_shifted, target_shifted
 
-    def calculate_collision_velocities(self, target: Self, direction: Vector3D):
+
+    def calc_collision_temp(self, target: Self, collision_vel: CollisionVel):
+        m1 = self.mass
+        m2 = target.mass
+        c1 = self.specific_heat
+        c2 = target.specific_heat
+        v1i = collision_vel.v1i
+        v1f = collision_vel.v1f
+        v2i = collision_vel.v2i
+        v2f = collision_vel.v2f
+
+        delta_t1 = abs((m2 * c2 * (v2f - v2i)) / (m1 * c1))
+        delta_t2 = abs((m1 * c1 * (v1f - v1i)) / (m2 * c2))
+
+        self.temperature += delta_t1
+        target.temperature += delta_t2
+
+        # print(
+        #     "m1: ", m1, "\n",
+        #     "m2: ", m2, "\n",
+        #     "c1: ", c1, "\n",
+        #     "c2: ", c2, "\n",
+        #     "v1i: ", v1i, "\n",
+        #     "v1f: ", v1f, "\n",
+        #     "v2i: ", v2i, "\n",
+        #     "v2f: ", v2f, "\n",
+        #     "dt1: ", delta_t1, "\n",
+        #     "dt2: ", delta_t2, "\n",
+        #     "t1: ", self.temperature, "\n",
+        #     "t2: ", target.temperature, "\n",
+
+        #     sep="",
+        # )
+
+
+
+
+    def calc_collision_vel(self, target: Self, direction: Vector3D) -> CollisionVel:
         v1i = self.velocity.dot_product(direction)
         v2i = target.velocity.dot_product(direction)
 
@@ -170,6 +210,11 @@ class Physics:
         self.velocity = v1
         target.velocity = v2
 
+        collision_vel = CollisionVel(v1i, v1f, v2i, v2f)
+        return collision_vel
+
+
+
     def apply_forces(self, target: Self, timestep: float) -> PhysicsProperties:
         # Target-To-Self Distance
         tts_distance = target.position.subtract_vector(self.position)
@@ -183,7 +228,7 @@ class Physics:
     def apply_attraction(self, target: Self, tts_distance: Vector3D):
         distance = tts_distance.get_length()
 
-        if distance > 0.0:
+        if distance > 0:
             strength = self.g_const * ((self.mass * target.mass) / distance)
             force = tts_distance.set_magnitude(strength)
             force = force.divide(self.mass)
@@ -203,7 +248,8 @@ class Physics:
             # Self-To-Target Distance
             stt_distance = tts_distance.multiply(-1)
             stt_direction = stt_distance.normalize()
-            self.calculate_collision_velocities(target, stt_direction)
+            collision_vel = self.calc_collision_vel(target, stt_direction)
+            self.calc_collision_temp(target, collision_vel)
 
             shift_args = (target, timestep, stt_direction, edge_distance)
             self_shifted, target_shifted = self.correct_shift_collision(*shift_args)
@@ -215,5 +261,5 @@ class Physics:
     def update(self, timestep: float):
         self._calculate_position(timestep)
         self._calculate_spin(timestep)
-        self.acceleration = self.acceleration.multiply(0)
-        self.spin_acceleration = self.spin_acceleration.multiply(0)
+        self.acceleration = Vector3D(0.0, 0.0, 0.0)
+        self.spin_acceleration = Vector3D(0.0, 0.0, 0.0)

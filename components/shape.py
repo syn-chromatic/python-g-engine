@@ -1,6 +1,6 @@
 from components.body import Body
 from components.physics import Physics
-from components.vector_3d import Vector3D
+from components.vectors import Vector3D
 from components.graphics import Graphics
 from components.camera import Camera
 from components.color import RGBA

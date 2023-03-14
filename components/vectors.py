@@ -5,7 +5,7 @@ from typing_extensions import Self
 class Vector3D:
     __slots__ = ("x", "y", "z")
 
-    def __init__(self, x: float = 0.0, y: float = 0.0, z: float = 0.0) -> None:
+    def __init__(self, x: float, y: float, z: float) -> None:
         self.x = x
         self.y = y
         self.z = z
@@ -34,7 +34,7 @@ class Vector3D:
     def normalize(self) -> Self:
         length = self.get_length()
         if length == 0:
-            return Vector3D(0, 0, 0)
+            return Vector3D(0.0, 0.0, 0.0)
         return Vector3D(self.x / length, self.y / length, self.z / length)
 
     def dot_product(self, vec: Self) -> float:
@@ -54,3 +54,4 @@ class Vector3D:
             y = (self.y / length) * magnitude
             z = (self.z / length) * magnitude
         return Vector3D(x, y, z)
+
