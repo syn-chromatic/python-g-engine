@@ -26,14 +26,14 @@ class Particle(Body):
         intr_scale = camera.interpolate_scale(projected, scale)
 
         # intr_scale = scale
-        # intr_scale = clamp_float(intr_scale, 0.5, float("inf"))
+        intr_scale = clamp_float(intr_scale, 1.0, float("inf"))
 
         alpha = self._get_scale_alpha(intr_scale)
         rgb = self.color.rgb_tuple
         color = RGBA(*rgb, alpha)
 
         point = projected.x, projected.y
-        graphics.draw_circle(point, intr_scale, color)
+        graphics.draw_circle(point, intr_scale, self.color)
 
     def _get_scale_alpha(self, scale: float) -> float:
         max_scale = 300.0

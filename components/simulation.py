@@ -89,6 +89,7 @@ class Simulation:
 
             obj1_physics.update(timestep)
             obj1.draw(graphics, self.camera)
+
         frame_time = time.perf_counter() - frame_st
         return frame_time
 

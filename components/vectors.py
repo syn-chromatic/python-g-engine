@@ -55,3 +55,18 @@ class Vector3D:
             z = (self.z / length) * magnitude
         return Vector3D(x, y, z)
 
+    def point_at(self, target: Self, up: Self):
+        nf = target.subtract_vector(self)
+        nfn = nf.normalize()
+
+        nfdu = up.dot_product(nf)
+        nfu = nf.multiply(nfdu)
+        nu = up.subtract_vector(nfu)
+        nun = nu.normalize()
+
+        nr = nun.cross_product(nfn)
+        return nr
+
+
+
+
