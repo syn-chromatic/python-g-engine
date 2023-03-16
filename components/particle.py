@@ -22,18 +22,21 @@ class Particle(Body):
         position = self._get_particle_position()
         scale = self._get_particle_scale()
 
-        projected = camera.get_perspective_projection(position)
-        intr_scale = camera.interpolate_scale(projected, scale)
+        point1 = Vector3D(position.x - scale, position.y, position.z)
+        point2 = Vector3D(position.x + scale, position.y, position.z)
 
-        # intr_scale = scale
-        intr_scale = clamp_float(intr_scale, 1.0, float("inf"))
+        proj1 = camera.get_screen_coordinates(point1)
+        proj2 = camera.get_screen_coordinates(point2)
 
-        alpha = self._get_scale_alpha(intr_scale)
+        pscale = proj1.subtract_vector(proj2).get_length() / 2.0
+        mid_point = proj1.get_midpoint(proj2)
+        point = mid_point.x, mid_point.y
+
+        alpha = self._get_scale_alpha(pscale)
         rgb = self.color.rgb_tuple
         color = RGBA(*rgb, alpha)
 
-        point = projected.x, projected.y
-        graphics.draw_circle(point, intr_scale, self.color)
+        graphics.draw_circle(point, pscale, color)
 
     def _get_scale_alpha(self, scale: float) -> float:
         max_scale = 300.0

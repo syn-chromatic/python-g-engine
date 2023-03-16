@@ -1,238 +1,161 @@
 import math
-import numpy as np
 
 from components.vectors import Vector3D
 from components.utils import clamp_float
+from copy import deepcopy
 
 
-class CameraBase:
+class Camera:
     def __init__(self, width: int, height: int) -> None:
-        self._width = width
-        self._height = height
-        self._fov = 120
-        self._near_plane = 0.9
-        self._far_plane = 100.0
-        self._yaw = 0.0
-        self._pitch = 0.0
-        self._position = Vector3D(0.0, 0.0, 0.0)
-        self._look_direction = Vector3D(0.0, 0.0, -1.0)
-        self._up = Vector3D(0.0, 1.0, 0.0)
-        self._right = Vector3D(1.0, 0.0, 0.0)
-        self._previous_pointer = (width / 2.0, height / 2.0)
+        self.width = width
+        self.height = height
+        self.fov = 90
+        self.near_plane = 0.1
+        self.far_plane = 100.0
+        self.yaw = 0.0
+        self.pitch = 0.0
+        self.camera_position = Vector3D(0.0, 0.0, -500.0)
+        self.camera_target = Vector3D(0.0, 0.0, 0.0)
+        self.side_direction = Vector3D(1.0, 0.0, 0.0)
+        self.up_direction = Vector3D(0.0, 1.0, 0.0)
+        self.look_direction = Vector3D(0.0, 0.0, 1.0)
 
+        self.previous_pointer = (width / 2.0, height / 2.0)
+        self.save()
 
-class Camera(CameraBase):
-    def __init__(self, width: int, height: int) -> None:
-        super().__init__(width, height)
-
-    def handle_mouse_movement(self, x: float, y: float) -> None:
-        px = self._previous_pointer[0]
-        py = self._previous_pointer[1]
-
-        dx = x - px
-        dy = y - py
-
-        sensitivity = 0.5
-        self._yaw += dx * sensitivity
-        self._pitch += dy * sensitivity
-        self._previous_pointer = (x, y)
-        self.update_vectors()
-
-    def update_vectors(self):
-        yaw_radians = math.radians(self._yaw)
-        pitch_radians = math.radians(self._pitch)
-
-        front = Vector3D(
-            math.cos(pitch_radians) * math.cos(yaw_radians),
-            math.sin(pitch_radians),
-            math.cos(pitch_radians) * math.sin(yaw_radians),
-        )
-
-        self._look_direction = front.normalize()
-        self._right = self._look_direction.cross_product(self._up).normalize()
-        self._up = self._right.cross_product(self._look_direction).normalize()
-
-    def interpolate_scale(self, position: Vector3D, scale: float) -> float:
-
-        transformed_position = self.apply_view_transform(position)
-        distance_to_camera = transformed_position.z
-
-        # If the object is behind the camera, return 0 size
-        if distance_to_camera < self._near_plane:
-            return 0.0
-
-        return scale + distance_to_camera
+    def save(self):
+        self.dict = deepcopy(self.__dict__)
 
     def apply_view_transform(self, position: Vector3D) -> Vector3D:
-        transformed_position = position.subtract_vector(self._position)
-        transformed_position = Vector3D(
-            transformed_position.dot_product(self._right),
-            transformed_position.dot_product(self._up),
-            transformed_position.dot_product(self._look_direction),
-        )
-        return transformed_position
+        look_dir = self.camera_target.subtract_vector(self.camera_position).normalize()
+        side_dir = look_dir.cross_product(self.up_direction).normalize()
+        up_dir = side_dir.cross_product(look_dir).normalize()
+
+        translated_point = position.subtract_vector(self.camera_position)
+        x = translated_point.dot_product(side_dir)
+        y = translated_point.dot_product(up_dir)
+        z = translated_point.dot_product(look_dir)
+
+        translated_point = Vector3D(x, y, z)
+        return translated_point
+
+    def ndc_to_screen_coordinates(self, position: Vector3D) -> Vector3D:
+        half_width = self.width / 2.0
+        half_height = self.height / 2.0
+
+        x = (position.x) * half_width
+        y = (position.y) * half_height
+
+        return Vector3D(x, y, position.z)
+
+    def get_screen_coordinates(self, position: Vector3D):
+        view = self.apply_view_transform(position)
+        projection = self.calculate_perspective_projection(view)
+        screen = self.ndc_to_screen_coordinates(projection)
+        return screen
 
     def calculate_perspective_projection(self, position: Vector3D):
-        width = self._width
-        height = self._height
-        fov = self._fov
-        near_plane = self._near_plane
-        far_plane = self._far_plane
+        width = self.width
+        height = self.height
+        fov_degrees = self.fov
+        zn = self.near_plane
+        zf = self.far_plane
 
         xi = position.x
         yi = position.y
         zi = position.z
 
-        aspect_ratio = height / width
-        fov_radians = math.tan(math.radians(fov))
+        aspect_ratio = width / height
+        fov_rad = math.tan(math.radians(fov_degrees / 2))
 
-        xo = xi * aspect_ratio * fov_radians
-        yo = yi * fov_radians
-        zo = zi * (far_plane / (far_plane - near_plane)) + 1
+        xo = xi * (1 / (fov_rad * aspect_ratio))
+        yo = yi * (1 / (fov_rad))
+        zo = zi * ((-zf - zn) / (zn - zf)) + ((2 * zf * zn) / (zn - zf))
 
-        w = (-far_plane * near_plane) / (far_plane - near_plane)
-
-        if w != 0.0:
-            xo /= w
-            yo /= w
-            zo /= w
+        if zi != 0.0:
+            xo /= -zi
+            yo /= -zi
+            zo /= -zi
 
         vo = Vector3D(xo, yo, zo)
         return vo
 
-    def get_perspective_projection(self, position: Vector3D):
-        position = self.apply_view_transform(position)
-        position = self.calculate_perspective_projection(position)
-        return position
+    def handle_mouse_movement(self, x: float, y: float) -> None:
+        px = self.previous_pointer[0]
+        py = self.previous_pointer[1]
 
-    def increment_distance(self, increment: float):
-        near_plane = self._near_plane
-        far_plane = self._far_plane
+        dx = x - px
+        dy = y - py
 
-        if (near_plane + increment) >= 0.0:
+        sensitivity = 0.5
+        self.yaw += dx * sensitivity
+        self.pitch += dy * sensitivity
+        self.pitch = clamp_float(self.pitch, -90.0, 90.0)
+
+        self.previous_pointer = (x, y)
+
+    def increment_plane(self, increment: float):
+        near_plane = self.near_plane
+        far_plane = self.far_plane
+
+        if (near_plane + increment) >= 0.1:
             near_plane += increment
             far_plane += increment
-            self._near_plane = clamp_float(near_plane, 0.0, float("inf"))
-            self._far_plane = clamp_float(far_plane, 0.0, float("inf"))
+            self.near_plane = clamp_float(near_plane, 0.0, float("inf"))
+            self.far_plane = clamp_float(far_plane, 0.0, float("inf"))
 
+    def increment_position_x(self, increment: float):
+        self.camera_position.x += increment
 
-# class Camera(CameraBase):
-#     def __init__(self, width: int, height: int) -> None:
-#         super().__init__(width, height)
+    def increment_position_y(self, increment: float):
+        self.camera_position.y += increment
 
-#     def handle_mouse_movement(self, x: float, y: float) -> None:
-#         px = self._previous_pointer[0]
-#         py = self._previous_pointer[1]
+    def increment_position_z(self, increment: float):
+        self.camera_position.z += increment
 
-#         dx = x - px
-#         dy = y - py
+    def increment_target_x(self, increment: float):
+        self.camera_target.x += increment
 
-#         sensitivity = 0.5
-#         self._yaw += dx * sensitivity
-#         self._pitch += dy * sensitivity
-#         self._previous_pointer = (x, y)
+    def increment_target_y(self, increment: float):
+        self.camera_target.y += increment
 
-#     def interpolate_scale(self, position: Vector3D, scale: float) -> float:
-#         distance_from_camera = position.get_length()
-#         if distance_from_camera == 0.0:
-#             return 0.0
+    def increment_target_z(self, increment: float):
+        self.camera_target.z += increment
 
-#         fov_radians = math.radians(self._fov)
-#         scale_factor = 1 / math.tan(fov_radians / 2)
+    def reset(self):
+        class_dict = deepcopy(self.dict)
 
-#         projected_circle_size = (scale * scale_factor) / distance_from_camera
-#         return projected_circle_size
+        for variable, value in class_dict.items():
+            self.__setattr__(variable, value)
 
-#     def calculate_yaw_projection(self, position: Vector3D) -> Vector3D:
-#         yaw_radians = math.radians(self._yaw)
-#         yaw_cos = math.cos(yaw_radians)
-#         yaw_sin = math.sin(yaw_radians)
+    def calculate_yaw_projection(self, position: Vector3D) -> Vector3D:
+        yaw_radians = math.radians(self.yaw)
+        yaw_cos = math.cos(yaw_radians)
+        yaw_sin = math.sin(yaw_radians)
 
-#         px = position.x
-#         py = position.y
-#         pz = position.z
+        px = position.x
+        py = position.y
+        pz = position.z
 
-#         yaw_x = (px * yaw_cos) - (pz * yaw_sin)
-#         yaw_y = py
-#         yaw_z = (px * yaw_sin) + (pz * yaw_cos)
+        yaw_x = (px * yaw_cos) - (pz * yaw_sin)
+        yaw_y = py
+        yaw_z = (px * yaw_sin) + (pz * yaw_cos)
 
-#         yaw_vector = Vector3D(yaw_x, yaw_y, yaw_z)
-#         return yaw_vector
+        yaw_vector = Vector3D(yaw_x, yaw_y, yaw_z)
+        return yaw_vector
 
-#     def calculate_pitch_projection(self, position: Vector3D) -> Vector3D:
-#         pitch_radians = math.radians(self._pitch)
-#         pitch_cos = math.cos(pitch_radians)
-#         pitch_sin = math.sin(pitch_radians)
+    def calculate_pitch_projection(self, position: Vector3D) -> Vector3D:
+        pitch_radians = math.radians(self.pitch)
+        pitch_cos = math.cos(pitch_radians)
+        pitch_sin = math.sin(pitch_radians)
 
-#         px = position.x
-#         py = position.y
-#         pz = position.z
+        px = position.x
+        py = position.y
+        pz = position.z
 
-#         pitch_x = px
-#         pitch_y = (py * pitch_cos) - (pz * pitch_sin)
-#         pitch_z = (py * pitch_sin) + (pz * pitch_cos)
+        pitch_x = px
+        pitch_y = (py * pitch_cos) - (pz * pitch_sin)
+        pitch_z = (py * pitch_sin) + (pz * pitch_cos)
 
-#         pitch_vector = Vector3D(pitch_x, pitch_y, pitch_z)
-#         return pitch_vector
-
-#     def calculate_perspective_projection(self, position: Vector3D):
-#         width = self._width
-#         height = self._height
-#         fov = self._fov
-#         near_plane = self._near_plane
-#         far_plane = self._far_plane
-
-#         xi = position.x
-#         yi = position.y
-#         zi = position.z
-
-#         aspect_ratio = height / width
-#         fov_radians = math.tan(math.radians(fov))
-
-#         xo = xi * aspect_ratio * fov_radians
-#         yo = yi * fov_radians
-#         zo = zi * (far_plane / (far_plane - near_plane)) + 1
-
-#         w = (-far_plane * near_plane) / (far_plane - near_plane)
-
-#         if w != 0.0:
-#             xo /= w
-#             yo /= w
-#             zo /= w
-
-#         vo = Vector3D(xo, yo, zo)
-#         return vo
-
-#     def apply_view_transform(self, position: Vector3D) -> Vector3D:
-#         yaw_radians = math.radians(self._yaw)
-#         pitch_radians = math.radians(self._pitch)
-
-#         yaw_cos = math.cos(yaw_radians)
-#         yaw_sin = math.sin(yaw_radians)
-#         pitch_cos = math.cos(pitch_radians)
-#         pitch_sin = math.sin(pitch_radians)
-
-#         px, py, pz = position.x, position.y, position.z
-
-#         rx = (px * yaw_cos) + (pz * yaw_sin)
-#         ry = (py * pitch_cos) - (rx * pitch_sin)
-#         rz = (py * pitch_sin) + (rx * pitch_cos)
-
-#         transformed_position = Vector3D(rx, ry, rz)
-#         return transformed_position
-
-#     def get_perspective_projection(self, position: Vector3D):
-#         position = self.apply_view_transform(position)
-#         position = self.calculate_perspective_projection(position)
-
-#         return position
-
-#     def increment_distance(self, increment: float):
-#         near_plane = self._near_plane
-#         far_plane = self._far_plane
-
-#         if (near_plane + increment) >= 0.0:
-#             near_plane += increment
-#             far_plane += increment
-#             self._near_plane = clamp_float(near_plane, 0.0, float("inf"))
-#             self._far_plane = clamp_float(far_plane, 0.0, float("inf"))
+        pitch_vector = Vector3D(pitch_x, pitch_y, pitch_z)
+        return pitch_vector

@@ -10,6 +10,9 @@ class Vector3D:
         self.y = y
         self.z = z
 
+    def __str__(self) -> str:
+        return f"[{self.x:.3f}, {self.y:.3f}, {self.z:.3f}]"
+
     def multiply(self, num: float) -> Self:
         return Vector3D(self.x * num, self.y * num, self.z * num)
 
@@ -21,6 +24,15 @@ class Vector3D:
 
     def subtract_vector(self, vec: Self) -> Self:
         return Vector3D(self.x - vec.x, self.y - vec.y, self.z - vec.z)
+
+    def multiply_vector(self, vec: Self) -> Self:
+        return Vector3D(self.x * vec.x, self.y * vec.y, self.z * vec.z)
+
+    def get_midpoint(self, vec: Self) -> Self:
+        x_mid = (self.x + vec.x) / 2.0
+        y_mid = (self.y + vec.y) / 2.0
+        z_mid = (self.z + vec.z) / 2.0
+        return Vector3D(x_mid, y_mid, z_mid)
 
     def get_length_squared(self) -> float:
         return self.x**2.0 + self.y**2.0 + self.z**2.0
@@ -54,19 +66,3 @@ class Vector3D:
             y = (self.y / length) * magnitude
             z = (self.z / length) * magnitude
         return Vector3D(x, y, z)
-
-    def point_at(self, target: Self, up: Self):
-        nf = target.subtract_vector(self)
-        nfn = nf.normalize()
-
-        nfdu = up.dot_product(nf)
-        nfu = nf.multiply(nfdu)
-        nu = up.subtract_vector(nfu)
-        nun = nu.normalize()
-
-        nr = nun.cross_product(nfn)
-        return nr
-
-
-
-

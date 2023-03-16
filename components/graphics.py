@@ -160,6 +160,7 @@ class Graphics(GraphicsScreen):
     ) -> None:
         self.set_draw_color(color)
         self.goto_point(point)
+        self.turtle.pendown()
         self.turtle.write(arg=text, font=font, align="left")
 
     def clear_screen(self) -> None:

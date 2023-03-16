@@ -4,7 +4,7 @@ from components.graphics import Graphics
 from components.body import Body
 from components.camera import Camera
 from components.color import RGBA
-from components.text_writer import TextWriter, FontConfiguration
+from components.text_writer import TextWriter, Font
 
 from components.body_configurations import (
     get_particle_t3,
@@ -12,6 +12,7 @@ from components.body_configurations import (
     get_particle_t4,
     get_particle_t5,
     get_center_particle,
+    get_center_cube,
 )
 
 
@@ -23,15 +24,31 @@ class Simulation:
         self.timestep_hz = 10_000
 
     @staticmethod
-    def create_text_writer() -> TextWriter:
-        font = FontConfiguration(
+    def get_header_font():
+        font = Font(
             font_type="Arial",
-            font_size=11,
+            font_size=10,
+            font_style="bold",
+            font_color=RGBA.from_rgb_tuple((0.5, 0.5, 1.0)),
+            line_height=1.8,
+            padding_percent=1,
+        )
+        return font
+
+    @staticmethod
+    def get_standard_font():
+        font = Font(
+            font_type="Arial",
+            font_size=10,
             font_style="normal",
             font_color=RGBA.from_rgb_tuple((0.8, 0.8, 0.8)),
             line_height=1.8,
-            padding_percent=2,
+            padding_percent=1,
         )
+        return font
+
+    def create_text_writer(self) -> TextWriter:
+        font = self.get_standard_font()
         text_writer = TextWriter(font)
         return text_writer
 
@@ -46,6 +63,14 @@ class Simulation:
 
         c1 = get_center_particle()
         self.objects.append(c1)
+
+
+        # cube = get_center_cube(100, 0)
+        # cube2 = get_center_cube(-100, 0)
+        # p = get_center_particle()
+        # self.objects.append(cube)
+        # self.objects.append(cube2)
+        # self.objects.append(p)
 
     # def setup_objects(self):
     #     self.timestep_hz = 1000
@@ -94,36 +119,56 @@ class Simulation:
         return frame_time
 
     def write_fps_text(self, frame_time: float):
+        header_font = self.get_header_font()
+        header_text = "Simulation Information"
         text = f"{1 / frame_time:.2f} FPS"
+        self.text_writer.add_text_top_left(header_text, header_font)
         self.text_writer.add_text_top_left(text)
 
     def write_timestep_text(self):
         khz = self.timestep_hz / 1000.0
-        text = f"Timestep: {khz} khz"
+        text = f"Timestep:  {khz} khz"
         self.text_writer.add_text_top_left(text)
 
     def write_object_count(self):
         object_count = len(self.objects)
-        text = f"Objects: {object_count}"
+        text = f"Objects:  {object_count}"
         self.text_writer.add_text_top_left(text)
 
     def write_camera_information(self):
         camera = self.camera
+        cp = camera.camera_position
+        clt = camera.camera_target
+        cld = camera.look_direction
+        clu = camera.up_direction
+        cls = camera.side_direction
+
+        header_font = self.get_header_font()
 
         info_header = "Camera Information"
-        fov = f"FOV: {camera._fov}"
-        near_plane = f"Near Plane: {camera._near_plane}"
-        far_plane = f"Far Plane: {camera._far_plane}"
-        yaw = f"Yaw: {camera._yaw}"
-        pitch = f"Pitch: {camera._pitch}"
+        fov = f"FOV:  {camera.fov}"
+        near_plane = f"Near Plane:  {camera.near_plane}"
+        far_plane = f"Far Plane:  {camera.far_plane}"
+        yaw = f"Yaw:  {camera.yaw}"
+        pitch = f"Pitch:  {camera.pitch}"
+        position = f"Position:  {cp.__str__()}"
+        target = f"Target:  {clt.__str__()}"
+        look_dir = f"Look (d):  {cld.__str__()}"
+        up_dir = f"Up (d):  {clu.__str__()}"
+        side_dir = f"Side (d):  {cls.__str__()}"
 
         self.text_writer.add_text_top_left("")
-        self.text_writer.add_text_top_left(info_header)
+        self.text_writer.add_text_top_left(info_header, header_font)
         self.text_writer.add_text_top_left(fov)
         self.text_writer.add_text_top_left(near_plane)
         self.text_writer.add_text_top_left(far_plane)
         self.text_writer.add_text_top_left(yaw)
         self.text_writer.add_text_top_left(pitch)
+        self.text_writer.add_text_top_left(position)
+        self.text_writer.add_text_top_left(target)
+        self.text_writer.add_text_top_left(look_dir)
+        self.text_writer.add_text_top_left(up_dir)
+        self.text_writer.add_text_top_left(side_dir)
 
     def draw_text(self, graphics: Graphics):
         self.text_writer.draw(graphics)

@@ -45,27 +45,33 @@ class Shape(Body):
         graphics: Graphics,
         camera: Camera,
     ):
+        position = self._get_shape_position()
+        scale = self._get_shape_scale()
 
-        position = self._get_particle_position()
-        scale = self._get_particle_scale()
+        point_a = (
+            (a[0] * scale) + position.x,
+            (a[1] * scale) + position.y,
+            (a[2] * scale) + position.z,
+        )
+        point_b = (
+            (b[0] * scale) + position.x,
+            (b[1] * scale) + position.y,
+            (b[2] * scale) + position.z,
+        )
+        point_av = Vector3D(*point_a)
+        point_bv = Vector3D(*point_b)
 
-        projected = camera.get_perspective_projection(position)
-        intr_scale = camera.interpolate_scale(projected, scale)
-        intr_scale = clamp_float(intr_scale, 0.5, float("inf"))
+        point_av = camera.get_screen_coordinates(point_av)
+        point_bv = camera.get_screen_coordinates(point_bv)
 
-        x1 = a[0] * intr_scale + projected.x
-        y1 = a[1] * intr_scale + projected.y
-        x2 = b[0] * intr_scale + projected.x
-        y2 = b[1] * intr_scale + projected.y
+        # alpha = self._get_scale_alpha(intr_scale)
+        # rgb = self.color.rgb_tuple
+        # color = RGBA(*rgb, alpha)
 
-        alpha = self._get_scale_alpha(intr_scale)
-        rgb = self.color.rgb_tuple
-        color = RGBA(*rgb, alpha)
+        point_a_2d = (point_av.x, point_av.y)
+        point_b_2d = (point_bv.x, point_bv.y)
 
-        point1 = (x1, y1)
-        point2 = (x2, y2)
-        thickness = self.line_thickness
-        graphics.draw_line(point1, point2, thickness, color)
+        graphics.draw_line(point_a_2d, point_b_2d, self.line_thickness, color)
 
     def _get_static_shading_sequence(self, shape_length: int):
         shading = []
@@ -92,8 +98,8 @@ class Shape(Body):
         rgb = tuple(ch * shade_value for ch in rgb)
         return rgb
 
-    def _get_particle_position(self) -> Vector3D:
+    def _get_shape_position(self) -> Vector3D:
         return self.physics.position
 
-    def _get_particle_scale(self) -> float:
+    def _get_shape_scale(self) -> float:
         return self.physics.scale
