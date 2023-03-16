@@ -41,24 +41,26 @@ class GraphicsHandler:
         camera = self.simulation.camera
         simulation = self.simulation
 
-        increase_distance = partial(camera.increment_plane, 1.0)
-        decrease_distance = partial(camera.increment_plane, -1.0)
+        step_val = 10.0
+
+        increase_distance = partial(camera.increment_plane, step_val)
+        decrease_distance = partial(camera.increment_plane, -step_val)
         increase_timestep = partial(simulation.increment_timestep, 100)
         decrease_timestep = partial(simulation.increment_timestep, -100)
 
-        move_forward = partial(camera.increment_position_z, 1.0)
-        move_backward = partial(camera.increment_position_z, -1.0)
-        move_right = partial(camera.increment_position_x, 1.0)
-        move_left = partial(camera.increment_position_x, -1.0)
-        move_up = partial(camera.increment_position_y, 1.0)
-        move_down = partial(camera.increment_position_y, -1.0)
+        move_forward = partial(camera.increment_position_z, step_val)
+        move_backward = partial(camera.increment_position_z, -step_val)
+        move_right = partial(camera.increment_position_x, step_val)
+        move_left = partial(camera.increment_position_x, -step_val)
+        move_up = partial(camera.increment_position_y, step_val)
+        move_down = partial(camera.increment_position_y, -step_val)
 
-        move_tar_forward = partial(camera.increment_target_z, 1.0)
-        move_tar_backward = partial(camera.increment_target_z, -1.0)
-        move_tar_right = partial(camera.increment_target_x, 1.0)
-        move_tar_left = partial(camera.increment_target_x, -1.0)
-        move_tar_up = partial(camera.increment_target_y, 1.0)
-        move_tar_down = partial(camera.increment_target_y, -1.0)
+        move_tar_forward = partial(camera.increment_target_z, step_val)
+        move_tar_backward = partial(camera.increment_target_z, -step_val)
+        move_tar_right = partial(camera.increment_target_x, step_val)
+        move_tar_left = partial(camera.increment_target_x, -step_val)
+        move_tar_up = partial(camera.increment_target_y, step_val)
+        move_tar_down = partial(camera.increment_target_y, -step_val)
 
         reset = partial(camera.reset)
 
