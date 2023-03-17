@@ -9,16 +9,16 @@ class Camera:
     def __init__(self, width: int, height: int) -> None:
         self.width = width
         self.height = height
-        self.fov = 90
-        self.near_plane = 0.1
-        self.far_plane = 100.0
+        self.fov = 100
+        self.near_plane = 1
+        self.far_plane = 1000.0
         self.yaw = 0.0
         self.pitch = 0.0
-        self.camera_position = Vector3D(0.0, 0.0, -500.0)
+        self.camera_position = Vector3D(0.0, 0.0, 1000.0)
         self.camera_target = Vector3D(0.0, 0.0, 0.0)
         self.side_direction = Vector3D(1.0, 0.0, 0.0)
         self.up_direction = Vector3D(0.0, 1.0, 0.0)
-        self.look_direction = Vector3D(0.0, 0.0, -1.0)
+        self.look_direction = Vector3D(0.0, 0.0, 1.0)
 
         self.previous_pointer = (width / 2.0, height / 2.0)
         self.save()
@@ -81,20 +81,20 @@ class Camera:
         return vo
 
     def handle_mouse_movement(self, x: float, y: float) -> None:
-        sensitivity = 0.1
+        sensitivityx = 0.3
+        sensitivityy = 0.1
 
         dx = x - self.previous_pointer[0]
         dy = y - self.previous_pointer[1]
         self.previous_pointer = (x, y)
 
-        self.yaw += dx * sensitivity
-        self.pitch += dy * sensitivity
+        self.yaw += dx * sensitivityx
+        self.pitch += dy * sensitivityy
 
         if self.pitch > 89.0:
             self.pitch = 89.0
-        if self.pitch < -89.0:
+        elif self.pitch < -89.0:
             self.pitch = -89.0
-
         self.apply_mouse_movement()
 
     def apply_mouse_movement(self):
@@ -115,6 +115,14 @@ class Camera:
         self.up_direction = self.side_direction.cross_product(self.look_direction)
         self.up_direction = self.up_direction.normalize()
 
+
+
+        # self.side_direction = Vector3D(1.0, 0.0, 0.0)
+        # self.up_direction = Vector3D(0.0, 1.0, 0.0)
+        # self.look_direction = Vector3D(0.0, 0.0, 1.0)
+
+
+
     def increment_plane(self, increment: float):
         near_plane = self.near_plane
         far_plane = self.far_plane
@@ -126,7 +134,7 @@ class Camera:
             self.far_plane = clamp_float(far_plane, 0.0, float("inf"))
 
     def increment_position_x(self, increment: float):
-        side_vector = self.side_direction.multiply(-increment)
+        side_vector = self.side_direction.multiply(increment)
         self.camera_position = self.camera_position.add_vector(side_vector)
         self.camera_target = self.camera_position.add_vector(self.look_direction)
 

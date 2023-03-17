@@ -5,6 +5,7 @@ from components.body import Body
 from components.camera import Camera
 from components.color import RGBA
 from components.text_writer import TextWriter, Font
+from components.vectors import Vector3D
 
 from components.body_configurations import (
     get_particle_t3,
@@ -29,7 +30,7 @@ class Simulation:
             font_type="Arial",
             font_size=10,
             font_style="bold",
-            font_color=RGBA.from_rgb_tuple((0.5, 0.5, 1.0)),
+            font_color=RGBA.from_rgb_tuple((0.8, 0.8, 0.8)),
             line_height=1.8,
             padding_percent=1,
         )
@@ -58,18 +59,18 @@ class Simulation:
 
     def setup_objects(self):
         # self.timestep_hz = 5
-        p7_list = get_particle_t7(200, 0)
-        self.objects.extend(p7_list)
+        # p7_list = get_particle_t7(200, 0)
+        # self.objects.extend(p7_list)
 
-        c1 = get_center_particle()
-        self.objects.append(c1)
+        # c1 = get_center_particle()
+        # self.objects.append(c1)
 
 
-        # cube = get_center_cube(100, 0)
-        # cube2 = get_center_cube(-100, 0)
+        cube = get_center_cube(-400, 0)
+        cube2 = get_center_cube(400, 0)
         # p = get_center_particle()
-        # self.objects.append(cube)
-        # self.objects.append(cube2)
+        self.objects.append(cube)
+        self.objects.append(cube2)
         # self.objects.append(p)
 
     # def setup_objects(self):
@@ -112,7 +113,7 @@ class Simulation:
                             obj2_physics.mass += obj1_physics.mass
                             continue
 
-            obj1_physics.update(timestep)
+            # obj1_physics.update(timestep)
             obj1.draw(graphics, self.camera)
 
         frame_time = time.perf_counter() - frame_st

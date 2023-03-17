@@ -7,7 +7,7 @@ from components.color import RGBA
 
 
 def main() -> None:
-    width = 800
+    width = 1200
     height = 800
     background_color = RGBA(0.15, 0.15, 0.15, 1.0)
 

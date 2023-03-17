@@ -33,7 +33,7 @@ def get_center_cube(px, py):
     body.set_color(color)
     body.physics.set_mass(mass)
     body.physics.set_scale(scale)
-    body.physics.set_position(px, py, 0)
+    body.physics.set_position(px, py, 500)
     body.physics.set_spin_velocity(50, 50, 0)
     return body
 

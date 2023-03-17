@@ -22,6 +22,7 @@ class Shape(Body):
         shading = self._get_static_shading_sequence(shape_length)
         rgb = self.color.rgb_tuple
 
+        print("OBJECT:")
         for idx in range(0, shape_length):
             nxt_idx = idx + 1
             rgb = tuple((i * shading[idx] for i in rgb))
@@ -36,6 +37,7 @@ class Shape(Body):
             p1 = shape[idx]
             p2 = shape[0]
             self._draw_edge(p1, p2, color, graphics, camera)
+        print("\n\n")
 
     def _draw_edge(
         self,
@@ -71,7 +73,9 @@ class Shape(Body):
         point_a_2d = (point_av.x, point_av.y)
         point_b_2d = (point_bv.x, point_bv.y)
 
-        graphics.draw_line(point_a_2d, point_b_2d, self.line_thickness, color)
+        print(point_a_2d, point_b_2d)
+
+        graphics.draw_line(point_a_2d, point_b_2d, self.line_thickness, self.color)
 
     def _get_static_shading_sequence(self, shape_length: int):
         shading = []

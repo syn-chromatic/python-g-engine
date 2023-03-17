@@ -158,8 +158,8 @@ class Graphics(GraphicsScreen):
         text: str,
         font: tuple[str, int, str],
     ) -> None:
-        self.set_draw_color(color)
         self.goto_point(point)
+        self.set_draw_color(color)
         self.turtle.pendown()
         self.turtle.write(arg=text, font=font, align="left")
 
