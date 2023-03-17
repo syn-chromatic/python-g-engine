@@ -35,7 +35,9 @@ class TextWriter:
         top_left_y = (height / 2.0) - padding_y
         return top_left_x, top_left_y
 
-    def get_text_xy(self, font: Font, width: int, height: int, idx: int) -> tuple[float, float]:
+    def get_text_xy(
+        self, font: Font, width: int, height: int, idx: int
+    ) -> tuple[float, float]:
         font_size = font.font_size
         line_height = font.line_height
         padding_percent = font.padding_percent
@@ -51,7 +53,6 @@ class TextWriter:
     def draw(self, graphics: Graphics):
         width = graphics.get_width()
         height = graphics.get_height()
-
 
         for idx, (text, font) in enumerate(self.tl_column, 1):
             if not font:

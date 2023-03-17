@@ -6,7 +6,6 @@ from components.color import RGBA
 from components.vertices import SphereShape, CubeShape, ParticleCircle
 
 
-
 def get_center_particle():
     mass = 10_000_000
     shape = [(0.0, 0.0, 0.0)]
@@ -20,7 +19,6 @@ def get_center_particle():
     body.physics.set_scale(scale)
     body.physics.set_spin_velocity(50, 50, 0)
     return body
-
 
 
 def get_center_cube(px, py):

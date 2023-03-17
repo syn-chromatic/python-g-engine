@@ -115,13 +115,9 @@ class Camera:
         self.up_direction = self.side_direction.cross_product(self.look_direction)
         self.up_direction = self.up_direction.normalize()
 
-
-
-        # self.side_direction = Vector3D(1.0, 0.0, 0.0)
-        # self.up_direction = Vector3D(0.0, 1.0, 0.0)
-        # self.look_direction = Vector3D(0.0, 0.0, 1.0)
-
-
+        self.side_direction = Vector3D(1.0, 0.0, 0.0)
+        self.up_direction = Vector3D(0.0, 1.0, 0.0)
+        self.look_direction = Vector3D(0.0, 0.0, 1.0)
 
     def increment_plane(self, increment: float):
         near_plane = self.near_plane
@@ -162,35 +158,3 @@ class Camera:
 
         for variable, value in class_dict.items():
             self.__setattr__(variable, value)
-
-    def calculate_yaw_projection(self, position: Vector3D) -> Vector3D:
-        yaw_radians = math.radians(self.yaw)
-        yaw_cos = math.cos(yaw_radians)
-        yaw_sin = math.sin(yaw_radians)
-
-        px = position.x
-        py = position.y
-        pz = position.z
-
-        yaw_x = (px * yaw_cos) - (pz * yaw_sin)
-        yaw_y = py
-        yaw_z = (px * yaw_sin) + (pz * yaw_cos)
-
-        yaw_vector = Vector3D(yaw_x, yaw_y, yaw_z)
-        return yaw_vector
-
-    def calculate_pitch_projection(self, position: Vector3D) -> Vector3D:
-        pitch_radians = math.radians(self.pitch)
-        pitch_cos = math.cos(pitch_radians)
-        pitch_sin = math.sin(pitch_radians)
-
-        px = position.x
-        py = position.y
-        pz = position.z
-
-        pitch_x = px
-        pitch_y = (py * pitch_cos) - (pz * pitch_sin)
-        pitch_z = (py * pitch_sin) + (pz * pitch_cos)
-
-        pitch_vector = Vector3D(pitch_x, pitch_y, pitch_z)
-        return pitch_vector
