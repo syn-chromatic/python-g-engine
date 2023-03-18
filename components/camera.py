@@ -115,10 +115,6 @@ class Camera:
         self.up_direction = self.side_direction.cross_product(self.look_direction)
         self.up_direction = self.up_direction.normalize()
 
-        self.side_direction = Vector3D(1.0, 0.0, 0.0)
-        self.up_direction = Vector3D(0.0, 1.0, 0.0)
-        self.look_direction = Vector3D(0.0, 0.0, 1.0)
-
     def increment_plane(self, increment: float):
         near_plane = self.near_plane
         far_plane = self.far_plane
