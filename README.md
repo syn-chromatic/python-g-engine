@@ -12,6 +12,14 @@ No external libraries are required, other than typing-extensions.
 
 ___
 
+# Issues and Upcoming changes 
+* Issue: Projection math causes drift when an object is positioned on an axis plane
+* Issue: Performance optimization is needed for draw calls
+* Issue: Text Writer flickering and disappearance
+* Change: Separate physics from the Body abstraction 
+
+___
+
 ### Gravity Simulation ~30 objects (Cubes and Particles, No Collision)
 https://user-images.githubusercontent.com/68112904/221572327-ffb9d2fb-e025-46a3-b639-8ac5723b0159.mp4
 
