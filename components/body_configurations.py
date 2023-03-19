@@ -14,14 +14,14 @@ def get_center_particle():
 
     body = Particle(shape)
     body.set_color(color)
-    body.physics.set_position(0, 0, 0)
+    body.physics.set_position(0, 0, 500)
     body.physics.set_mass(mass)
     body.physics.set_scale(scale)
     body.physics.set_spin_velocity(50, 50, 0)
     return body
 
 
-def get_center_cube(px, py):
+def get_center_cube(px, py, pz):
     mass = 100
     shape = CubeShape().get_shape()
     color = RGBA(0.8, 0.3, 0.3, 1.0)
@@ -31,7 +31,7 @@ def get_center_cube(px, py):
     body.set_color(color)
     body.physics.set_mass(mass)
     body.physics.set_scale(scale)
-    body.physics.set_position(px, py, 500)
+    body.physics.set_position(px, py, pz)
     body.physics.set_spin_velocity(50, 50, 0)
     return body
 
@@ -187,7 +187,7 @@ def get_particle_t7(px: float, py: float) -> list[Particle]:
     for particle in particles:
         px = particle[0]
         py = particle[1]
-        pz = 0
+        pz = 500
 
         mass = particle[2]
         shape = [(1.0, 1.0, 1.0)]

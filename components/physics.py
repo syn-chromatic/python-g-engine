@@ -149,7 +149,6 @@ class Physics:
         target.position = target_shifted
         return self_shifted, target_shifted
 
-
     def calc_collision_temp(self, target: Self, collision_vel: CollisionVel):
         m1 = self.mass
         m2 = target.mass
@@ -165,26 +164,6 @@ class Physics:
 
         self.temperature += delta_t1
         target.temperature += delta_t2
-
-        # print(
-        #     "m1: ", m1, "\n",
-        #     "m2: ", m2, "\n",
-        #     "c1: ", c1, "\n",
-        #     "c2: ", c2, "\n",
-        #     "v1i: ", v1i, "\n",
-        #     "v1f: ", v1f, "\n",
-        #     "v2i: ", v2i, "\n",
-        #     "v2f: ", v2f, "\n",
-        #     "dt1: ", delta_t1, "\n",
-        #     "dt2: ", delta_t2, "\n",
-        #     "t1: ", self.temperature, "\n",
-        #     "t2: ", target.temperature, "\n",
-
-        #     sep="",
-        # )
-
-
-
 
     def calc_collision_vel(self, target: Self, direction: Vector3D) -> CollisionVel:
         v1i = self.velocity.dot_product(direction)
@@ -212,8 +191,6 @@ class Physics:
 
         collision_vel = CollisionVel(v1i, v1f, v2i, v2f)
         return collision_vel
-
-
 
     def apply_forces(self, target: Self, timestep: float) -> PhysicsProperties:
         # Target-To-Self Distance

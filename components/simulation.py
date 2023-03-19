@@ -1,4 +1,5 @@
 import time
+import random
 
 from components.graphics import Graphics
 from components.body import Body
@@ -65,12 +66,20 @@ class Simulation:
         # c1 = get_center_particle()
         # self.objects.append(c1)
 
-
-        cube = get_center_cube(-400, 0)
-        cube2 = get_center_cube(400, 0)
+        # cube = get_center_cube(-400, 0)
+        # cube2 = get_center_cube(400, 0)
         # p = get_center_particle()
-        self.objects.append(cube)
-        self.objects.append(cube2)
+        # self.objects.append(cube)
+        # self.objects.append(cube2)
+
+        for _ in range(20):
+            x = random.uniform(0, 1000)
+            y = 0
+            z = random.uniform(0, 1000)
+
+            cube = get_center_cube(x, y, z)
+            self.objects.append(cube)
+
         # self.objects.append(p)
 
     # def setup_objects(self):
