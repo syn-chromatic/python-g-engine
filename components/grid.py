@@ -5,6 +5,8 @@ from components.physics import Physics
 from components.camera import Camera
 from components.color import RGBA
 
+from typing import Optional
+
 
 class GridGround(Body):
     def __init__(self, rows: int, columns: int, cell_size: float) -> None:
@@ -22,16 +24,23 @@ class GridGround(Body):
             for column in range(self.columns + 1):
                 self._draw_grid_line(graphics, camera, row, column)
 
+    def _get_position1(self, row: int, column: int) -> Vector3D:
+        return self._get_cell_position(row, column)
+
+    def _get_position2(self, row: int, column: int) -> Optional[Vector3D]:
+        if row < self.rows:
+            return self._get_cell_position(row + 1, column)
+
+    def _get_position3(self, row: int, column: int) -> Optional[Vector3D]:
+        if column < self.columns:
+            return self._get_cell_position(row, column + 1)
+
     def _draw_grid_line(
         self, graphics: Graphics, camera: Camera, row: int, column: int
     ) -> None:
-        position1 = self._get_cell_position(row, column)
-        position2 = (
-            self._get_cell_position(row + 1, column) if row < self.rows else None
-        )
-        position3 = (
-            self._get_cell_position(row, column + 1) if column < self.columns else None
-        )
+        position1 = self._get_position1(row, column)
+        position2 = self._get_position2(row, column)
+        position3 = self._get_position3(row, column)
 
         if position2:
             proj1 = camera.get_screen_coordinates(position1)
