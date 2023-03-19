@@ -1,6 +1,6 @@
 from components.body import Body
 from components.physics import Physics
-from components.vector_3d import Vector3D
+from components.vectors import Vector3D
 from components.graphics import Graphics
 from components.camera import Camera
 from components.color import RGBA
@@ -22,16 +22,24 @@ class Particle(Body):
         position = self._get_particle_position()
         scale = self._get_particle_scale()
 
-        projected = camera.get_perspective_projection(position)
-        intr_scale = camera.interpolate_scale(projected, scale)
-        intr_scale = clamp_float(intr_scale, 0.5, float("inf"))
+        point1 = Vector3D(position.x - scale, position.y, position.z)
+        point2 = Vector3D(position.x + scale, position.y, position.z)
 
-        alpha = self._get_scale_alpha(intr_scale)
+        proj1 = camera.get_screen_coordinates(point1)
+        proj2 = camera.get_screen_coordinates(point2)
+
+        if proj1 is None or proj2 is None:
+            return
+
+        p_scale = proj1.subtract_vector(proj2).get_length() / 2.0
+        mid_point = proj1.get_midpoint(proj2)
+        point = mid_point.x, mid_point.y
+
+        alpha = self._get_scale_alpha(p_scale)
         rgb = self.color.rgb_tuple
         color = RGBA(*rgb, alpha)
 
-        point = projected.x, projected.y
-        graphics.draw_circle(point, intr_scale, color)
+        graphics.draw_circle(point, p_scale, color)
 
     def _get_scale_alpha(self, scale: float) -> float:
         max_scale = 300.0

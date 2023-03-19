@@ -1,4 +1,4 @@
-from components.vector_3d import Vector3D
+from components.vectors import Vector3D
 from components.particle import Particle
 from components.graphics import Graphics
 from components.camera import Camera

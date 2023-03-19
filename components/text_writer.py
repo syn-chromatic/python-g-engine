@@ -1,11 +1,12 @@
 from components.graphics import Graphics
 from components.color import RGBA
 
+from typing import Optional
 from dataclasses import dataclass
 
 
 @dataclass
-class FontConfiguration:
+class Font:
     font_type: str
     font_size: int
     font_style: str
@@ -19,12 +20,12 @@ class FontConfiguration:
 
 
 class TextWriter:
-    def __init__(self, font: FontConfiguration):
+    def __init__(self, font: Font):
         self.font = font
-        self.tl_column = []
+        self.tl_column: list[tuple[str, Optional[Font]]] = []
 
-    def add_text_top_left(self, text: str):
-        self.tl_column.append(text)
+    def add_text_top_left(self, text: str, font: Optional[Font] = None):
+        self.tl_column.append((text, font))
 
     @staticmethod
     def get_padded_top_left_corner(
@@ -34,10 +35,12 @@ class TextWriter:
         top_left_y = (height / 2.0) - padding_y
         return top_left_x, top_left_y
 
-    def get_text_xy(self, width: int, height: int, idx: int) -> tuple[float, float]:
-        font_size = self.font.font_size
-        line_height = self.font.line_height
-        padding_percent = self.font.padding_percent
+    def get_text_xy(
+        self, font: Font, width: int, height: int, idx: int
+    ) -> tuple[float, float]:
+        font_size = font.font_size
+        line_height = font.line_height
+        padding_percent = font.padding_percent
         padding_x = width * (padding_percent / 100)
         padding_y = height * (padding_percent / 100)
 
@@ -51,10 +54,12 @@ class TextWriter:
         width = graphics.get_width()
         height = graphics.get_height()
 
-        for idx, text in enumerate(self.tl_column, 1):
-            text_xy = self.get_text_xy(width, height, idx)
-            font_tuple = self.font.font_tuple
-            font_color = self.font.font_color
+        for idx, (text, font) in enumerate(self.tl_column, 1):
+            if not font:
+                font = self.font
+            text_xy = self.get_text_xy(font, width, height, idx)
+            font_tuple = font.font_tuple
+            font_color = font.font_color
             graphics.draw_text(text_xy, font_color, text, font_tuple)
 
         self.tl_column = []

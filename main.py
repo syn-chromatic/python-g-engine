@@ -6,12 +6,13 @@ from components.camera import Camera
 from components.color import RGBA
 
 
-def main():
+def main() -> None:
     width = 1200
     height = 800
     background_color = RGBA(0.15, 0.15, 0.15, 1.0)
 
     graphics = Graphics(width, height)
+    graphics.update()
     camera = Camera(width, height)
 
     graphics.set_title("Physics System")
@@ -40,13 +41,46 @@ class GraphicsHandler:
         camera = self.simulation.camera
         simulation = self.simulation
 
-        increase_distance = partial(camera.increment_distance, 1.0)
-        decrease_distance = partial(camera.increment_distance, -1.0)
+        step_val = 10.0
+
+        increase_distance = partial(camera.increment_plane, step_val)
+        decrease_distance = partial(camera.increment_plane, -step_val)
         increase_timestep = partial(simulation.increment_timestep, 100)
         decrease_timestep = partial(simulation.increment_timestep, -100)
 
-        screen.onkeypress(increase_distance, "w")
-        screen.onkeypress(decrease_distance, "s")
+        move_forward = partial(camera.increment_position_z, step_val)
+        move_backward = partial(camera.increment_position_z, -step_val)
+        move_right = partial(camera.increment_position_x, step_val)
+        move_left = partial(camera.increment_position_x, -step_val)
+        move_up = partial(camera.increment_position_y, step_val)
+        move_down = partial(camera.increment_position_y, -step_val)
+
+        move_tar_forward = partial(camera.increment_target_z, step_val)
+        move_tar_backward = partial(camera.increment_target_z, -step_val)
+        move_tar_right = partial(camera.increment_target_x, step_val)
+        move_tar_left = partial(camera.increment_target_x, -step_val)
+        move_tar_up = partial(camera.increment_target_y, step_val)
+        move_tar_down = partial(camera.increment_target_y, -step_val)
+
+        reset = partial(camera.reset)
+
+        screen.onkeypress(move_forward, "w")
+        screen.onkeypress(move_backward, "s")
+        screen.onkeypress(move_left, "a")
+        screen.onkeypress(move_right, "d")
+        screen.onkeypress(move_up, "f")
+        screen.onkeypress(move_down, "g")
+
+        screen.onkeypress(move_tar_forward, "Up")
+        screen.onkeypress(move_tar_backward, "Down")
+        screen.onkeypress(move_tar_right, "Left")
+        screen.onkeypress(move_tar_left, "Right")
+        screen.onkeypress(move_tar_up, "k")
+        screen.onkeypress(move_tar_down, "l")
+
+        screen.onkeypress(reset, "r")
+        screen.onkeypress(increase_distance, "e")
+        screen.onkeypress(decrease_distance, "q")
         screen.onkeypress(increase_timestep, ".")
         screen.onkeypress(decrease_timestep, ",")
 

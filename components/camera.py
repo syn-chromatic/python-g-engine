@@ -1,118 +1,224 @@
 import math
 
-from components.vector_3d import Vector3D
+from components.vectors import Vector3D
 from components.utils import clamp_float
+from copy import deepcopy
 
 
-class CameraBase:
+class Camera:
     def __init__(self, width: int, height: int) -> None:
-        self._width = width
-        self._height = height
-        self._camera_position = Vector3D()
-        self._near_plane = 100.0
-        self._far_plane = 200.0
-        self._yaw = 0.0
-        self._pitch = 0.0
-        self._previous_pointer = (width / 2.0, height / 2.0)
+        self.width = width
+        self.height = height
+        self.fov = 100
+        self.near_plane = 0.1
+        self.far_plane = 5000.0
+        self.yaw = 0.0
+        self.pitch = 0.0
+        self.camera_position = Vector3D(0.0, 0.0, 1000.0)
+        self.camera_target = Vector3D(0.0, 0.0, 0.0)
+        self.side_direction = Vector3D(1.0, 0.0, 0.0)
+        self.up_direction = Vector3D(0.0, 1.0, 0.0)
+        self.look_direction = Vector3D(0.0, 0.0, 1.0)
 
+        self.previous_pointer = (width / 2.0, height / 2.0)
+        self.save()
 
-class Camera(CameraBase):
-    def __init__(self, width: int, height: int) -> None:
-        super().__init__(width, height)
+    def save(self):
+        self.dict = deepcopy(self.__dict__)
 
-    def handle_mouse_movement(self, x: float, y: float) -> None:
-        px = self._previous_pointer[0]
-        py = self._previous_pointer[1]
+    def apply_view_transform(self, position: Vector3D) -> Vector3D:
+        self.apply_direction_adjustment()
 
-        dx = x - px
-        dy = y - py
+        look_dir = self.look_direction
+        side_dir = self.side_direction
+        up_dir = self.up_direction
 
-        sensitivity = 0.5
-        self._yaw += dx * sensitivity
-        self._pitch += dy * sensitivity
-        self._previous_pointer = (x, y)
+        translated_point = position.subtract_vector(self.camera_position)
+        x = translated_point.dot_product(side_dir)
+        y = translated_point.dot_product(up_dir)
+        z = translated_point.dot_product(look_dir)
 
-    def interpolate_scale(self, position: Vector3D, scale: float) -> float:
-        pz = position.z
-        near_plane = self._near_plane
-        far_plane = self._far_plane
+        translated_point = Vector3D(x, y, z)
+        return translated_point
 
-        if (pz + scale) < 0:
-            return 0
+    def ndc_to_screen_coordinates(self, position: Vector3D) -> Vector3D:
+        half_width = self.width / 2.0
+        half_height = self.height / 2.0
 
-        interpolation_value = (pz + near_plane) / (far_plane - near_plane)
-        interpolated_scale = (pz + scale) * interpolation_value
-        return interpolated_scale
+        x = (position.x) * half_width
+        y = (position.y) * half_height
 
-    def calculate_yaw_projection(self, position: Vector3D) -> Vector3D:
-        yaw_radians = math.radians(self._yaw)
-        yaw_cos = math.cos(yaw_radians)
-        yaw_sin = math.sin(yaw_radians)
-
-        px = position.x
-        py = position.y
-        pz = position.z
-
-        yaw_x = (px * yaw_cos) - (pz * yaw_sin)
-        yaw_y = py
-        yaw_z = (px * yaw_sin) + (pz * yaw_cos)
-
-        yaw_vector = Vector3D(yaw_x, yaw_y, yaw_z)
-        return yaw_vector
-
-    def calculate_pitch_projection(self, position: Vector3D) -> Vector3D:
-        pitch_radians = math.radians(self._pitch)
-        pitch_cos = math.cos(pitch_radians)
-        pitch_sin = math.sin(pitch_radians)
-
-        px = position.x
-        py = position.y
-        pz = position.z
-
-        pitch_x = px
-        pitch_y = (py * pitch_cos) - (pz * pitch_sin)
-        pitch_z = (py * pitch_sin) + (pz * pitch_cos)
-
-        pitch_vector = Vector3D(pitch_x, pitch_y, pitch_z)
-        return pitch_vector
+        return Vector3D(x, y, position.z)
 
     def calculate_perspective_projection(self, position: Vector3D):
-        near_plane = self._near_plane
-        far_plane = self._far_plane
+        width = self.width
+        height = self.height
+        fov_degrees = self.fov
+        zn = self.near_plane
+        zf = self.far_plane
 
-        px = position.x
-        py = position.y
-        pz = position.z
+        xi = position.x
+        yi = position.y
+        zi = position.z
 
-        x = (px * near_plane) / pz
-        y = (py * near_plane) / pz
+        aspect_ratio = width / height
+        fov_rad = math.tan(math.radians(fov_degrees / 2))
 
-        z = (far_plane + near_plane) / (near_plane - far_plane)
-        w = -pz / (far_plane - near_plane)
+        xo = xi * (1 / (fov_rad * aspect_ratio))
+        yo = yi * (1 / (fov_rad))
+        zo = zi * ((-zf - zn) / (zn - zf)) + ((2 * zf * zn) / (zn - zf))
 
-        xprj = x * w
-        yprj = y * w
-        zprj = z * w
+        if zi != 0.0:
+            xo /= -zi
+            yo /= -zi
+            zo /= -zi
 
-        projected_vector = Vector3D(xprj, yprj, zprj)
-        return projected_vector
+        vo = Vector3D(xo, yo, zo)
+        return vo
 
-    def get_perspective_projection(self, position: Vector3D):
-        position = self.calculate_yaw_projection(position)
-        position = self.calculate_pitch_projection(position)
+    def handle_mouse_movement(self, x: float, y: float) -> None:
+        sens_x = 0.3
+        sens_y = 0.1
 
-        if position.z == 0.0:
-            return position
+        dx = x - self.previous_pointer[0]
+        dy = y - self.previous_pointer[1]
+        self.previous_pointer = (x, y)
 
-        position = self.calculate_perspective_projection(position)
-        return position
+        self.yaw += dx * sens_x
+        self.pitch += dy * -sens_y
 
-    def increment_distance(self, increment: float):
-        near_plane = self._near_plane
-        far_plane = self._far_plane
+        if self.pitch > 90.0:
+            self.pitch = 90.0
+        elif self.pitch < -90.0:
+            self.pitch = -90.0
+        self.apply_mouse_movement()
 
-        if (near_plane + increment) >= 0.0:
+    def apply_direction_adjustment(self):
+        self.look_direction = self.camera_target.subtract_vector(self.camera_position)
+        self.look_direction = self.look_direction.normalize()
+        self.side_direction = self.look_direction.cross_product(self.up_direction)
+        self.side_direction = self.side_direction.normalize()
+
+        yaw_rad = math.radians(self.yaw)
+        pitch_rad = math.radians(self.pitch - 90.0)
+        up_x = math.cos(yaw_rad) * math.cos(pitch_rad)
+        up_y = math.sin(pitch_rad)
+        up_z = math.sin(yaw_rad) * math.cos(pitch_rad)
+        self.up_direction = Vector3D(up_x, up_y, up_z).normalize()
+
+    def apply_mouse_movement(self):
+        yaw_rad = math.radians(self.yaw)
+        pitch_rad = math.radians(self.pitch)
+
+        direction_x = math.cos(yaw_rad) * math.cos(pitch_rad)
+        direction_y = math.sin(pitch_rad)
+        direction_z = math.sin(yaw_rad) * math.cos(pitch_rad)
+
+        direction = Vector3D(direction_x, direction_y, direction_z)
+        self.camera_target = self.camera_position.add_vector(direction)
+        self.apply_direction_adjustment()
+
+    def increment_position_x(self, increment: float):
+        side_vector = self.side_direction.multiply(-increment)
+        side_vector.y = 0
+        self.camera_position = self.camera_position.add_vector(side_vector)
+        self.camera_target = self.camera_position.add_vector(self.look_direction)
+
+    def increment_position_y(self, increment: float):
+        up_vector = self.up_direction.multiply(increment)
+        self.camera_position = self.camera_position.add_vector(up_vector)
+        self.camera_target = self.camera_position.add_vector(self.look_direction)
+
+    def increment_position_z(self, increment: float):
+        look_vector = self.look_direction.multiply(increment)
+        look_vector.y = 0
+        self.camera_position = self.camera_position.add_vector(look_vector)
+        self.camera_target = self.camera_position.add_vector(self.look_direction)
+
+    def is_point_in_frustum(self, position: Vector3D) -> bool:
+        look_dir = self.camera_target.subtract_vector(self.camera_position).normalize()
+        side_dir = look_dir.cross_product(self.up_direction).normalize()
+        up_dir = side_dir.cross_product(look_dir).normalize()
+
+        near_dir = look_dir.multiply(self.near_plane)
+        near_center = self.camera_position.add_vector(near_dir)
+        far_center = self.camera_position.add_vector(look_dir.multiply(self.far_plane))
+
+        aspect_ratio = self.width / self.height
+        fov_rad = math.tan(math.radians(self.fov / 2))
+
+        near_height = 2 * self.near_plane * fov_rad
+        near_width = near_height * aspect_ratio
+        far_height = 2 * self.far_plane * fov_rad
+        far_width = far_height * aspect_ratio
+
+        near_up = up_dir.multiply(near_height / 2)
+        near_right = side_dir.multiply(near_width / 2)
+        far_up = up_dir.multiply(far_height / 2)
+        far_right = side_dir.multiply(far_width / 2)
+
+        points = [
+            near_center.subtract_vector(near_right).subtract_vector(near_up),
+            near_center.add_vector(near_right).subtract_vector(near_up),
+            near_center.add_vector(near_right).add_vector(near_up),
+            near_center.subtract_vector(near_right).add_vector(near_up),
+            far_center.subtract_vector(far_right).subtract_vector(far_up),
+            far_center.add_vector(far_right).subtract_vector(far_up),
+            far_center.add_vector(far_right).add_vector(far_up),
+            far_center.subtract_vector(far_right).add_vector(far_up),
+        ]
+
+        planes = [
+            (points[0], points[3], points[2]),
+            (points[4], points[5], points[6]),
+            (points[0], points[1], points[5]),
+            (points[2], points[3], points[7]),
+            (points[0], points[4], points[7]),
+            (points[1], points[2], points[6]),
+        ]
+
+        for plane in planes:
+            a, b, c = plane
+            ab = b.subtract_vector(a)
+            ac = c.subtract_vector(a)
+            normal = ab.cross_product(ac).normalize()
+            ap = position.subtract_vector(a)
+
+            if normal.dot_product(ap) < 0:
+                return False
+
+        return True
+
+    def get_screen_coordinates(self, position: Vector3D):
+        if not self.is_point_in_frustum(position):
+            return
+
+        view = self.apply_view_transform(position)
+        projection = self.calculate_perspective_projection(view)
+        screen = self.ndc_to_screen_coordinates(projection)
+        return screen
+
+    def increment_plane(self, increment: float):
+        near_plane = self.near_plane
+        far_plane = self.far_plane
+
+        if (near_plane + increment) >= 0.1:
             near_plane += increment
             far_plane += increment
-            self._near_plane = clamp_float(near_plane, 0.0, float("inf"))
-            self._far_plane = clamp_float(far_plane, 0.0, float("inf"))
+            self.near_plane = clamp_float(near_plane, 0.0, float("inf"))
+            self.far_plane = clamp_float(far_plane, 0.0, float("inf"))
+
+    def increment_target_x(self, increment: float):
+        self.camera_target.x += increment
+
+    def increment_target_y(self, increment: float):
+        self.camera_target.y += increment
+
+    def increment_target_z(self, increment: float):
+        self.camera_target.z += increment
+
+    def reset(self):
+        class_dict = deepcopy(self.dict)
+
+        for variable, value in class_dict.items():
+            self.__setattr__(variable, value)

@@ -5,10 +5,13 @@ from typing_extensions import Self
 class Vector3D:
     __slots__ = ("x", "y", "z")
 
-    def __init__(self, x: float = 0.0, y: float = 0.0, z: float = 0.0) -> None:
+    def __init__(self, x: float, y: float, z: float) -> None:
         self.x = x
         self.y = y
         self.z = z
+
+    def __str__(self) -> str:
+        return f"[{self.x:.3f}, {self.y:.3f}, {self.z:.3f}]"
 
     def multiply(self, num: float) -> Self:
         return Vector3D(self.x * num, self.y * num, self.z * num)
@@ -22,6 +25,15 @@ class Vector3D:
     def subtract_vector(self, vec: Self) -> Self:
         return Vector3D(self.x - vec.x, self.y - vec.y, self.z - vec.z)
 
+    def multiply_vector(self, vec: Self) -> Self:
+        return Vector3D(self.x * vec.x, self.y * vec.y, self.z * vec.z)
+
+    def get_midpoint(self, vec: Self) -> Self:
+        x_mid = (self.x + vec.x) / 2.0
+        y_mid = (self.y + vec.y) / 2.0
+        z_mid = (self.z + vec.z) / 2.0
+        return Vector3D(x_mid, y_mid, z_mid)
+
     def get_length_squared(self) -> float:
         return self.x**2.0 + self.y**2.0 + self.z**2.0
 
@@ -34,7 +46,7 @@ class Vector3D:
     def normalize(self) -> Self:
         length = self.get_length()
         if length == 0:
-            return Vector3D(0, 0, 0)
+            return Vector3D(0.0, 0.0, 0.0)
         return Vector3D(self.x / length, self.y / length, self.z / length)
 
     def dot_product(self, vec: Self) -> float:

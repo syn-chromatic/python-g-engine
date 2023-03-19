@@ -2,20 +2,37 @@ import random
 
 from components.shape import Shape
 from components.particle import Particle
+from components.grid import GridGround
 from components.color import RGBA
 from components.vertices import SphereShape, CubeShape, ParticleCircle
 
 
-def get_center_cube():
+def get_center_particle():
     mass = 10_000_000
+    shape = [(0.0, 0.0, 0.0)]
+    color = RGBA(0.8, 0.3, 0.3, 1.0)
+    scale = mass / 100_000
+
+    body = Particle(shape)
+    body.set_color(color)
+    body.physics.set_position(0, 0, 500)
+    body.physics.set_mass(mass)
+    body.physics.set_scale(scale)
+    body.physics.set_spin_velocity(50, 50, 0)
+    return body
+
+
+def get_center_cube(px, py, pz):
+    mass = 100
     shape = CubeShape().get_shape()
     color = RGBA(0.8, 0.3, 0.3, 1.0)
-    scale = mass / 250_000
+    scale = 50
 
     body = Shape(shape)
     body.set_color(color)
     body.physics.set_mass(mass)
     body.physics.set_scale(scale)
+    body.physics.set_position(px, py, pz)
     body.physics.set_spin_velocity(50, 50, 0)
     return body
 
@@ -114,11 +131,11 @@ def get_particle_t3():
 def get_particle_t4(px, py):
     pz = 0
 
-    mass = 30
+    mass = 100
     shape = [(0.0, 0.0, 0.0)]
-    scale = mass
+    scale = 10
 
-    vx = 500
+    vx = 10
     vy = 0
 
     body = Particle(shape)
@@ -132,12 +149,12 @@ def get_particle_t4(px, py):
 def get_particle_t5(px, py):
     pz = 0
 
-    mass = 30
+    mass = 100
     shape = [(0.0, 0.0, 0.0)]
-    scale = mass
+    scale = 10
 
-    vx = -20_000
-    vy = 80_000
+    vx = -50
+    vy = 0
 
     body = Particle(shape)
     body.physics.set_position(px, py, pz)
@@ -165,22 +182,27 @@ def get_particle_t6() -> Particle:
 
 
 def get_particle_t7(px: float, py: float) -> list[Particle]:
-    particles = ParticleCircle(20).generate(px, py)
+    particles = ParticleCircle(15).generate(px, py)
     bodies = []
 
     for particle in particles:
         px = particle[0]
         py = particle[1]
-        pz = 0
+        pz = 500
 
         mass = particle[2]
-        shape = [(0.0, 0.0, 0.0)]
+        shape = [(1.0, 1.0, 1.0)]
         scale = particle[2]
 
         body = Particle(shape)
         body.physics.set_position(px, py, pz)
-        body.physics.set_velocity(0, 0, 0)
+        body.physics.set_velocity(5, 5, 0)
         body.physics.set_mass(mass)
         body.physics.set_scale(scale)
         bodies.append(body)
     return bodies
+
+
+def get_grid():
+    p = GridGround(50, 50, 100)
+    return p
