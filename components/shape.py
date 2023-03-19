@@ -85,7 +85,7 @@ class Shape(Body):
         return shading
 
     def _get_scale_alpha(self, scale: float) -> float:
-        max_scale = 300.0
+        max_scale = 500.0
         min_scale = max_scale / 2.0
 
         if scale < min_scale:

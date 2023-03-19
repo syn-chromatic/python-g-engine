@@ -2,6 +2,7 @@ import random
 
 from components.shape import Shape
 from components.particle import Particle
+from components.grid import GridGround
 from components.color import RGBA
 from components.vertices import SphereShape, CubeShape, ParticleCircle
 
@@ -200,3 +201,8 @@ def get_particle_t7(px: float, py: float) -> list[Particle]:
         body.physics.set_scale(scale)
         bodies.append(body)
     return bodies
+
+
+def get_grid():
+    p = GridGround(50, 50, 100)
+    return p

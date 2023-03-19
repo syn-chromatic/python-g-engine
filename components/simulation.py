@@ -6,14 +6,10 @@ from components.body import Body
 from components.camera import Camera
 from components.color import RGBA
 from components.text_writer import TextWriter, Font
-from components.vectors import Vector3D
 
 from components.body_configurations import (
     get_particle_t3,
     get_particle_t7,
-    get_particle_t4,
-    get_particle_t5,
-    get_center_particle,
     get_center_cube,
 )
 
@@ -58,21 +54,8 @@ class Simulation:
         if (self.timestep_hz + increment) > 1:
             self.timestep_hz += increment
 
-    def setup_objects(self):
-        # self.timestep_hz = 5
-        # p7_list = get_particle_t7(200, 0)
-        # self.objects.extend(p7_list)
-
-        # c1 = get_center_particle()
-        # self.objects.append(c1)
-
-        # cube = get_center_cube(-400, 0)
-        # cube2 = get_center_cube(400, 0)
-        # p = get_center_particle()
-        # self.objects.append(cube)
-        # self.objects.append(cube2)
-
-        for _ in range(20):
+    def setup_objects_cubes(self):
+        for _ in range(10):
             x = random.uniform(0, 1000)
             y = 0
             z = random.uniform(0, 1000)
@@ -80,20 +63,11 @@ class Simulation:
             cube = get_center_cube(x, y, z)
             self.objects.append(cube)
 
-        # self.objects.append(p)
-
-    # def setup_objects(self):
-    #     self.timestep_hz = 1000
-    #     p4 = get_particle_t4(-50, 0)
-    #     p5 = get_particle_t5(50, 0)
-    #     self.objects.append(p4)
-    #     self.objects.append(p5)
-
-    # def setup_objects(self) -> None:
-    #     p3 = get_particle_t3()
-    #     p7_list = get_particle_t7(0, 0)
-    #     self.objects.append(p3)
-    #     self.objects.extend(p7_list)
+    def setup_objects(self) -> None:
+        p3 = get_particle_t3()
+        p7_list = get_particle_t7(0, 0)
+        self.objects.append(p3)
+        self.objects.extend(p7_list)
 
     def compute_all_objects(self, graphics: Graphics) -> float:
         frame_st = time.perf_counter()
@@ -122,7 +96,7 @@ class Simulation:
                             obj2_physics.mass += obj1_physics.mass
                             continue
 
-            # obj1_physics.update(timestep)
+            obj1_physics.update(timestep)
             obj1.draw(graphics, self.camera)
 
         frame_time = time.perf_counter() - frame_st
