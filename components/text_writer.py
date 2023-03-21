@@ -27,6 +27,20 @@ class TextWriter:
     def add_text_top_left(self, text: str, font: Optional[Font] = None):
         self.tl_column.append((text, font))
 
+    def draw(self, graphics: Graphics):
+        width = graphics.get_width()
+        height = graphics.get_height()
+
+        for idx, (text, font) in enumerate(self.tl_column, 1):
+            if not font:
+                font = self.font
+            text_xy = self.get_text_xy(font, width, height, idx)
+            font_tuple = font.font_tuple
+            font_color = font.font_color
+            graphics.draw_text(text_xy, font_color, text, font_tuple)
+
+        self.tl_column = []
+
     @staticmethod
     def get_padded_top_left_corner(
         width: int, height: int, padding_x: float, padding_y: float
@@ -49,17 +63,3 @@ class TextWriter:
 
         text_xy = self.get_padded_top_left_corner(width, height, text_x, text_y)
         return text_xy
-
-    def draw(self, graphics: Graphics):
-        width = graphics.get_width()
-        height = graphics.get_height()
-
-        for idx, (text, font) in enumerate(self.tl_column, 1):
-            if not font:
-                font = self.font
-            text_xy = self.get_text_xy(font, width, height, idx)
-            font_tuple = font.font_tuple
-            font_color = font.font_color
-            graphics.draw_text(text_xy, font_color, text, font_tuple)
-
-        self.tl_column = []

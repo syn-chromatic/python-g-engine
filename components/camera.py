@@ -33,10 +33,10 @@ class Camera:
         side_dir = self.side_direction
         up_dir = self.up_direction
 
-        translated_point = position.subtract_vector(self.camera_position)
-        x = translated_point.dot_product(side_dir)
-        y = translated_point.dot_product(up_dir)
-        z = translated_point.dot_product(look_dir)
+        point = position.subtract_vector(self.camera_position)
+        x = point.dot_product(side_dir)
+        y = point.dot_product(up_dir)
+        z = point.dot_product(look_dir)
 
         translated_point = Vector3D(x, y, z)
         return translated_point
@@ -48,9 +48,10 @@ class Camera:
         x = (position.x) * half_width
         y = (position.y) * half_height
 
-        return Vector3D(x, y, position.z)
+        screen_coordinates = Vector3D(x, y, position.z)
+        return screen_coordinates
 
-    def calculate_perspective_projection(self, position: Vector3D):
+    def calculate_perspective_projection(self, position: Vector3D) -> Vector3D:
         width = self.width
         height = self.height
         fov_degrees = self.fov
@@ -66,7 +67,7 @@ class Camera:
 
         xo = xi * (1 / (fov_rad * aspect_ratio))
         yo = yi * (1 / (fov_rad))
-        zo = zi * ((-zf - zn) / (zn - zf)) + ((2 * zf * zn) / (zn - zf))
+        zo = zi * -((zf - zn) / (zn - zf)) + ((2 * zf * zn) / (zn - zf))
 
         if zi != 0.0:
             xo /= -zi
@@ -145,7 +146,7 @@ class Camera:
         far_center = self.camera_position.add_vector(look_dir.multiply(self.far_plane))
 
         aspect_ratio = self.width / self.height
-        fov_rad = math.tan(math.radians(self.fov / 2))
+        fov_rad = math.tan(math.radians(self.fov))
 
         near_height = 2 * self.near_plane * fov_rad
         near_width = near_height * aspect_ratio
