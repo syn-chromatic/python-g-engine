@@ -66,3 +66,9 @@ class Vector3D:
             y = (self.y / length) * magnitude
             z = (self.z / length) * magnitude
         return Vector3D(x, y, z)
+
+    def lerp(self, vec: Self, t: float) -> Self:
+        x = self.x + (vec.x - self.x) * t
+        y = self.y + (vec.y - self.y) * t
+        z = self.z + (vec.z - self.z) * t
+        return Vector3D(x, y, z)

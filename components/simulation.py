@@ -11,6 +11,7 @@ from components.body_configurations import (
     get_particle_t3,
     get_particle_t7,
     get_center_cube,
+    get_grid,
 )
 
 
@@ -68,6 +69,9 @@ class Simulation:
         p7_list = get_particle_t7(0, 0)
         self.objects.append(p3)
         self.objects.extend(p7_list)
+
+        grid = get_grid()
+        self.objects.append(grid)
 
     def compute_all_objects(self, graphics: Graphics) -> float:
         frame_st = time.perf_counter()

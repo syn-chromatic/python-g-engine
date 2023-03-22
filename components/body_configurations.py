@@ -182,7 +182,7 @@ def get_particle_t6() -> Particle:
 
 
 def get_particle_t7(px: float, py: float) -> list[Particle]:
-    particles = ParticleCircle(15).generate(px, py)
+    particles = ParticleCircle(10).generate(px, py)
     bodies = []
 
     for particle in particles:
@@ -204,5 +204,10 @@ def get_particle_t7(px: float, py: float) -> list[Particle]:
 
 
 def get_grid():
-    p = GridGround(50, 50, 100)
+    p = GridGround(
+        rows=20,
+        columns=20,
+        cell_size=50,
+        y_pos=-50.0,
+    )
     return p

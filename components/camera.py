@@ -77,6 +77,15 @@ class Camera:
         vo = Vector3D(xo, yo, zo)
         return vo
 
+    def get_screen_coordinates(self, position: Vector3D):
+        if not self.is_point_in_frustum(position):
+            return
+
+        view = self.apply_view_transform(position)
+        projection = self.calculate_perspective_projection(view)
+        screen = self.ndc_to_screen_coordinates(projection)
+        return screen
+
     def handle_mouse_movement(self, x: float, y: float) -> None:
         sens_x = 0.3
         sens_y = 0.1
@@ -189,15 +198,6 @@ class Camera:
                 return False
 
         return True
-
-    def get_screen_coordinates(self, position: Vector3D):
-        if not self.is_point_in_frustum(position):
-            return
-
-        view = self.apply_view_transform(position)
-        projection = self.calculate_perspective_projection(view)
-        screen = self.ndc_to_screen_coordinates(projection)
-        return screen
 
     def increment_plane(self, increment: float):
         near_plane = self.near_plane
