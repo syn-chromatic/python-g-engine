@@ -5,7 +5,8 @@ from components.graphics import Graphics
 from components.body import Body
 from components.camera import Camera
 from components.color import RGBA
-from components.text_writer import TextWriter, Font
+from components.font import FontSettings, ArialFontNormal, ArialFontBold
+from components.text_writer import TextWriter
 
 from components.body_configurations import (
     get_particle_t3,
@@ -24,11 +25,13 @@ class Simulation:
 
     @staticmethod
     def get_header_font():
-        font = Font(
-            font_type="Arial",
+        font_type = ArialFontBold()
+        font_color = RGBA.from_rgb_tuple((0.8, 0.8, 0.8))
+
+        font = FontSettings(
+            font_type=font_type,
             font_size=10,
-            font_style="bold",
-            font_color=RGBA.from_rgb_tuple((0.8, 0.8, 0.8)),
+            font_color=font_color,
             line_height=1.8,
             padding_percent=1,
         )
@@ -36,11 +39,13 @@ class Simulation:
 
     @staticmethod
     def get_standard_font():
-        font = Font(
-            font_type="Arial",
+        font_type = ArialFontNormal()
+        font_color = RGBA.from_rgb_tuple((0.8, 0.8, 0.8))
+
+        font = FontSettings(
+            font_type=font_type,
             font_size=10,
-            font_style="normal",
-            font_color=RGBA.from_rgb_tuple((0.8, 0.8, 0.8)),
+            font_color=font_color,
             line_height=1.8,
             padding_percent=1,
         )
@@ -137,8 +142,8 @@ class Simulation:
         fov = f"FOV:  {camera.fov}"
         near_plane = f"Near Plane:  {camera.near_plane}"
         far_plane = f"Far Plane:  {camera.far_plane}"
-        yaw = f"Yaw:  {camera.yaw}"
-        pitch = f"Pitch:  {camera.pitch}"
+        yaw = f"Yaw:  {camera.yaw:.2f}"
+        pitch = f"Pitch:  {camera.pitch:.2f}"
         position = f"Position:  {cp.__str__()}"
         target = f"Target:  {clt.__str__()}"
         look_dir = f"Look (d):  {cld.__str__()}"

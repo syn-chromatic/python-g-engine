@@ -11,7 +11,7 @@ class Vector3D:
         self.z = z
 
     def __str__(self) -> str:
-        return f"[{self.x:.3f}, {self.y:.3f}, {self.z:.3f}]"
+        return f"[{self.x:.2f}, {self.y:.2f}, {self.z:.2f}]"
 
     def multiply(self, num: float) -> Self:
         return Vector3D(self.x * num, self.y * num, self.z * num)

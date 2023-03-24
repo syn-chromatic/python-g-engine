@@ -1,5 +1,6 @@
 from turtle import Turtle, Screen, ScrolledCanvas
 
+from components.font import FontSettings
 from components.color import RGBA
 from components.utils import clamp_float
 
@@ -79,6 +80,9 @@ class Graphics(GraphicsScreen):
     # Turtle doesn't support alpha channel.
     # This is a limited (in functionality) workaround.
     def handle_alpha_component(self, color: RGBA) -> RGBA:
+        if color.alpha == 1.0:
+            return color
+
         bgcolor: tuple[float, float, float] = self.screen.bgcolor()
         rgba = color.rgba_tuple
         alpha_channel = color.alpha
@@ -152,16 +156,14 @@ class Graphics(GraphicsScreen):
         self.draw_point_to_point(point1, point2)
 
     def draw_text(
-        self,
-        point: tuple[float, float],
-        color: RGBA,
-        text: str,
-        font: tuple[str, int, str],
+        self, point: tuple[float, float], text: str, font_settings: FontSettings
     ) -> None:
+        color = font_settings.font_color
+        font_tuple = font_settings.font_tuple
         self.goto_point(point)
         self.set_draw_color(color)
         self.turtle.pendown()
-        self.turtle.write(arg=text, font=font, align="left")
+        self.turtle.write(arg=text, font=font_tuple, align="left")
 
     def clear_screen(self) -> None:
         self.turtle.clear()
