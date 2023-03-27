@@ -22,7 +22,7 @@ class Sphere:
                 cos_phi = math.cos(phi)
 
                 x = self.radius * sin_theta * cos_phi
-                y = (self.radius * sin_theta * sin_phi) - 50
+                y = (self.radius * sin_theta * sin_phi) + 100
                 z = self.radius * cos_theta
 
                 vertex = (x, y, z)

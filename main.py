@@ -9,8 +9,8 @@ from components.vertices import Cube, Sphere
 
 
 def main() -> None:
-    width = 1200
-    height = 800
+    width = 1760
+    height = 960
     background_color = RGBA(0.15, 0.15, 0.15, 1.0)
 
     graphics = PygGraphics(width, height)

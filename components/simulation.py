@@ -83,8 +83,8 @@ class Simulation:
         # tank = get_tank()
         # self.objects.append(tank)
 
-        # sphere = get_center_sphere()
-        # self.objects.append(sphere)
+        sphere = get_center_sphere()
+        self.objects.append(sphere)
 
     def compute_all_objects(self, graphics: GraphicsABC) -> float:
         frame_st = time.perf_counter()

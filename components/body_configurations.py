@@ -96,7 +96,7 @@ def get_grid():
 
 
 def get_tank():
-    file_path = Path("./tank.obj")
+    file_path = Path("./tank_2.obj")
     polygons = OBJModelFormat(file_path).get_polygons()
     color = RGBA(0.8, 0.3, 0.3, 1.0)
 
