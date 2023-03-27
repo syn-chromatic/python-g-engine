@@ -45,11 +45,12 @@ class Triangle:
         vertices: tuple[Vector3D, Vector3D, Vector3D],
         face: tuple[int, int, int],
         shader: tuple[float, float, float],
+        color: tuple[int, int, int] = (255, 255, 255),
     ):
         self.vertices = vertices
         self.face = face
         self.shader = shader
-        self.color = (255, 255, 255)
+        self.color = color
 
 
 class Quad:
@@ -58,11 +59,12 @@ class Quad:
         vertices: tuple[Vector3D, Vector3D, Vector3D, Vector3D],
         face: tuple[int, int, int, int],
         shader: tuple[float, float, float],
+        color: tuple[int, int, int] = (255, 255, 255),
     ) -> None:
         self.vertices = vertices
         self.face = face
         self.shader = shader
-        self.color = (255, 255, 255)
+        self.color = color
 
 
 class Mesh:

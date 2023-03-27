@@ -71,7 +71,6 @@ class Simulation:
 
     def setup_objects(self) -> None:
 
-
         grid = get_grid()
         self.objects.append(grid)
 
@@ -113,7 +112,6 @@ class Simulation:
             # obj1_physics.update(timestep)
             obj1.draw(graphics, self.camera)
 
-
         frame_time = time.perf_counter() - frame_st
         return frame_time
 
@@ -145,9 +143,9 @@ class Simulation:
         header_font = self.get_header_font()
 
         info_header = "Camera Information"
-        fov = f"FOV:  {camera.fov}"
-        near_plane = f"Near Plane:  {camera.near_plane}"
-        far_plane = f"Far Plane:  {camera.far_plane}"
+        fov = f"FOV:  {camera.frustum.fov}"
+        near_plane = f"Near Plane:  {camera.frustum.near_plane}"
+        far_plane = f"Far Plane:  {camera.frustum.far_plane}"
         yaw = f"Yaw:  {camera.yaw:.2f}"
         pitch = f"Pitch:  {camera.pitch:.2f}"
         position = f"Position:  {cp.__str__()}"
