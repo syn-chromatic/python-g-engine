@@ -1,5 +1,5 @@
 from components.physics import Physics
-from components.graphics import Graphics
+from components.graphics_abc import GraphicsABC
 from components.camera import Camera
 from components.color import RGBA
 
@@ -16,5 +16,5 @@ class Body(ABC):
         return
 
     @abstractmethod
-    def draw(self, graphics: Graphics, camera: Camera) -> None:
+    def draw(self, graphics: GraphicsABC, camera: Camera) -> None:
         return

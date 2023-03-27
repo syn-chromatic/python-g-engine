@@ -5,6 +5,12 @@ from components.particle import Particle
 from components.grid import GridGround
 from components.color import RGBA
 from components.vertices import SphereShape, CubeShape, ParticleCircle
+from components.vertices import Sphere, Cube, GridHorizontal
+from components.shared_dcs import Circles, Quads, Triangles, Polygons
+from components.model import OBJModelFormat
+
+
+from pathlib import Path
 
 
 def get_center_particle():
@@ -37,13 +43,34 @@ def get_center_cube(px, py, pz):
     return body
 
 
+def quads_to_triangles(polygons: list[Polygons]) -> list[Polygons]:
+
+    for idx, polys in enumerate(polygons):
+        polys_type = polys.type
+
+        if isinstance(polys_type, Quads):
+            triangle_faces: list[tuple[int, int, int]] = []
+            quad_faces = polys_type.faces
+            for quad in quad_faces:
+                triangle1 = (quad[0], quad[1], quad[2])
+                triangle2 = (quad[0], quad[2], quad[3])
+
+                triangle_faces.extend([triangle1, triangle2])
+            triangles = Triangles(polys_type.vertices, triangle_faces)
+            polygons[idx].type = triangles
+
+    return polygons
+
+
 def get_center_sphere():
     mass = 10_000_000
-    shape = SphereShape(10, 10, 10).get_shape()
+    polygons = Sphere(50, 10, 10).get_triangle_polygons()
+    # polygons = quads_to_triangles(polygons)
+
     color = RGBA(0.8, 0.3, 0.3, 1.0)
     scale = mass / 250_000
 
-    body = Shape(shape)
+    body = Shape(polygons)
     body.set_color(color)
     body.physics.set_mass(mass)
     body.physics.set_scale(scale)
@@ -204,10 +231,26 @@ def get_particle_t7(px: float, py: float) -> list[Particle]:
 
 
 def get_grid():
-    p = GridGround(
-        rows=20,
-        columns=20,
-        cell_size=50,
-        y_pos=-50.0,
-    )
-    return p
+    mass = 10_000_000
+    polygons = GridHorizontal(10, 10, 20, -50).get_triangle_polygons()
+    # polygons = quads_to_triangles(polygons)
+
+    color = RGBA(0.8, 0.3, 0.3, 1.0)
+    # scale = mass / 250_000
+
+    body = Shape(polygons)
+    body.set_color(color)
+    body.physics.set_mass(mass)
+    # body.physics.set_scale(scale)
+    # body.physics.set_spin_velocity(50, 50, 0)
+    return body
+
+
+def get_tank():
+    file_path = Path("./tank.obj")
+    polygons = OBJModelFormat(file_path).get_polygons()
+    color = RGBA(0.8, 0.3, 0.3, 1.0)
+
+    body = Shape(polygons)
+    body.set_color(color)
+    return body

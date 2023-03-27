@@ -1,6 +1,6 @@
 from components.body import Body
 from components.vectors import Vector3D
-from components.graphics import Graphics
+from components.graphics_abc import GraphicsABC
 from components.physics import Physics
 from components.camera import Camera
 from components.color import RGBA
@@ -39,7 +39,7 @@ class GridGround(Body):
 
         return points
 
-    def draw(self, graphics: Graphics, camera: Camera) -> None:
+    def draw(self, graphics: GraphicsABC, camera: Camera) -> None:
         previous_line: list[tuple[float, float]] = []
 
         for point1, point2 in self.points:

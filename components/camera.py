@@ -1,8 +1,26 @@
 import math
+import time
 
 from components.vectors import Vector3D
+from components.shared_dcs import Polygons, Triangles, Quads
+
+from dataclasses import dataclass
+from typing import Optional
 from components.utils import clamp_float
 from copy import deepcopy
+
+
+@dataclass
+class Plane:
+    A: float
+    B: float
+    C: float
+    D: float
+
+
+@dataclass
+class Frustum:
+    planes: list[Plane]
 
 
 class Camera:
@@ -14,17 +32,23 @@ class Camera:
         self.far_plane = 5000.0
         self.yaw = 0.0
         self.pitch = 0.0
-        self.camera_position = Vector3D(0.0, 0.0, 1000.0)
+        self.camera_position = Vector3D(0.0, 50.0, 500.0)
         self.camera_target = Vector3D(0.0, 0.0, 0.0)
         self.side_direction = Vector3D(1.0, 0.0, 0.0)
         self.up_direction = Vector3D(0.0, 1.0, 0.0)
         self.look_direction = Vector3D(0.0, 0.0, 1.0)
 
         self.previous_pointer = (width / 2.0, height / 2.0)
+        self.enable_frustum_clipping = True
+
         self.save()
 
     def save(self):
         self.dict = deepcopy(self.__dict__)
+
+    def toggle_frustum_clipping(self):
+        self.enable_frustum_clipping = not self.enable_frustum_clipping
+        print("FRUSTUM CLIPPING:", self.enable_frustum_clipping)
 
     def apply_view_transform(self, position: Vector3D) -> Vector3D:
         self.apply_direction_adjustment()
@@ -77,14 +101,269 @@ class Camera:
         vo = Vector3D(xo, yo, zo)
         return vo
 
-    def get_screen_coordinates(self, position: Vector3D):
-        if not self.is_point_in_frustum(position):
-            return
-
-        view = self.apply_view_transform(position)
-        projection = self.calculate_perspective_projection(view)
-        screen = self.ndc_to_screen_coordinates(projection)
+    def get_screen_coordinates(self, world_position: Vector3D):
+        view = self.apply_view_transform(world_position)
+        ndc_projection = self.calculate_perspective_projection(view)
+        screen = self.ndc_to_screen_coordinates(ndc_projection)
         return screen
+
+    def apply_projection_polygons(
+        self, polygons: list[Polygons]
+    ) -> Optional[list[Polygons]]:
+        polygons = deepcopy(polygons)
+
+        for polys in polygons:
+            polys_type = polys.type
+            vertices = polys_type.vertices
+            for idx, vertex in enumerate(vertices):
+                vertex_vector = Vector3D(*vertex)
+                vertex_vector = self.apply_view_transform(vertex_vector)
+                vertex_vector = vertex_vector.multiply(-1)
+
+                if vertex_vector:
+                    vertex = vertex_vector.x, vertex_vector.y, vertex_vector.z
+                    vertices[idx] = vertex
+
+        if self.enable_frustum_clipping:
+            self.frustum_clip(polygons)
+
+        shift = 0
+        for polys in polygons:
+            polys_type = polys.type
+            vertices = polys_type.vertices
+            for idx, vertex in enumerate(vertices):
+                vertex_vector = Vector3D(*vertex)
+                # if not self.is_point_in_frustum(vertex_vector):
+                #     idx -= shift
+                #     print(len(polys_type.vertices), len(polys_type.faces))
+                #     polys_type.vertices.pop(idx)
+                #     polys_type.faces.pop(idx)
+                #     shift += 1
+                #     continue
+
+                vertex_vector = self.calculate_perspective_projection(vertex_vector)
+                vertex_vector = self.ndc_to_screen_coordinates(vertex_vector)
+                if vertex_vector:
+                    vertex = vertex_vector.x, vertex_vector.y, vertex_vector.z
+                    vertices[idx] = vertex
+
+        return polygons
+
+    def lerp_interpolation(
+        self, a: tuple[float, float, float], b: tuple[float, float, float], t: float
+    ) -> tuple[float, float, float]:
+        x = a[0] + (b[0] - a[0]) * t
+        y = a[1] + (b[1] - a[1]) * t
+        z = a[2] + (b[2] - a[2]) * t
+        return (x, y, z)
+
+    def make_frustum(self) -> Frustum:
+        fov = self.fov
+        aspect = self.width / self.height
+        near = -self.near_plane
+        far = -self.far_plane
+        fov_rad = math.tan(math.radians(fov / 2))
+
+        y_top = abs(near) * fov_rad * 0.5
+        x_right = y_top * aspect
+
+        # near
+        p0_n = Vector3D(0.0, 0.0, near)
+        n_n = Vector3D(0.0, 0.0, -1.0)
+        near_plane = self.make_plane(p0_n, n_n)
+
+        # far
+        p0_f = Vector3D(0.0, 0.0, far)
+        n_f = Vector3D(0.0, 0.0, 1.0)
+        far_plane = self.make_plane(p0_f, n_f)
+
+        # top
+        p0_t = Vector3D(0.0, y_top, near)
+        n_t = Vector3D(0.0, near / y_top, -1.0).normalize()
+        top_plane = self.make_plane(p0_t, n_t)
+
+        # bottom
+        p0_b = Vector3D(0.0, -y_top, near)
+        n_b = Vector3D(0.0, -near / y_top, -1.0).normalize()
+        bottom_plane = self.make_plane(p0_b, n_b)
+
+        # left
+        p0_l = Vector3D(-x_right, 0.0, near)
+        n_l = Vector3D(-near / x_right, 0.0, -1.0).normalize()
+        left_plane = self.make_plane(p0_l, n_l)
+
+        # right
+        p0_r = Vector3D(x_right, 0.0, near)
+        n_r = Vector3D(near / x_right, 0.0, -1.0).normalize()
+        right_plane = self.make_plane(p0_r, n_r)
+
+        planes = [
+            near_plane,
+            far_plane,
+            top_plane,
+            bottom_plane,
+            left_plane,
+            right_plane,
+        ]
+        frustum = Frustum(planes)
+        return frustum
+
+    def make_plane(self, p0: Vector3D, n: Vector3D) -> Plane:
+        n = n.normalize()
+
+        pA = n.x
+        pB = n.y
+        pC = n.z
+        pD = -p0.dot_product(n)
+        p = Plane(pA, pB, pC, pD)
+
+        return p
+
+    def get_plane_intersection(
+        self, a: tuple[float, float, float], b: tuple[float, float, float], p: Plane
+    ) -> float:
+        numerator = -(a[0] * p.A + a[1] * p.B + a[2] * p.C + p.D)
+        denominator = p.A * (b[0] - a[0]) + p.B * (b[1] - a[1]) + p.C * (b[2] - a[2])
+        if denominator == 0:
+            return 0
+        return numerator / denominator
+
+    def is_point_behind_plane(
+        self, point: tuple[float, float, float], plane: Plane
+    ) -> bool:
+        test = plane.A * point[0] + plane.B * point[1] + plane.C * point[2] + plane.D
+        is_behind_plane = test < 0
+        return is_behind_plane
+
+    # def clip_against_plane(self, polygons: list[Polygons], p: Plane):
+    #     for polys in polygons:
+    #         if isinstance(polys.type, Quads):
+    #             return
+
+    #         output_vertices = []
+    #         input_vertices = polys.type.vertices
+    #         input_faces = polys.type.faces
+
+    #         len_vertices = len(input_vertices)
+    #         index_mapping = {}
+    #         new_index = 0
+
+    #         for i in range(len_vertices):
+    #             a = input_vertices[i]
+    #             b = input_vertices[(i + 1) % len_vertices]
+
+    #             t = self.get_plane_intersection(a, b, p)
+    #             c = self.lerp_interpolation(a, b, t)
+
+    #             if not self.is_point_behind_plane(b, p):
+    #                 if self.is_point_behind_plane(a, p):
+    #                     output_vertices.append(c)
+    #                     index_mapping[i] = new_index
+    #                     new_index += 1
+
+    #                 output_vertices.append(b)
+    #                 index_mapping[(i + 1) % len_vertices] = new_index
+    #                 new_index += 1
+
+    #             elif not self.is_point_behind_plane(a, p):
+    #                 output_vertices.append(c)
+    #                 index_mapping[i] = new_index
+    #                 new_index += 1
+
+    #         polys.type.vertices = output_vertices
+    #         output_faces = []
+    #         for face in input_faces:
+    #             updated_face = tuple(index_mapping.get(idx, -1) for idx in face)
+    #             if all(idx != -1 for idx in updated_face):
+    #                 output_faces.append(updated_face)
+
+    #         polys.type.faces = output_faces
+
+
+
+
+
+
+
+
+
+    def clip_against_plane(self, polygons: list[Polygons], p: Plane):
+        for polys in polygons:
+            if isinstance(polys.type, Quads):
+                return
+
+            output_vertices = []
+            input_vertices = polys.type.vertices
+            input_faces = polys.type.faces
+
+            len_vertices = len(input_vertices)
+            index_mapping = {}
+            new_index = 0
+
+            for i in range(len_vertices):
+                a = input_vertices[i]
+                b = input_vertices[(i + 1) % len_vertices]
+
+                t = self.get_plane_intersection(a, b, p)
+                c = self.lerp_interpolation(a, b, t)
+
+                if not self.is_point_behind_plane(b, p):
+                    if self.is_point_behind_plane(a, p):
+                        output_vertices.append(c)
+                        index_mapping[i] = new_index
+                        new_index += 1
+
+                    output_vertices.append(b)
+                    index_mapping[(i + 1) % len_vertices] = new_index
+                    new_index += 1
+
+                elif not self.is_point_behind_plane(a, p):
+                    output_vertices.append(c)
+                    index_mapping[i] = new_index
+                    new_index += 1
+
+            polys.type.vertices = output_vertices
+            output_faces = []
+
+            for face in input_faces:
+                clipped_face = []
+                added_intersection = False
+                for idx in range(len(face)):
+                    if face[idx] in index_mapping:
+                        clipped_face.append(index_mapping[face[idx]])
+                    else:
+                        if not added_intersection:
+                            clipped_face.append(new_index - 1)
+                            added_intersection = True
+
+                if len(clipped_face) >= 3:
+                    output_faces.append(tuple(clipped_face))
+
+            polys.type.faces = output_faces
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    def frustum_clip(self, polygons: list[Polygons]):
+        frustum = self.make_frustum()
+
+        for plane in frustum.planes:
+            self.clip_against_plane(polygons, plane)
 
     def handle_mouse_movement(self, x: float, y: float) -> None:
         sens_x = 0.3
@@ -145,6 +424,60 @@ class Camera:
         self.camera_position = self.camera_position.add_vector(look_vector)
         self.camera_target = self.camera_position.add_vector(self.look_direction)
 
+    def get_plane_points(
+        self,
+    ) -> list[tuple[tuple[Vector3D, Vector3D, Vector3D], Vector3D]]:
+        look_dir = self.camera_target.subtract_vector(self.camera_position).normalize()
+        side_dir = look_dir.cross_product(self.up_direction).normalize()
+        up_dir = side_dir.cross_product(look_dir).normalize()
+
+        near_dir = look_dir.multiply(self.near_plane)
+        near_center = self.camera_position.add_vector(near_dir)
+        far_center = self.camera_position.add_vector(look_dir.multiply(self.far_plane))
+
+        aspect_ratio = self.width / self.height
+        fov_rad = math.tan(math.radians(self.fov / 2))
+
+        near_height = 2 * self.near_plane * fov_rad
+        near_width = near_height * aspect_ratio
+        far_height = 2 * self.far_plane * fov_rad
+        far_width = far_height * aspect_ratio
+
+        near_up = up_dir.multiply(near_height / 2)
+        near_right = side_dir.multiply(near_width / 2)
+        far_up = up_dir.multiply(far_height / 2)
+        far_right = side_dir.multiply(far_width / 2)
+
+        points = [
+            near_center.subtract_vector(near_right).subtract_vector(near_up),
+            near_center.add_vector(near_right).subtract_vector(near_up),
+            near_center.add_vector(near_right).add_vector(near_up),
+            near_center.subtract_vector(near_right).add_vector(near_up),
+            far_center.subtract_vector(far_right).subtract_vector(far_up),
+            far_center.add_vector(far_right).subtract_vector(far_up),
+            far_center.add_vector(far_right).add_vector(far_up),
+            far_center.subtract_vector(far_right).add_vector(far_up),
+        ]
+
+        planes = [
+            (points[0], points[3], points[2]),
+            (points[4], points[5], points[6]),
+            (points[0], points[1], points[5]),
+            (points[2], points[3], points[7]),
+            (points[0], points[4], points[7]),
+            (points[1], points[2], points[6]),
+        ]
+
+        planes_normals = []
+        for plane in planes:
+            a, b, c = plane
+            ab = b.subtract_vector(a)
+            ac = c.subtract_vector(a)
+            normal = ab.cross_product(ac).normalize()
+
+            planes_normals.append((plane, normal))
+        return planes_normals
+
     def is_point_in_frustum(self, position: Vector3D) -> bool:
         look_dir = self.camera_target.subtract_vector(self.camera_position).normalize()
         side_dir = look_dir.cross_product(self.up_direction).normalize()
@@ -155,7 +488,7 @@ class Camera:
         far_center = self.camera_position.add_vector(look_dir.multiply(self.far_plane))
 
         aspect_ratio = self.width / self.height
-        fov_rad = math.tan(math.radians(self.fov))
+        fov_rad = math.tan(math.radians(self.fov / 2))
 
         near_height = 2 * self.near_plane * fov_rad
         near_width = near_height * aspect_ratio

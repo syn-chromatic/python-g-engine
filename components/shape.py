@@ -1,48 +1,57 @@
 from components.body import Body
 from components.physics import Physics
 from components.vectors import Vector3D
-from components.graphics import Graphics
+from components.graphics_abc import GraphicsABC
 from components.camera import Camera
 from components.color import RGBA
+from components.shared_dcs import Polygons
+
 from components.utils import clamp_float
 
 
 class Shape(Body):
-    def __init__(self, shape: list[tuple[float, float, float]]):
-        self.physics = Physics(shape)
+    def __init__(self, polygons: list[Polygons]):
+        self.physics = Physics(polygons)
         self.color = RGBA(1.0, 1.0, 1.0, 1.0)
         self.line_thickness = 3
 
     def set_color(self, color: RGBA):
         self.color = color
 
-    def draw(self, graphics: Graphics, camera: Camera):
-        shape = self.physics.shape
-        shape_length = len(shape)
-        shading = self._get_static_shading_sequence(shape_length)
-        rgb = self.color.rgb_tuple
+    def draw(self, graphics: GraphicsABC, camera: Camera):
+        polygons = self.physics.polygons
+        polygons = camera.apply_projection_polygons(polygons)
+        if polygons:
+            graphics.draw_polygons(polygons)
 
-        for idx in range(0, shape_length):
-            nxt_idx = idx + 1
-            rgb = tuple((i * shading[idx] for i in rgb))
-            color = RGBA.from_rgb_tuple(rgb)
-            if nxt_idx < shape_length:
-                p1 = shape[idx]
-                p2 = shape[nxt_idx]
 
-                self._draw_edge(p1, p2, color, graphics, camera)
-                continue
 
-            p1 = shape[idx]
-            p2 = shape[0]
-            self._draw_edge(p1, p2, color, graphics, camera)
+        # polygons = self.physics.polygons
+        # shape_length = len(shape)
+        # shading = self._get_static_shading_sequence(shape_length)
+        # rgb = self.color.rgb_tuple
+
+        # for idx in range(0, shape_length):
+        #     nxt_idx = idx + 1
+        #     rgb = tuple((i * shading[idx] for i in rgb))
+        #     color = RGBA.from_rgb_tuple(rgb)
+        #     if nxt_idx < shape_length:
+        #         p1 = shape[idx]
+        #         p2 = shape[nxt_idx]
+
+        #         self._draw_edge(p1, p2, color, graphics, camera)
+        #         continue
+
+        #     p1 = shape[idx]
+        #     p2 = shape[0]
+        #     self._draw_edge(p1, p2, color, graphics, camera)
 
     def _draw_edge(
         self,
         a: tuple[float, float, float],
         b: tuple[float, float, float],
         color: RGBA,
-        graphics: Graphics,
+        graphics: GraphicsABC,
         camera: Camera,
     ):
         position = self._get_shape_position()

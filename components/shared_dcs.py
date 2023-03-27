@@ -1,7 +1,7 @@
 from components.vectors import Vector3D
 
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Union, Callable
 
 
 @dataclass
@@ -24,3 +24,48 @@ class CollisionVel:
 @dataclass
 class PhysicsProperties:
     collision: Optional[CollisionProperties]
+
+
+class Circles:
+    def __init__(
+        self,
+        vertices: list[tuple[float, float, float]],
+        faces: list[tuple[int, int, int]],
+    ):
+        self.vertices = vertices
+        self.faces = faces
+
+
+class Triangles:
+    def __init__(
+        self,
+        vertices: list[tuple[float, float, float]],
+        faces: list[tuple[int, int, int]],
+    ):
+        self.vertices = vertices
+        self.faces = faces
+
+
+class Quads:
+    def __init__(
+        self,
+        vertices: list[tuple[float, float, float]],
+        faces: list[tuple[int, int, int, int]],
+    ):
+        self.vertices = vertices
+        self.faces = faces
+
+
+class Polygons:
+    def __init__(self, type: Union[Triangles, Quads, Circles]):
+        self.type = type
+
+
+@dataclass
+class KeyRegister:
+    key: str
+    scancode: int
+    function: Callable
+    press_time: float
+    is_pressed: bool
+    is_repeatable: bool

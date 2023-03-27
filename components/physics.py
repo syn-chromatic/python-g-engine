@@ -1,5 +1,7 @@
 import math
 import random
+
+from components.shared_dcs import Polygons
 from components.vectors import Vector3D
 from components.shared_dcs import PhysicsProperties, CollisionProperties, CollisionVel
 
@@ -9,8 +11,8 @@ from typing_extensions import Self
 
 
 class Physics:
-    def __init__(self, shape: list[tuple[float, float, float]]):
-        self.shape = shape
+    def __init__(self, polygons: list[Polygons]):
+        self.polygons = polygons
         self.position = Vector3D(0.0, 0.0, 0.0)
         self.velocity = Vector3D(0.0, 0.0, 0.0)
         self.acceleration = Vector3D(0.0, 0.0, 0.0)
@@ -72,13 +74,16 @@ class Physics:
         x_rotation = self.spin_velocity.x * timestep
         y_rotation = self.spin_velocity.y * timestep
         z_rotation = self.spin_velocity.z * timestep
-        shape = []
-        for point in self.shape:
-            point = self._rotate_x(point, x_rotation)
-            point = self._rotate_y(point, y_rotation)
-            point = self._rotate_z(point, z_rotation)
-            shape.append(point)
-        self.shape = shape
+
+        for polygons in self.polygons:
+            polygons_type = polygons.type
+            vertices = polygons_type.vertices
+
+            for idx, vertex in enumerate(vertices):
+                vertex = self._rotate_x(vertex, x_rotation)
+                vertex = self._rotate_y(vertex, y_rotation)
+                vertex = self._rotate_z(vertex, z_rotation)
+                vertices[idx] = vertex
 
     def get_random_direction(self):
         x_rnd = random.uniform(-1.0, 1.0)

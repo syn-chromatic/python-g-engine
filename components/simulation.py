@@ -1,7 +1,7 @@
 import time
 import random
 
-from components.graphics import Graphics
+from components.graphics_abc import GraphicsABC
 from components.body import Body
 from components.camera import Camera
 from components.color import RGBA
@@ -9,10 +9,12 @@ from components.font import FontSettings, ArialFontNormal, ArialFontBold
 from components.text_writer import TextWriter
 
 from components.body_configurations import (
-    get_particle_t3,
-    get_particle_t7,
+    # get_particle_t3,
+    # get_particle_t7,
     get_center_cube,
+    get_center_sphere,
     get_grid,
+    get_tank,
 )
 
 
@@ -70,15 +72,21 @@ class Simulation:
             self.objects.append(cube)
 
     def setup_objects(self) -> None:
-        p3 = get_particle_t3()
-        p7_list = get_particle_t7(0, 0)
-        self.objects.append(p3)
-        self.objects.extend(p7_list)
+        # p3 = get_particle_t3()
+        # p7_list = get_particle_t7(0, 0)
+        # self.objects.append(p3)
+        # self.objects.extend(p7_list)
 
         grid = get_grid()
         self.objects.append(grid)
 
-    def compute_all_objects(self, graphics: Graphics) -> float:
+        # tank = get_tank()
+        # self.objects.append(tank)
+
+        # sphere = get_center_sphere()
+        # self.objects.append(sphere)
+
+    def compute_all_objects(self, graphics: GraphicsABC) -> float:
         frame_st = time.perf_counter()
         timestep = 1.0 / self.timestep_hz
 
@@ -105,7 +113,7 @@ class Simulation:
                             obj2_physics.mass += obj1_physics.mass
                             continue
 
-            obj1_physics.update(timestep)
+            # obj1_physics.update(timestep)
             obj1.draw(graphics, self.camera)
 
         frame_time = time.perf_counter() - frame_st
@@ -163,10 +171,10 @@ class Simulation:
         self.text_writer.add_text_top_left(up_dir)
         self.text_writer.add_text_top_left(side_dir)
 
-    def draw_text(self, graphics: Graphics):
+    def draw_text(self, graphics: GraphicsABC):
         self.text_writer.draw(graphics)
 
-    def simulate(self, graphics: Graphics):
+    def simulate(self, graphics: GraphicsABC):
         frame_time = self.compute_all_objects(graphics)
 
         self.write_fps_text(frame_time)

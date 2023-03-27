@@ -1,7 +1,7 @@
 from components.body import Body
 from components.physics import Physics
 from components.vectors import Vector3D
-from components.graphics import Graphics
+from components.graphics_abc import GraphicsABC
 from components.camera import Camera
 from components.color import RGBA
 from components.utils import clamp_float
@@ -15,10 +15,10 @@ class Particle(Body):
     def set_color(self, color: RGBA) -> None:
         self.color = color
 
-    def draw(self, graphics: Graphics, camera: Camera) -> None:
+    def draw(self, graphics: GraphicsABC, camera: Camera) -> None:
         self._draw_circle(graphics, camera)
 
-    def _draw_circle(self, graphics: Graphics, camera: Camera) -> None:
+    def _draw_circle(self, graphics: GraphicsABC, camera: Camera) -> None:
         position = self._get_particle_position()
         scale = self._get_particle_scale()
 

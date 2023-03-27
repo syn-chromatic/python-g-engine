@@ -1,12 +1,12 @@
 from components.vectors import Vector3D
 from components.particle import Particle
-from components.graphics import Graphics
+from components.graphics_abc import GraphicsABC
 from components.camera import Camera
 from components.color import RGBA
 
 
 def debug_show_collision_shifts(
-    graphics: Graphics, camera: Camera, self_shifted: Vector3D, target_shifted: Vector3D
+    graphics: GraphicsABC, camera: Camera, self_shifted: Vector3D, target_shifted: Vector3D
 ):
 
     p1_color = RGBA(0.4, 0.8, 0.4, 1.0)
