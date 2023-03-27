@@ -1,9 +1,9 @@
 import math
 import random
 
-from components.shared_dcs import Polygons
+from shared_dcs import Polygons
 from components.vectors import Vector3D
-from components.shared_dcs import PhysicsProperties, CollisionProperties, CollisionVel
+from shared_dcs import PhysicsProperties, CollisionProperties, CollisionVel
 
 
 from typing import Optional

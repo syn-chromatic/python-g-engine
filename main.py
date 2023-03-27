@@ -1,6 +1,6 @@
 from functools import partial
 
-from components.graphics_abc import GraphicsABC
+from abstracts.graphics_abc import GraphicsABC
 from components.graphics import TurtleGraphics, PygGraphics
 from components.simulation import Simulation
 from components.camera import Camera

@@ -1,4 +1,4 @@
-from components.graphics_abc import GraphicsABC
+from abstracts.graphics_abc import GraphicsABC
 from components.font import FontSettings
 
 from typing import Optional

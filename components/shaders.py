@@ -1,5 +1,5 @@
 from components.vectors import Vector3D
-from components.shared_dcs import Polygons, Quads
+from shared_dcs import Polygons, Quads
 
 
 class Light:

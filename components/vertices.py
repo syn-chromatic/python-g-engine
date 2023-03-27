@@ -1,5 +1,5 @@
 import math
-from components.shared_dcs import Polygons, Triangles, Quads
+from shared_dcs import Polygons, Triangles, Quads
 from components.vectors import Vector3D
 
 

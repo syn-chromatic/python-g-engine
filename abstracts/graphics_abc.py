@@ -1,6 +1,6 @@
 from components.color import RGBA
 from components.font import FontSettings
-from components.shared_dcs import Polygons, Triangles, Quads
+from shared_dcs import Polygons, Triangles, Quads
 
 
 from typing import Callable

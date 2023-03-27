@@ -1,5 +1,5 @@
 from components.physics import Physics
-from components.graphics_abc import GraphicsABC
+from abstracts.graphics_abc import GraphicsABC
 from components.camera import Camera
 from components.color import RGBA
 

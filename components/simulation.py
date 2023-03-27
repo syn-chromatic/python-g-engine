@@ -1,14 +1,14 @@
 import time
 import random
 
-from components.graphics_abc import GraphicsABC
-from components.body import Body
+from abstracts.graphics_abc import GraphicsABC
+from abstracts.body_abc import Body
 from components.camera import Camera
 from components.color import RGBA
 from components.font import FontSettings, ArialFontNormal, ArialFontBold
 from components.text_writer import TextWriter
 
-from components.body_configurations import (
+from configurations.body_configurations import (
     get_center_cube,
     get_center_sphere,
     get_grid,

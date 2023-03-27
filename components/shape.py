@@ -1,9 +1,9 @@
-from components.body import Body
+from abstracts.body_abc import Body
 from components.physics import Physics
-from components.graphics_abc import GraphicsABC
+from abstracts.graphics_abc import GraphicsABC
 from components.camera import Camera
 from components.color import RGBA
-from components.shared_dcs import Polygons
+from shared_dcs import Polygons
 from components.shaders import Shaders, Light
 
 

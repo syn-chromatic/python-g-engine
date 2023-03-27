@@ -1,4 +1,4 @@
-from components.shared_dcs import Polygons, Triangles, Quads
+from shared_dcs import Polygons, Triangles, Quads
 from components.vertices import MeshConverter
 from components.vectors import Vector3D
 from pathlib import Path
