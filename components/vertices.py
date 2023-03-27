@@ -1,5 +1,6 @@
 import math
 from components.shared_dcs import Polygons, Triangles, Quads
+from components.vectors import Vector3D
 
 
 class Sphere:
@@ -7,9 +8,17 @@ class Sphere:
         self.radius = radius
         self.num_latitude = num_latitude
         self.num_longitude = num_longitude
+        self.x_offset = 0.0
+        self.y_offset = 0.0
+        self.z_offset = 0.0
 
-    def get_vertices(self) -> list[tuple[float, float, float]]:
-        vertices: list[tuple[float, float, float]] = []
+    def set_offset(self, x: float, y: float, z: float):
+        self.x_offset = x
+        self.y_offset = y
+        self.z_offset = z
+
+    def get_vertices(self) -> list[Vector3D]:
+        vertices: list[Vector3D] = []
 
         for i in range(self.num_latitude + 1):
             theta = i * math.pi / self.num_latitude
@@ -21,11 +30,11 @@ class Sphere:
                 sin_phi = math.sin(phi)
                 cos_phi = math.cos(phi)
 
-                x = self.radius * sin_theta * cos_phi
-                y = (self.radius * sin_theta * sin_phi) + 100
-                z = self.radius * cos_theta
+                x = (self.radius * sin_theta * cos_phi) + self.x_offset
+                y = (self.radius * sin_theta * sin_phi) + self.y_offset
+                z = (self.radius * cos_theta) + self.z_offset
 
-                vertex = (x, y, z)
+                vertex = Vector3D(x, y, z)
                 vertices.append(vertex)
         return vertices
 
@@ -59,14 +68,14 @@ class Sphere:
     def get_triangle_polygons(self) -> list[Polygons]:
         vertices = self.get_vertices()
         faces = self.get_triangle_faces()
-        triangles = Triangles(vertices, faces)
+        triangles = Triangles(vertices, faces, [])
         polygons = [Polygons(triangles)]
         return polygons
 
     def get_quad_polygons(self):
         vertices = self.get_vertices()
         faces = self.get_quad_faces()
-        quads = Quads(vertices, faces)
+        quads = Quads(vertices, faces, [])
         polygons = [Polygons(quads)]
         return polygons
 
@@ -75,17 +84,17 @@ class Cube:
     def __init__(self, size: float):
         self.size = size
 
-    def get_quad_vertices(self) -> list[tuple[float, float, float]]:
+    def get_quad_vertices(self) -> list[Vector3D]:
         half_size = self.size / 2
         vertices = [
-            (-half_size, -half_size, -half_size),
-            (half_size, -half_size, -half_size),
-            (half_size, half_size, -half_size),
-            (-half_size, half_size, -half_size),
-            (-half_size, -half_size, half_size),
-            (half_size, -half_size, half_size),
-            (half_size, half_size, half_size),
-            (-half_size, half_size, half_size),
+            Vector3D(-half_size, -half_size, -half_size),
+            Vector3D(half_size, -half_size, -half_size),
+            Vector3D(half_size, half_size, -half_size),
+            Vector3D(-half_size, half_size, -half_size),
+            Vector3D(-half_size, -half_size, half_size),
+            Vector3D(half_size, -half_size, half_size),
+            Vector3D(half_size, half_size, half_size),
+            Vector3D(-half_size, half_size, half_size),
         ]
         return vertices
 
@@ -103,7 +112,7 @@ class Cube:
     def get_polygons(self) -> list[Polygons]:
         vertices = self.get_quad_vertices()
         faces = self.get_quad_faces()
-        quads = Quads(vertices, faces)
+        quads = Quads(vertices, faces, [])
         polygons = [Polygons(quads)]
         return polygons
 
@@ -126,7 +135,7 @@ class MeshConverter:
                     triangle2 = (quad[0], quad[2], quad[3])
 
                     triangle_faces.extend([triangle1, triangle2])
-                triangles = Triangles(polys_type.vertices, triangle_faces)
+                triangles = Triangles(polys_type.vertices, triangle_faces, [])
                 polygons[idx].type = triangles
 
         return polygons
@@ -146,7 +155,7 @@ class GridHorizontal:
         self.y_offset = y
         self.z_offset = z
 
-    def get_vertices(self) -> list[tuple[float, float, float]]:
+    def get_vertices(self) -> list[Vector3D]:
         vertices = []
 
         for row in range(self.rows):
@@ -154,7 +163,7 @@ class GridHorizontal:
                 xv = (row * self.size) + self.x_offset
                 yv = self.y_offset
                 zv = (col * self.size) + self.z_offset
-                vertex = (xv, yv, zv)
+                vertex = Vector3D(xv, yv, zv)
                 vertices.append(vertex)
         return vertices
 
@@ -196,7 +205,7 @@ class GridHorizontal:
         vertices = self.get_vertices()
         faces = self.get_triangle_faces()
 
-        triangles = Triangles(vertices, faces)
+        triangles = Triangles(vertices, faces, [])
         polygons = [Polygons(triangles)]
         return polygons
 
@@ -204,7 +213,7 @@ class GridHorizontal:
         vertices = self.get_vertices()
         faces = self.get_quad_faces()
 
-        triangles = Quads(vertices, faces)
+        triangles = Quads(vertices, faces, [])
         polygons = [Polygons(triangles)]
         return polygons
 

@@ -3,9 +3,8 @@ import random
 from components.shape import Shape
 from components.color import RGBA
 
-from components.vertices import Sphere, Cube, GridHorizontal
+from components.vertices import Sphere, Cube, GridHorizontal, MeshConverter
 from components.model import OBJModelFormat
-
 
 from pathlib import Path
 
@@ -13,6 +12,9 @@ from pathlib import Path
 def get_center_cube(px, py, pz):
     mass = 100
     shape = Cube(50).get_polygons()
+
+    shape = MeshConverter(shape).quads_to_triangles()
+
     color = RGBA(0.8, 0.3, 0.3, 1.0)
 
     body = Shape(shape)
@@ -25,7 +27,9 @@ def get_center_cube(px, py, pz):
 
 def get_center_sphere():
     mass = 10_000_000
-    polygons = Sphere(50, 10, 10).get_triangle_polygons()
+    sphere = Sphere(50, 10, 10)
+    sphere.set_offset(300.0, 500.0, 400)
+    polygons = sphere.get_triangle_polygons()
 
     color = RGBA(0.8, 0.3, 0.3, 1.0)
     scale = mass / 250_000
@@ -48,7 +52,7 @@ def get_cube_t1():
     shape = Cube(scale).get_polygons()
 
     body = Shape(shape)
-    body.physics.set_position(px, py, pz)
+    # body.physics.set_position(px, py, pz)
     body.physics.set_velocity(10, 30, 5)
     body.physics.set_mass(mass)
     body.physics.set_scale(scale)
@@ -69,9 +73,11 @@ def get_grid():
     return body
 
 
-def get_tank():
-    file_path = Path("./tank_2.obj")
-    polygons = OBJModelFormat(file_path).get_polygons()
+def get_obj():
+    file_path = Path("./cottage.obj")
+    obj = OBJModelFormat(file_path, 0.2)
+    obj.set_offset(0, -100, 0)
+    polygons = obj.get_polygons()
     color = RGBA(0.8, 0.3, 0.3, 1.0)
 
     body = Shape(polygons)

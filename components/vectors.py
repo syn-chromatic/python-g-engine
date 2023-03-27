@@ -1,5 +1,4 @@
 import math
-from typing_extensions import Self
 
 
 class Vector3D:
@@ -19,63 +18,69 @@ class Vector3D:
         z = self.z
         return (x, y, z)
 
-    def add(self, num: float):
+    def clamp(self, min_value: float, max_value: float) -> "Vector3D":
+        x = max(min_value, min(self.x, max_value))
+        y = max(min_value, min(self.y, max_value))
+        z = max(min_value, min(self.z, max_value))
+        return Vector3D(x, y, z)
+
+    def add(self, num: float) -> "Vector3D":
         x = self.x + num
         y = self.y + num
         z = self.z + num
 
         return Vector3D(x, y, z)
 
-    def subtract(self, num: float):
+    def subtract(self, num: float) -> "Vector3D":
         x = self.x - num
         y = self.y - num
         z = self.z - num
 
         return Vector3D(x, y, z)
 
-    def multiply(self, num: float) -> Self:
+    def multiply(self, num: float) -> "Vector3D":
         x = self.x * num
         y = self.y * num
         z = self.z * num
 
         return Vector3D(x, y, z)
 
-    def divide(self, num: float) -> Self:
+    def divide(self, num: float) -> "Vector3D":
         x = self.x / num
         y = self.y / num
         z = self.z / num
 
         return Vector3D(x, y, z)
 
-    def add_vector(self, vec: Self) -> Self:
+    def add_vector(self, vec: "Vector3D") -> "Vector3D":
         x = self.x + vec.x
         y = self.y + vec.y
         z = self.z + vec.z
 
         return Vector3D(x, y, z)
 
-    def subtract_vector(self, vec: Self) -> Self:
+    def subtract_vector(self, vec: "Vector3D") -> "Vector3D":
         x = self.x - vec.x
         y = self.y - vec.y
         z = self.z - vec.z
 
         return Vector3D(x, y, z)
 
-    def multiply_vector(self, vec: Self) -> Self:
+    def multiply_vector(self, vec: "Vector3D") -> "Vector3D":
         x = self.x * vec.x
         y = self.y * vec.y
         z = self.z * vec.z
 
         return Vector3D(x, y, z)
 
-    def divide_vector(self, vec: Self) -> Self:
+    def divide_vector(self, vec: "Vector3D") -> "Vector3D":
         x = self.x / vec.x
         y = self.y / vec.y
         z = self.z / vec.z
 
         return Vector3D(x, y, z)
 
-    def normalize(self) -> Self:
+    def normalize(self) -> "Vector3D":
         length = self.get_length()
         if length == 0:
             return Vector3D(0.0, 0.0, 0.0)
@@ -85,20 +90,20 @@ class Vector3D:
 
         return Vector3D(x, y, z)
 
-    def dot_product(self, vec: Self) -> float:
+    def dot_product(self, vec: "Vector3D") -> float:
         x = self.x * vec.x
         y = self.y * vec.y
         z = self.z * vec.z
 
         return x + y + z
 
-    def cross_product(self, vec: Self) -> Self:
+    def cross_product(self, vec: "Vector3D") -> "Vector3D":
         x = self.y * vec.z - self.z * vec.y
         y = self.z * vec.x - self.x * vec.z
         z = self.x * vec.y - self.y * vec.x
         return Vector3D(x, y, z)
 
-    def set_magnitude(self, magnitude: float) -> Self:
+    def set_magnitude(self, magnitude: float) -> "Vector3D":
         length = self.get_length()
         x, y, z = self.x, self.y, self.z
         if length > 0:
@@ -107,13 +112,13 @@ class Vector3D:
             z = (self.z / length) * magnitude
         return Vector3D(x, y, z)
 
-    def lerp(self, vec: Self, t: float) -> Self:
+    def lerp_interpolation(self, vec: "Vector3D", t: float) -> "Vector3D":
         x = self.x + (vec.x - self.x) * t
         y = self.y + (vec.y - self.y) * t
         z = self.z + (vec.z - self.z) * t
         return Vector3D(x, y, z)
 
-    def get_midpoint(self, vec: Self) -> Self:
+    def get_midpoint(self, vec: "Vector3D") -> "Vector3D":
         x = (self.x + vec.x) / 2.0
         y = (self.y + vec.y) / 2.0
         z = (self.z + vec.z) / 2.0

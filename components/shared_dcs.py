@@ -1,4 +1,5 @@
 from components.vectors import Vector3D
+from components.color import RGBA
 
 from dataclasses import dataclass
 from typing import Optional, Union, Callable
@@ -29,31 +30,39 @@ class PhysicsProperties:
 class Circles:
     def __init__(
         self,
-        vertices: list[tuple[float, float, float]],
+        vertices: list[Vector3D],
         faces: list[tuple[int, int, int]],
+        shaders: list[tuple[int, int, int]],
     ):
         self.vertices = vertices
         self.faces = faces
+        self.shaders = shaders
 
 
 class Triangles:
     def __init__(
         self,
-        vertices: list[tuple[float, float, float]],
+        vertices: list[Vector3D],
         faces: list[tuple[int, int, int]],
+        shaders: list[tuple[int, int, int]],
     ):
         self.vertices = vertices
         self.faces = faces
+        self.shaders = shaders
+        self.color = (255, 255, 255)
 
 
 class Quads:
     def __init__(
         self,
-        vertices: list[tuple[float, float, float]],
+        vertices: list[Vector3D],
         faces: list[tuple[int, int, int, int]],
+        shaders: list[tuple[int, int, int]],
     ):
         self.vertices = vertices
         self.faces = faces
+        self.shaders = shaders
+        self.color = (255, 255, 255)
 
 
 class Polygons:

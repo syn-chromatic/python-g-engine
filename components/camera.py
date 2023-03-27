@@ -31,7 +31,7 @@ class Camera:
         self.far_plane = 5000.0
         self.yaw = 0.0
         self.pitch = 0.0
-        self.camera_position = Vector3D(0.0, 50.0, 500.0)
+        self.camera_position = Vector3D(-100.0, 25.0, 500.0)
         self.camera_target = Vector3D(0.0, 0.0, 0.0)
         self.side_direction = Vector3D(1.0, 0.0, 0.0)
         self.up_direction = Vector3D(0.0, 1.0, 0.0)
@@ -116,13 +116,9 @@ class Camera:
             polys_type = polys.type
             vertices = polys_type.vertices
             for idx, vertex in enumerate(vertices):
-                vertex_vector = Vector3D(*vertex)
-                vertex_vector = self.apply_view_transform(vertex_vector)
-                vertex_vector = vertex_vector.multiply(-1)
-
-                if vertex_vector:
-                    vertex = vertex_vector.x, vertex_vector.y, vertex_vector.z
-                    vertices[idx] = vertex
+                vertex = self.apply_view_transform(vertex)
+                vertex = vertex.multiply(-1)
+                vertices[idx] = vertex
 
         if self.enable_frustum_clipping:
             self.frustum_clip(polygons)
@@ -131,22 +127,10 @@ class Camera:
             polys_type = polys.type
             vertices = polys_type.vertices
             for idx, vertex in enumerate(vertices):
-                vertex_vector = Vector3D(*vertex)
-                vertex_vector = self.calculate_perspective_projection(vertex_vector)
-                vertex_vector = self.ndc_to_screen_coordinates(vertex_vector)
-                if vertex_vector:
-                    vertex = vertex_vector.x, vertex_vector.y, vertex_vector.z
-                    vertices[idx] = vertex
-
+                vertex = self.calculate_perspective_projection(vertex)
+                vertex = self.ndc_to_screen_coordinates(vertex)
+                vertices[idx] = vertex
         return polygons
-
-    def lerp_interpolation(
-        self, a: tuple[float, float, float], b: tuple[float, float, float], t: float
-    ) -> tuple[float, float, float]:
-        x = a[0] + (b[0] - a[0]) * t
-        y = a[1] + (b[1] - a[1]) * t
-        z = a[2] + (b[2] - a[2]) * t
-        return (x, y, z)
 
     def make_frustum(self) -> Frustum:
         fov = self.fov
@@ -210,23 +194,23 @@ class Camera:
 
         return p
 
-    def get_plane_intersection(
-        self, a: tuple[float, float, float], b: tuple[float, float, float], p: Plane
-    ) -> float:
-        numerator = -(a[0] * p.A + a[1] * p.B + a[2] * p.C + p.D)
-        denominator = p.A * (b[0] - a[0]) + p.B * (b[1] - a[1]) + p.C * (b[2] - a[2])
+    def get_plane_intersection(self, a: Vector3D, b: Vector3D, p: Plane) -> float:
+        ax, ay, az = a.x, a.y, a.z
+        bx, by, bz = b.x, b.y, b.z
+
+        numerator = -(ax * p.A + ay * p.B + az * p.C + p.D)
+        denominator = p.A * (bx - ax) + p.B * (by - ay) + p.C * (bz - az)
         if denominator == 0:
             return 0
         return numerator / denominator
 
-    def is_point_behind_plane(
-        self, point: tuple[float, float, float], plane: Plane
-    ) -> bool:
-        test = plane.A * point[0] + plane.B * point[1] + plane.C * point[2] + plane.D
-        is_behind_plane = test < 0
-        return is_behind_plane
+    def is_point_inside_frustum(self, point: Vector3D, plane: Plane) -> bool:
+        x, y, z = point.x, point.y, point.z
+        distance = plane.A * x + plane.B * y + plane.C * z + plane.D
+        is_inside_frustum = distance < 0
+        return is_inside_frustum
 
-    def get_faces(self, output_polygon):
+    def get_faces(self, output_polygon: list[float]):
         faces = []
         for i in range(1, len(output_polygon) - 1):
             face = (output_polygon[0], output_polygon[i], output_polygon[i + 1])
@@ -244,27 +228,34 @@ class Camera:
             output_vertices = input_vertices.copy()
             output_faces = []
 
+            out_length = len(output_vertices)
+
             for face in input_faces:
                 output_polygon = []
-                for i in range(len(face)):
+                len_face = len(face)
+                for i in range(len_face):
                     a_idx = face[i]
-                    b_idx = face[(i + 1) % len(face)]
+                    b_idx = face[(i + 1) % len_face]
                     a = input_vertices[a_idx]
                     b = input_vertices[b_idx]
 
                     t = self.get_plane_intersection(a, b, p)
-                    c = self.lerp_interpolation(a, b, t)
+                    c = a.lerp_interpolation(b, t)
 
-                    if not self.is_point_behind_plane(b, p):
-                        if self.is_point_behind_plane(a, p):
-                            new_idx = len(output_vertices)
+                    ap_inside = self.is_point_inside_frustum(a, p)
+                    bp_inside = self.is_point_inside_frustum(b, p)
+
+                    if not bp_inside:
+                        if ap_inside:
                             output_vertices.append(c)
-                            output_polygon.append(new_idx)
+                            output_polygon.append(out_length)
+                            out_length += 1
+
                         output_polygon.append(b_idx)
-                    elif not self.is_point_behind_plane(a, p):
-                        new_idx = len(output_vertices)
+                    elif not ap_inside:
                         output_vertices.append(c)
-                        output_polygon.append(new_idx)
+                        output_polygon.append(out_length)
+                        out_length += 1
 
                 if len(output_polygon) > 2:
                     faces = self.get_faces(output_polygon)
@@ -448,11 +439,11 @@ class Camera:
         near_plane = self.near_plane
         far_plane = self.far_plane
 
-        if (near_plane + increment) >= 0.1:
+        if (near_plane + increment) > 0.1:
             near_plane += increment
             far_plane += increment
-            self.near_plane = clamp_float(near_plane, 0.0, float("inf"))
-            self.far_plane = clamp_float(far_plane, 0.0, float("inf"))
+            self.near_plane = clamp_float(near_plane, 0.1, float("inf"))
+            self.far_plane = clamp_float(far_plane, near_plane, float("inf"))
 
     def increment_target_x(self, increment: float):
         self.camera_target.x += increment

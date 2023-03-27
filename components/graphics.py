@@ -178,26 +178,34 @@ class TurtleGraphics(TurtleGraphicsBase):
     def draw_triangles(self, triangles: Triangles):
         vertices = triangles.vertices
         faces = triangles.faces
+        shaders = triangles.shaders
+        len_shaders = len(shaders)
 
-        for face in faces:
+        for idx, face in enumerate(faces):
             if any(i >= len(vertices) for i in face):
                 print("Warning: Skipping face with out-of-bounds vertex indices.")
                 continue
 
             v1, v2, v3 = [vertices[i] for i in face]
+            p1 = v1.to_tuple()[:2]
+            p2 = v2.to_tuple()[:2]
+            p3 = v3.to_tuple()[:2]
 
-            x1, y1 = v1[0], v1[1]
-            x2, y2 = v2[0], v2[1]
-            x3, y3 = v3[0], v3[1]
+            color = triangles.color
+            color = tuple(ch / 255 for ch in color)
 
-            self.turtle.pencolor("green")
-            self.turtle.fillcolor("lightgray")
-            self.draw_begin_fill((x1, y1))
+            if len_shaders > idx:
+                shading = shaders[idx]
+                color = tuple(ch * shading_ch for ch, shading_ch in zip(color, shading))
+
+            self.turtle.pencolor("black")
+            self.turtle.fillcolor(color)
+            self.draw_begin_fill(p1)
 
             self.turtle.pendown()
-            self.turtle.goto(x2, y2)
-            self.turtle.goto(x3, y3)
-            self.turtle.goto(x1, y1)
+            self.turtle.goto(p2)
+            self.turtle.goto(p3)
+            self.turtle.goto(p1)
             self.draw_end_fill()
 
     def draw_quads(self, quads: Quads):
@@ -210,21 +218,20 @@ class TurtleGraphics(TurtleGraphicsBase):
                 continue
 
             v1, v2, v3, v4 = [vertices[i] for i in face]
-
-            x1, y1 = v1[0], v1[1]
-            x2, y2 = v2[0], v2[1]
-            x3, y3 = v3[0], v3[1]
-            x4, y4 = v4[0], v4[1]
+            p1 = v1.to_tuple()[:2]
+            p2 = v2.to_tuple()[:2]
+            p3 = v3.to_tuple()[:2]
+            p4 = v4.to_tuple()[:2]
 
             self.turtle.pencolor("black")
             self.turtle.fillcolor("lightgray")
-            self.draw_begin_fill((x1, y1))
+            self.draw_begin_fill(p1)
 
             self.turtle.pendown()
-            self.turtle.goto(x2, y2)
-            self.turtle.goto(x3, y3)
-            self.turtle.goto(x4, y4)
-            self.turtle.goto(x1, y1)
+            self.turtle.goto(p2)
+            self.turtle.goto(p3)
+            self.turtle.goto(p4)
+            self.turtle.goto(p1)
             self.draw_end_fill()
 
     def draw_text(
@@ -431,30 +438,40 @@ class PygGraphics(PygGraphicsBase):
     def draw_triangles(self, triangles: Triangles):
         vertices = triangles.vertices
         faces = triangles.faces
+        shaders = triangles.shaders
 
-        for face in faces:
+        len_shaders = len(shaders)
+
+        for idx, face in enumerate(faces):
             if any(i >= len(vertices) for i in face):
                 print("Warning: Skipping face with out-of-bounds vertex indices.")
                 continue
 
             v1, v2, v3 = [vertices[i] for i in face]
 
-            x1, y1 = v1[0], v1[1]
-            x2, y2 = v2[0], v2[1]
-            x3, y3 = v3[0], v3[1]
-
-            p1 = (x1, y1)
-            p2 = (x2, y2)
-            p3 = (x3, y3)
+            p1 = v1.to_tuple()[:2]
+            p2 = v2.to_tuple()[:2]
+            p3 = v3.to_tuple()[:2]
 
             p1 = self.get_centered_coordinates(p1)
             p2 = self.get_centered_coordinates(p2)
             p3 = self.get_centered_coordinates(p3)
 
             points = [p1, p2, p3]
+            color = triangles.color
+            line_shading = (0.5, 0.5, 0.5)
+            line_color = tuple(
+                int(ch * shading_ch) for ch, shading_ch in zip(color, line_shading)
+            )
 
-            pyg.draw.polygon(self.screen, (200, 200, 200), points)
-            pyg.draw.lines(self.screen, (0, 0, 0), True, points, 1)
+            if len_shaders > idx:
+                shading = shaders[idx]
+                color = tuple(
+                    int(ch * shading_ch) for ch, shading_ch in zip(color, shading)
+                )
+
+            pyg.draw.polygon(self.screen, color, points)
+            pyg.draw.lines(self.screen, (5, 5, 5), True, points, 1)
 
     def draw_quads(self, quads: Quads):
         vertices = quads.vertices
@@ -467,15 +484,10 @@ class PygGraphics(PygGraphicsBase):
 
             v1, v2, v3, v4 = [vertices[i] for i in face]
 
-            x1, y1 = v1[0], v1[1]
-            x2, y2 = v2[0], v2[1]
-            x3, y3 = v3[0], v3[1]
-            x4, y4 = v4[0], v4[1]
-
-            p1 = (x1, y1)
-            p2 = (x2, y2)
-            p3 = (x3, y3)
-            p4 = (x4, y4)
+            p1 = v1.to_tuple()[:2]
+            p2 = v2.to_tuple()[:2]
+            p3 = v3.to_tuple()[:2]
+            p4 = v4.to_tuple()[:2]
 
             p1 = self.get_centered_coordinates(p1)
             p2 = self.get_centered_coordinates(p2)
