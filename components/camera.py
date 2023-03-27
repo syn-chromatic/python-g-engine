@@ -2,7 +2,7 @@ import math
 
 from components.frustum import Frustum
 from components.vectors import Vector3D
-from shared_dcs import Mesh
+from components.polygons import Mesh
 
 from typing import Optional
 from components.utils import clamp_float

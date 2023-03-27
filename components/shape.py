@@ -3,7 +3,7 @@ from components.physics import Physics
 from abstracts.graphics_abc import GraphicsABC
 from components.camera import Camera
 from components.color import RGBA
-from shared_dcs import Mesh
+from components.polygons import Mesh
 from components.shaders import Shaders, Light
 
 

@@ -2,7 +2,8 @@ import pygame as pyg
 import time
 from turtle import Turtle, Screen, ScrolledCanvas
 
-from shared_dcs import KeyRegister, Mesh, Triangle, Quad
+from shared_dcs import KeyRegister
+from components.polygons import Mesh, Triangle, Quad
 from components.font import FontSettings
 from components.color import RGBA
 from abstracts.graphics_abc import GraphicsABC

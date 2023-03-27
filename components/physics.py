@@ -1,7 +1,7 @@
 import math
 import random
 
-from shared_dcs import Mesh
+from components.polygons import Mesh
 from components.vectors import Vector3D
 from shared_dcs import PhysicsProperties, CollisionProperties, CollisionVel
 

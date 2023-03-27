@@ -1,10 +1,10 @@
 import math
-from shared_dcs import Mesh, Triangle, Quad
+from components.polygons import Mesh, Triangle, Quad
 from components.vectors import Vector3D
 
 
 class Sphere:
-    def __init__(self, radius, num_latitude, num_longitude):
+    def __init__(self, radius: float, num_latitude: int, num_longitude: int):
         self.radius = radius
         self.num_latitude = num_latitude
         self.num_longitude = num_longitude

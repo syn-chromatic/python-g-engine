@@ -1,7 +1,7 @@
 import math
 
 from components.vectors import Vector3D
-from shared_dcs import Mesh, Triangle, Quad
+from components.polygons import Mesh, Triangle, Quad
 
 from dataclasses import dataclass
 
