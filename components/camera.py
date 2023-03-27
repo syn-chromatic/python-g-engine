@@ -1,7 +1,7 @@
 import math
 
 from components.vectors import Vector3D
-from shared_dcs import Polygons, Quads
+from shared_dcs import Mesh, Triangle, Quad
 
 from dataclasses import dataclass
 from typing import Optional
@@ -107,30 +107,104 @@ class Camera:
         screen = self.ndc_to_screen_coordinates(ndc_projection)
         return screen
 
-    def apply_projection_polygons(
-        self, polygons: list[Polygons]
-    ) -> Optional[list[Polygons]]:
-        polygons = deepcopy(polygons)
+    def apply_projection_polygons(self, mesh: Mesh) -> Optional[Mesh]:
+        mesh = deepcopy(mesh)
 
-        for polys in polygons:
-            polys_type = polys.type
-            vertices = polys_type.vertices
+        for polygon in mesh.polygons:
+            vertices = list(polygon.vertices)
             for idx, vertex in enumerate(vertices):
                 vertex = self.apply_view_transform(vertex)
                 vertex = vertex.multiply(-1)
                 vertices[idx] = vertex
+            polygon.vertices = tuple(vertices)
 
         if self.enable_frustum_clipping:
-            self.frustum_clip(polygons)
+            self.frustum_clip(mesh)
 
-        for polys in polygons:
-            polys_type = polys.type
-            vertices = polys_type.vertices
+        for polygon in mesh.polygons:
+            vertices = list(polygon.vertices)
             for idx, vertex in enumerate(vertices):
                 vertex = self.calculate_perspective_projection(vertex)
                 vertex = self.ndc_to_screen_coordinates(vertex)
                 vertices[idx] = vertex
-        return polygons
+            polygon.vertices = tuple(vertices)
+        return mesh
+
+    def get_plane_intersection(self, a: Vector3D, b: Vector3D, p: Plane) -> float:
+        ax, ay, az = a.x, a.y, a.z
+        bx, by, bz = b.x, b.y, b.z
+
+        numerator = -(ax * p.A + ay * p.B + az * p.C + p.D)
+        denominator = p.A * (bx - ax) + p.B * (by - ay) + p.C * (bz - az)
+        if denominator == 0:
+            return 0
+        return numerator / denominator
+
+    def is_point_inside_frustum(self, point: Vector3D, plane: Plane) -> bool:
+        x, y, z = point.x, point.y, point.z
+        distance = plane.A * x + plane.B * y + plane.C * z + plane.D
+        is_inside_frustum = distance < 0
+        return is_inside_frustum
+
+    def get_triangle_faces(
+        self, output_polygon: list[int]
+    ) -> list[tuple[int, int, int]]:
+        faces = []
+        for i in range(1, len(output_polygon) - 1):
+            face = (output_polygon[0], output_polygon[i], output_polygon[i + 1])
+            faces.append(face)
+        return faces
+
+    def clip_against_plane(self, mesh: Mesh, p: Plane):
+        new_polygons = []
+
+        for polygon in mesh.polygons:
+            if isinstance(polygon, Quad):
+                continue
+
+            input_vertices = polygon.vertices
+            output_vertices = []
+            output_faces = []
+
+            vertex_length = len(output_vertices)
+
+            for i in range(3):
+                a = input_vertices[i]
+                b = input_vertices[(i + 1) % 3]
+
+                t = self.get_plane_intersection(a, b, p)
+                c = a.lerp_interpolation(b, t)
+
+                ap_inside = self.is_point_inside_frustum(a, p)
+                bp_inside = self.is_point_inside_frustum(b, p)
+
+                if not bp_inside:
+                    if ap_inside:
+                        output_vertices.append(c)
+                        output_faces.append(vertex_length)
+                        vertex_length += 1
+
+                    output_vertices.append(b)
+                    output_faces.append(vertex_length)
+                    vertex_length += 1
+
+                elif not ap_inside:
+                    output_vertices.append(c)
+                    output_faces.append(vertex_length)
+                    vertex_length += 1
+
+            if len(output_faces) > 2:
+                faces = self.get_triangle_faces(output_faces)
+                for face in faces:
+                    new_vertices = tuple(output_vertices[idx] for idx in face)
+                    new_polygon = Triangle(new_vertices, face, polygon.shader)
+                    new_polygons.append(new_polygon)
+
+        mesh.polygons = new_polygons
+
+    def frustum_clip(self, mesh: Mesh):
+        for plane in self.frustum.planes:
+            self.clip_against_plane(mesh, plane)
 
     def make_frustum(self) -> Frustum:
         fov = self.fov
@@ -193,80 +267,6 @@ class Camera:
         p = Plane(pA, pB, pC, pD)
 
         return p
-
-    def get_plane_intersection(self, a: Vector3D, b: Vector3D, p: Plane) -> float:
-        ax, ay, az = a.x, a.y, a.z
-        bx, by, bz = b.x, b.y, b.z
-
-        numerator = -(ax * p.A + ay * p.B + az * p.C + p.D)
-        denominator = p.A * (bx - ax) + p.B * (by - ay) + p.C * (bz - az)
-        if denominator == 0:
-            return 0
-        return numerator / denominator
-
-    def is_point_inside_frustum(self, point: Vector3D, plane: Plane) -> bool:
-        x, y, z = point.x, point.y, point.z
-        distance = plane.A * x + plane.B * y + plane.C * z + plane.D
-        is_inside_frustum = distance < 0
-        return is_inside_frustum
-
-    def get_faces(self, output_polygon: list[float]):
-        faces = []
-        for i in range(1, len(output_polygon) - 1):
-            face = (output_polygon[0], output_polygon[i], output_polygon[i + 1])
-            faces.append(face)
-        return faces
-
-    def clip_against_plane(self, polygons: list[Polygons], p: Plane):
-        for polys in polygons:
-            if isinstance(polys.type, Quads):
-                continue
-
-            input_vertices = polys.type.vertices
-            input_faces = polys.type.faces
-
-            output_vertices = input_vertices.copy()
-            output_faces = []
-
-            out_length = len(output_vertices)
-
-            for face in input_faces:
-                output_polygon = []
-                len_face = len(face)
-                for i in range(len_face):
-                    a_idx = face[i]
-                    b_idx = face[(i + 1) % len_face]
-                    a = input_vertices[a_idx]
-                    b = input_vertices[b_idx]
-
-                    t = self.get_plane_intersection(a, b, p)
-                    c = a.lerp_interpolation(b, t)
-
-                    ap_inside = self.is_point_inside_frustum(a, p)
-                    bp_inside = self.is_point_inside_frustum(b, p)
-
-                    if not bp_inside:
-                        if ap_inside:
-                            output_vertices.append(c)
-                            output_polygon.append(out_length)
-                            out_length += 1
-
-                        output_polygon.append(b_idx)
-                    elif not ap_inside:
-                        output_vertices.append(c)
-                        output_polygon.append(out_length)
-                        out_length += 1
-
-                if len(output_polygon) > 2:
-                    faces = self.get_faces(output_polygon)
-                    output_faces.extend(faces)
-
-            polys.type.vertices = output_vertices
-            polys.type.faces = output_faces
-
-    def frustum_clip(self, polygons: list[Polygons]):
-        for plane in self.frustum.planes:
-            self.clip_against_plane(polygons, plane)
 
     def handle_mouse_movement(self, x: float, y: float) -> None:
         sens_x = 0.3

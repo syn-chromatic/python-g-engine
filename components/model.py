@@ -1,4 +1,4 @@
-from shared_dcs import Polygons, Triangles, Quads
+from shared_dcs import Mesh, Triangle, Quad
 from components.vertices import MeshConverter
 from components.vectors import Vector3D
 from pathlib import Path
@@ -17,7 +17,7 @@ class OBJModelFormat:
         self.y_offset = y
         self.z_offset = z
 
-    def get_model_triangles(self) -> list[Polygons]:
+    def get_model_triangles(self) -> Mesh:
         vertices, faces = [], []
         with open(self.file_path) as f:
             for line in f:
@@ -42,11 +42,17 @@ class OBJModelFormat:
                     if len(face_indices) == 3:
                         faces.append(tuple(face_indices))
 
-        triangles = Triangles(vertices, faces, [])
-        polygons = [Polygons(triangles)]
-        return polygons
+        triangle_polygons = []
+        for face in faces:
+            triangle = Triangle(
+                (vertices[face[0]], vertices[face[1]], vertices[face[2]]),
+                face,
+                (1.0, 1.0, 1.0),
+            )
+            triangle_polygons.append(triangle)
+        return Mesh(triangle_polygons)
 
-    def get_model_quads(self) -> list[Polygons]:
+    def get_model_quads(self) -> Mesh:
         vertices, faces = [], []
         with open(self.file_path) as f:
             for line in f:
@@ -69,13 +75,25 @@ class OBJModelFormat:
                     if len(face_indices) == 4:
                         faces.append(tuple(face_indices))
 
-        quads = Quads(vertices, faces, [])
-        polygons = [Polygons(quads)]
-        return polygons
+        quad_polygons = []
+        for face in faces:
+            quad = Quad(
+                (
+                    vertices[face[0]],
+                    vertices[face[1]],
+                    vertices[face[2]],
+                    vertices[face[3]],
+                ),
+                face,
+                (1.0, 1.0, 1.0),
+            )
+            quad_polygons.append(quad)
+        return Mesh(quad_polygons)
 
-    def get_polygons(self) -> list[Polygons]:
+    def get_polygons(self) -> Mesh:
         mesh1 = self.get_model_triangles()
         mesh2 = self.get_model_quads()
         mesh2 = MeshConverter(mesh2).quads_to_triangles()
-        polygons = [*mesh1, *mesh2]
-        return polygons
+
+        mesh = Mesh([*mesh1.polygons, *mesh2.polygons])
+        return mesh

@@ -1,6 +1,6 @@
 from components.color import RGBA
 from components.font import FontSettings
-from shared_dcs import Polygons, Triangles, Quads
+from shared_dcs import Mesh, Triangle, Quad
 
 
 from typing import Callable
@@ -74,15 +74,15 @@ class GraphicsABC(ABC):
         pass
 
     @abstractmethod
-    def draw_polygons(self, polygons: list[Polygons]) -> None:
+    def draw_polygons(self, mesh: Mesh) -> None:
         pass
 
     @abstractmethod
-    def draw_triangles(self, triangles: Triangles) -> None:
+    def draw_triangle(self, triangle: Triangle) -> None:
         pass
 
     @abstractmethod
-    def draw_quads(self, quads: Quads):
+    def draw_quad(self, quad: Quad):
         pass
 
     @abstractmethod

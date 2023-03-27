@@ -1,5 +1,5 @@
 import math
-from shared_dcs import Polygons, Triangles, Quads
+from shared_dcs import Mesh, Triangle, Quad
 from components.vectors import Vector3D
 
 
@@ -65,19 +65,36 @@ class Sphere:
                 faces.append(face)
         return faces
 
-    def get_triangle_polygons(self) -> list[Polygons]:
+    def get_triangle_polygons(self) -> Mesh:
         vertices = self.get_vertices()
         faces = self.get_triangle_faces()
-        triangles = Triangles(vertices, faces, [])
-        polygons = [Polygons(triangles)]
-        return polygons
+        triangle_polygons = []
+        for face in faces:
+            triangle = Triangle(
+                (vertices[face[0]], vertices[face[1]], vertices[face[2]]),
+                face,
+                (1.0, 1.0, 1.0),
+            )
+            triangle_polygons.append(triangle)
+        return Mesh(triangle_polygons)
 
-    def get_quad_polygons(self):
+    def get_quad_polygons(self) -> Mesh:
         vertices = self.get_vertices()
         faces = self.get_quad_faces()
-        quads = Quads(vertices, faces, [])
-        polygons = [Polygons(quads)]
-        return polygons
+        quad_polygons = []
+        for face in faces:
+            quad = Quad(
+                (
+                    vertices[face[0]],
+                    vertices[face[1]],
+                    vertices[face[2]],
+                    vertices[face[3]],
+                ),
+                face,
+                (1.0, 1.0, 1.0),
+            )
+            quad_polygons.append(quad)
+        return Mesh(quad_polygons)
 
 
 class Cube:
@@ -109,36 +126,59 @@ class Cube:
         ]
         return faces
 
-    def get_polygons(self) -> list[Polygons]:
+    def get_polygons(self) -> Mesh:
         vertices = self.get_quad_vertices()
         faces = self.get_quad_faces()
-        quads = Quads(vertices, faces, [])
-        polygons = [Polygons(quads)]
-        return polygons
+        quad_polygons = []
+        for face in faces:
+            quad = Quad(
+                (
+                    vertices[face[0]],
+                    vertices[face[1]],
+                    vertices[face[2]],
+                    vertices[face[3]],
+                ),
+                face,
+                (1.0, 1.0, 1.0),
+            )
+            quad_polygons.append(quad)
+        return Mesh(quad_polygons)
 
 
 class MeshConverter:
-    def __init__(self, polygons: list[Polygons]):
-        self.polygons = polygons
+    def __init__(self, mesh: Mesh):
+        self.mesh = mesh
 
-    def quads_to_triangles(self) -> list[Polygons]:
-        polygons = self.polygons
+    def quads_to_triangles(self) -> Mesh:
+        polygons = self.mesh.polygons
+        new_polygons = []
 
-        for idx, polys in enumerate(polygons):
-            polys_type = polys.type
+        for poly in polygons:
+            if isinstance(poly, Quad):
+                vertices = poly.vertices
+                face = poly.face
+                shader = poly.shader
+                color = poly.color
 
-            if isinstance(polys_type, Quads):
-                triangle_faces: list[tuple[int, int, int]] = []
-                quad_faces = polys_type.faces
-                for quad in quad_faces:
-                    triangle1 = (quad[0], quad[1], quad[2])
-                    triangle2 = (quad[0], quad[2], quad[3])
+                triangle1 = Triangle(
+                    (vertices[0], vertices[1], vertices[2]),
+                    (face[0], face[1], face[2]),
+                    shader,
+                )
+                triangle1.color = color
 
-                    triangle_faces.extend([triangle1, triangle2])
-                triangles = Triangles(polys_type.vertices, triangle_faces, [])
-                polygons[idx].type = triangles
+                triangle2 = Triangle(
+                    (vertices[0], vertices[2], vertices[3]),
+                    (face[0], face[2], face[3]),
+                    shader,
+                )
+                triangle2.color = color
 
-        return polygons
+                new_polygons.extend([triangle1, triangle2])
+            else:
+                new_polygons.append(poly)
+
+        return Mesh(new_polygons)
 
 
 class GridHorizontal:
@@ -201,21 +241,36 @@ class GridHorizontal:
                 faces.append(face)
         return faces
 
-    def get_triangle_polygons(self):
+    def get_triangle_polygons(self) -> Mesh:
         vertices = self.get_vertices()
         faces = self.get_triangle_faces()
+        triangle_polygons = []
+        for face in faces:
+            triangle = Triangle(
+                (vertices[face[0]], vertices[face[1]], vertices[face[2]]),
+                face,
+                (1.0, 1.0, 1.0),
+            )
+            triangle_polygons.append(triangle)
+        return Mesh(triangle_polygons)
 
-        triangles = Triangles(vertices, faces, [])
-        polygons = [Polygons(triangles)]
-        return polygons
-
-    def get_quad_polygons(self):
+    def get_quad_polygons(self) -> Mesh:
         vertices = self.get_vertices()
         faces = self.get_quad_faces()
-
-        triangles = Quads(vertices, faces, [])
-        polygons = [Polygons(triangles)]
-        return polygons
+        quad_polygons = []
+        for face in faces:
+            quad = Quad(
+                (
+                    vertices[face[0]],
+                    vertices[face[1]],
+                    vertices[face[2]],
+                    vertices[face[3]],
+                ),
+                face,
+                (1.0, 1.0, 1.0),
+            )
+            quad_polygons.append(quad)
+        return Mesh(quad_polygons)
 
 
 class ParticleCircle:

@@ -2,7 +2,7 @@ import pygame as pyg
 import time
 from turtle import Turtle, Screen, ScrolledCanvas
 
-from shared_dcs import Polygons, Triangles, Quads, KeyRegister
+from shared_dcs import KeyRegister, Mesh, Triangle, Quad
 from components.font import FontSettings
 from components.color import RGBA
 from abstracts.graphics_abc import GraphicsABC
@@ -166,73 +166,88 @@ class TurtleGraphics(TurtleGraphicsBase):
         self.set_draw_color(color)
         self.draw_point_to_point(point1, point2)
 
-    def draw_polygons(self, polygons: list[Polygons]):
-        for polys in polygons:
-            polys_type = polys.type
-            if isinstance(polys_type, Triangles):
-                self.draw_triangles(polys_type)
+    def integer_color_to_float(
+        self, color: tuple[int, int, int]
+    ) -> tuple[float, float, float]:
+        output_color = []
+        for int_channel in color:
+            float_channel = int_channel / 255
+            output_color.append(float_channel)
 
-            elif isinstance(polys_type, Quads):
-                self.draw_quads(polys_type)
+        return tuple(output_color)
 
-    def draw_triangles(self, triangles: Triangles):
-        vertices = triangles.vertices
-        faces = triangles.faces
-        shaders = triangles.shaders
-        len_shaders = len(shaders)
+    def apply_shader(
+        self, color: tuple[float, float, float], shader: tuple[float, float, float]
+    ) -> tuple[float, float, float]:
+        shaded_color = []
+        for channel, shader_channel in zip(color, shader):
+            shaded_channel = channel * shader_channel
+            shaded_color.append(shaded_channel)
+        return tuple(shaded_color)
 
-        for idx, face in enumerate(faces):
-            if any(i >= len(vertices) for i in face):
-                print("Warning: Skipping face with out-of-bounds vertex indices.")
-                continue
+    def draw_polygons(self, mesh: Mesh):
+        for polygon in mesh.polygons:
+            if isinstance(polygon, Triangle):
+                self.draw_triangle(polygon)
+            elif isinstance(polygon, Quad):
+                self.draw_quad(polygon)
 
-            v1, v2, v3 = [vertices[i] for i in face]
-            p1 = v1.to_tuple()[:2]
-            p2 = v2.to_tuple()[:2]
-            p3 = v3.to_tuple()[:2]
+    def draw_triangle(self, triangle: Triangle):
+        vertices = triangle.vertices
+        shader = triangle.shader
+        color = triangle.color
+        color = self.integer_color_to_float(color)
+        color = self.apply_shader(color, shader)
 
-            color = triangles.color
-            color = tuple(ch / 255 for ch in color)
+        line_shader = (0.5, 0.5, 0.5)
+        line_color = self.apply_shader(color, line_shader)
 
-            if len_shaders > idx:
-                shading = shaders[idx]
-                color = tuple(ch * shading_ch for ch, shading_ch in zip(color, shading))
+        v1, v2, v3 = vertices
+        p1 = v1.to_tuple()[:2]
+        p2 = v2.to_tuple()[:2]
+        p3 = v3.to_tuple()[:2]
 
-            self.turtle.pencolor("black")
-            self.turtle.fillcolor(color)
-            self.draw_begin_fill(p1)
+        color = triangle.color
+        color = tuple(ch / 255 for ch in color)
 
-            self.turtle.pendown()
-            self.turtle.goto(p2)
-            self.turtle.goto(p3)
-            self.turtle.goto(p1)
-            self.draw_end_fill()
+        color = tuple(ch * shading_ch for ch, shading_ch in zip(color, shader))
 
-    def draw_quads(self, quads: Quads):
-        vertices = quads.vertices
-        faces = quads.faces
+        self.turtle.pencolor(line_color)
+        self.turtle.fillcolor(color)
+        self.draw_begin_fill(p1)
 
-        for face in faces:
-            if any(i >= len(vertices) for i in face):
-                print("Warning: Skipping face with out-of-bounds vertex indices.")
-                continue
+        self.turtle.pendown()
+        self.turtle.goto(p2)
+        self.turtle.goto(p3)
+        self.turtle.goto(p1)
+        self.draw_end_fill()
 
-            v1, v2, v3, v4 = [vertices[i] for i in face]
-            p1 = v1.to_tuple()[:2]
-            p2 = v2.to_tuple()[:2]
-            p3 = v3.to_tuple()[:2]
-            p4 = v4.to_tuple()[:2]
+    def draw_quad(self, quad: Quad):
+        vertices = quad.vertices
+        shader = quad.shader
+        color = quad.color
+        color = self.integer_color_to_float(color)
+        color = self.apply_shader(color, shader)
 
-            self.turtle.pencolor("black")
-            self.turtle.fillcolor("lightgray")
-            self.draw_begin_fill(p1)
+        line_shader = (0.5, 0.5, 0.5)
+        line_color = self.apply_shader(color, line_shader)
 
-            self.turtle.pendown()
-            self.turtle.goto(p2)
-            self.turtle.goto(p3)
-            self.turtle.goto(p4)
-            self.turtle.goto(p1)
-            self.draw_end_fill()
+        v1, v2, v3, v4 = vertices
+        p1 = v1.to_tuple()[:2]
+        p2 = v2.to_tuple()[:2]
+        p3 = v3.to_tuple()[:2]
+        p4 = v4.to_tuple()[:2]
+
+        self.turtle.pencolor(line_color)
+        self.turtle.fillcolor(color)
+        self.draw_begin_fill(p1)
+
+        self.turtle.pendown()
+        self.turtle.goto(p2)
+        self.turtle.goto(p3)
+        self.turtle.goto(p4)
+        self.turtle.goto(p1)
+        self.draw_end_fill()
 
     def draw_text(
         self, point: tuple[float, float], text: str, font_settings: FontSettings
@@ -264,7 +279,6 @@ class PygGraphicsBase(GraphicsABC):
         events = self.get_events()
         self.set_onkeypress(events)
         self.event_onkeypress()
-        # print("frame")
         pyg.display.flip()
         self.clock.tick(60)
 
@@ -426,78 +440,72 @@ class PygGraphics(PygGraphicsBase):
         rgb_tuple = tuple(int(channel * 255) for channel in color.rgb_tuple)
         pyg.draw.line(self.screen, rgb_tuple, point1, point2, thickness)
 
-    def draw_polygons(self, polygons: list[Polygons]):
-        for polys in polygons:
-            polys_type = polys.type
-            if isinstance(polys_type, Triangles):
-                self.draw_triangles(polys_type)
+    def apply_shader(
+        self, color: tuple[int, int, int], shader: tuple[float, float, float]
+    ) -> tuple[int, int, int]:
+        shaded_color = []
+        for channel, shader_channel in zip(color, shader):
+            shaded_channel = int(channel * shader_channel)
+            shaded_color.append(shaded_channel)
+        return tuple(shaded_color)
 
-            elif isinstance(polys_type, Quads):
-                self.draw_quads(polys_type)
+    def draw_polygons(self, mesh: Mesh, mesh_lines: bool = False):
+        for polygon in mesh.polygons:
+            if isinstance(polygon, Triangle):
+                self.draw_triangle(polygon, mesh_lines)
+            elif isinstance(polygon, Quad):
+                self.draw_quad(polygon, mesh_lines)
 
-    def draw_triangles(self, triangles: Triangles):
-        vertices = triangles.vertices
-        faces = triangles.faces
-        shaders = triangles.shaders
+    def draw_triangle(self, triangle: Triangle, mesh_lines: bool):
+        vertices = triangle.vertices
+        shader = triangle.shader
+        color = triangle.color
+        color = self.apply_shader(color, shader)
 
-        len_shaders = len(shaders)
+        v1, v2, v3 = vertices
 
-        for idx, face in enumerate(faces):
-            if any(i >= len(vertices) for i in face):
-                print("Warning: Skipping face with out-of-bounds vertex indices.")
-                continue
+        p1 = v1.to_tuple()[:2]
+        p2 = v2.to_tuple()[:2]
+        p3 = v3.to_tuple()[:2]
 
-            v1, v2, v3 = [vertices[i] for i in face]
+        p1 = self.get_centered_coordinates(p1)
+        p2 = self.get_centered_coordinates(p2)
+        p3 = self.get_centered_coordinates(p3)
 
-            p1 = v1.to_tuple()[:2]
-            p2 = v2.to_tuple()[:2]
-            p3 = v3.to_tuple()[:2]
+        points = [p1, p2, p3]
 
-            p1 = self.get_centered_coordinates(p1)
-            p2 = self.get_centered_coordinates(p2)
-            p3 = self.get_centered_coordinates(p3)
+        pyg.draw.polygon(self.screen, color, points)
 
-            points = [p1, p2, p3]
-            color = triangles.color
-            line_shading = (0.5, 0.5, 0.5)
-            line_color = tuple(
-                int(ch * shading_ch) for ch, shading_ch in zip(color, line_shading)
-            )
+        if mesh_lines:
+            line_shader = (0.5, 0.5, 0.5)
+            line_color = self.apply_shader(color, line_shader)
+            pyg.draw.lines(self.screen, line_color, True, points, 1)
 
-            if len_shaders > idx:
-                shading = shaders[idx]
-                color = tuple(
-                    int(ch * shading_ch) for ch, shading_ch in zip(color, shading)
-                )
+    def draw_quad(self, quad: Quad, mesh_lines: bool):
+        vertices = quad.vertices
+        shader = quad.shader
+        color = quad.color
+        color = self.apply_shader(color, shader)
 
-            pyg.draw.polygon(self.screen, color, points)
-            pyg.draw.lines(self.screen, (5, 5, 5), True, points, 1)
+        v1, v2, v3, v4 = vertices
 
-    def draw_quads(self, quads: Quads):
-        vertices = quads.vertices
-        faces = quads.faces
+        p1 = v1.to_tuple()[:2]
+        p2 = v2.to_tuple()[:2]
+        p3 = v3.to_tuple()[:2]
+        p4 = v4.to_tuple()[:2]
 
-        for face in faces:
-            if any(i >= len(vertices) for i in face):
-                print("Warning: Skipping face with out-of-bounds vertex indices.")
-                continue
+        p1 = self.get_centered_coordinates(p1)
+        p2 = self.get_centered_coordinates(p2)
+        p3 = self.get_centered_coordinates(p3)
+        p4 = self.get_centered_coordinates(p4)
 
-            v1, v2, v3, v4 = [vertices[i] for i in face]
+        points = [p1, p2, p3, p4]
 
-            p1 = v1.to_tuple()[:2]
-            p2 = v2.to_tuple()[:2]
-            p3 = v3.to_tuple()[:2]
-            p4 = v4.to_tuple()[:2]
-
-            p1 = self.get_centered_coordinates(p1)
-            p2 = self.get_centered_coordinates(p2)
-            p3 = self.get_centered_coordinates(p3)
-            p4 = self.get_centered_coordinates(p4)
-
-            points = [p1, p2, p3, p4]
-
-            pyg.draw.polygon(self.screen, (200, 200, 200), points)
-            pyg.draw.lines(self.screen, (0, 0, 0), True, points, 1)
+        pyg.draw.polygon(self.screen, color, points)
+        if mesh_lines:
+            line_shader = (0.5, 0.5, 0.5)
+            line_color = self.apply_shader(color, line_shader)
+            pyg.draw.lines(self.screen, line_color, True, points, 1)
 
     def draw_text(
         self, point: tuple[float, float], text: str, font_settings: FontSettings

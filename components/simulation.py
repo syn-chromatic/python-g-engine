@@ -70,10 +70,12 @@ class Simulation:
             self.objects.append(cube)
 
     def setup_objects(self) -> None:
-        # self.setup_objects_cubes()
+
 
         grid = get_grid()
         self.objects.append(grid)
+
+        # self.setup_objects_cubes()
 
         obj = get_obj()
         self.objects.append(obj)

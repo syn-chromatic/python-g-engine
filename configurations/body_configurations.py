@@ -64,6 +64,7 @@ def get_grid():
     grid = GridHorizontal(15, 15, 100)
     grid.set_offset(-1000, -100, -1000)
     polygons = grid.get_triangle_polygons()
+
     color = RGBA(0.8, 0.3, 0.3, 1.0)
 
     body = Shape(polygons)

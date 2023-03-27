@@ -3,13 +3,13 @@ from components.physics import Physics
 from abstracts.graphics_abc import GraphicsABC
 from components.camera import Camera
 from components.color import RGBA
-from shared_dcs import Polygons
+from shared_dcs import Mesh
 from components.shaders import Shaders, Light
 
 
 class Shape(Body):
-    def __init__(self, polygons: list[Polygons]):
-        self.physics = Physics(polygons)
+    def __init__(self, mesh: Mesh):
+        self.physics = Physics(mesh)
         self.color = RGBA(1.0, 1.0, 1.0, 1.0)
         self.light = Light.get_light()
         self.line_thickness = 3
@@ -18,8 +18,8 @@ class Shape(Body):
         self.color = color
 
     def draw(self, graphics: GraphicsABC, camera: Camera):
-        polygons = self.physics.polygons
-        polygons = camera.apply_projection_polygons(polygons)
-        if polygons:
-            Shaders(polygons).apply_lighting(self.light, camera.camera_position)
-            graphics.draw_polygons(polygons)
+        mesh = self.physics.mesh
+        mesh = camera.apply_projection_polygons(mesh)
+        if mesh:
+            Shaders(mesh).apply_lighting(self.light, camera.camera_position)
+            graphics.draw_polygons(mesh)

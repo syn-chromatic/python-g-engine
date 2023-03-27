@@ -27,47 +27,47 @@ class PhysicsProperties:
     collision: Optional[CollisionProperties]
 
 
-class Circles:
+class Circle:
     def __init__(
         self,
-        vertices: list[Vector3D],
-        faces: list[tuple[int, int, int]],
-        shaders: list[tuple[int, int, int]],
+        vertices: tuple[Vector3D, Vector3D, Vector3D],
+        face: tuple[int, int, int],
+        shader: tuple[float, float, float],
     ):
         self.vertices = vertices
-        self.faces = faces
-        self.shaders = shaders
+        self.face = face
+        self.shader = shader
 
 
-class Triangles:
+class Triangle:
     def __init__(
         self,
-        vertices: list[Vector3D],
-        faces: list[tuple[int, int, int]],
-        shaders: list[tuple[int, int, int]],
+        vertices: tuple[Vector3D, Vector3D, Vector3D],
+        face: tuple[int, int, int],
+        shader: tuple[float, float, float],
     ):
         self.vertices = vertices
-        self.faces = faces
-        self.shaders = shaders
+        self.face = face
+        self.shader = shader
         self.color = (255, 255, 255)
 
 
-class Quads:
+class Quad:
     def __init__(
         self,
-        vertices: list[Vector3D],
-        faces: list[tuple[int, int, int, int]],
-        shaders: list[tuple[int, int, int]],
-    ):
+        vertices: tuple[Vector3D, Vector3D, Vector3D, Vector3D],
+        face: tuple[int, int, int, int],
+        shader: tuple[float, float, float],
+    ) -> None:
         self.vertices = vertices
-        self.faces = faces
-        self.shaders = shaders
+        self.face = face
+        self.shader = shader
         self.color = (255, 255, 255)
 
 
-class Polygons:
-    def __init__(self, type: Union[Triangles, Quads, Circles]):
-        self.type = type
+class Mesh:
+    def __init__(self, polygons: list[Union[Triangle, Quad]]) -> None:
+        self.polygons = polygons
 
 
 @dataclass
