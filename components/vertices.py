@@ -108,63 +108,53 @@ class Cube:
         return polygons
 
 
-# class Grid:
-#     def __init__(self, rows: int, cols: int, size=20):
-#         self.rows = rows
-#         self.cols = cols
-#         self.size = size
+class MeshConverter:
+    def __init__(self, polygons: list[Polygons]):
+        self.polygons = polygons
 
-#     def get_vertices(self) -> list[tuple[float, float, float]]:
-#         vertices = []
+    def quads_to_triangles(self) -> list[Polygons]:
+        polygons = self.polygons
 
-#         for row in range(self.rows):
-#             for col in range(self.cols):
-#                 vertex = (row, col, 0)
-#                 vertices.append(vertex)
-#         return vertices
+        for idx, polys in enumerate(polygons):
+            polys_type = polys.type
 
-#     def get_triangle_faces(self) -> list[tuple[int, int, int]]:
-#         faces = []
+            if isinstance(polys_type, Quads):
+                triangle_faces: list[tuple[int, int, int]] = []
+                quad_faces = polys_type.faces
+                for quad in quad_faces:
+                    triangle1 = (quad[0], quad[1], quad[2])
+                    triangle2 = (quad[0], quad[2], quad[3])
 
-#         for row in range(self.rows - 1):
-#             for col in range(self.cols - 1):
-#                 face1 = (
-#                     row * self.cols + col,
-#                     row * self.cols + col + 1,
-#                     (row + 1) * self.cols + col,
-#                 )
+                    triangle_faces.extend([triangle1, triangle2])
+                triangles = Triangles(polys_type.vertices, triangle_faces)
+                polygons[idx].type = triangles
 
-#                 face2 = (
-#                     row * self.cols + col + 1,
-#                     (row + 1) * self.cols + col + 1,
-#                     (row + 1) * self.cols + col,
-#                 )
-
-#                 faces.extend([face1, face2])
-#         return faces
-
-#     def get_triangle_polygons(self):
-#         vertices = self.get_vertices()
-#         faces = self.get_triangle_faces()
-
-#         triangles = Triangles(vertices, faces)
-#         polygons = [Polygons(triangles)]
-#         return polygons
+        return polygons
 
 
 class GridHorizontal:
-    def __init__(self, rows: int, cols: int, size: float = 20.0, y_offset: float = 0.0):
+    def __init__(self, rows: int, cols: int, size: float = 20.0):
         self.rows = rows
         self.cols = cols
         self.size = size
-        self.y_offset = y_offset
+        self.x_offset = 0.0
+        self.y_offset = 0.0
+        self.z_offset = 0.0
+
+    def set_offset(self, x: float, y: float, z: float):
+        self.x_offset = x
+        self.y_offset = y
+        self.z_offset = z
 
     def get_vertices(self) -> list[tuple[float, float, float]]:
         vertices = []
 
         for row in range(self.rows):
             for col in range(self.cols):
-                vertex = (row * self.size, self.y_offset, col * self.size)
+                xv = (row * self.size) + self.x_offset
+                yv = self.y_offset
+                zv = (col * self.size) + self.z_offset
+                vertex = (xv, yv, zv)
                 vertices.append(vertex)
         return vertices
 
@@ -217,75 +207,6 @@ class GridHorizontal:
         triangles = Quads(vertices, faces)
         polygons = [Polygons(triangles)]
         return polygons
-
-
-class SphereShape:
-    def __init__(self, long_num: int, lat_num: int, points: int) -> None:
-        self.long_num = long_num
-        self.lat_num = lat_num
-        self.points = points
-        self.shape: list[tuple[float, float, float]] = []
-
-    def create_long_points(self) -> None:
-        range_long = range(self.long_num)
-        range_lat = range(self.lat_num)
-        for i in range_long:
-            for j in range_lat:
-                theta = 2.0 * math.pi * i / self.long_num
-                phi = math.pi * j / (self.lat_num - 1)
-                x = 1.0 * math.sin(phi) * math.cos(theta)
-                y = 1.0 * math.sin(phi) * math.sin(theta)
-                z = 1.0 * math.cos(phi)
-                self.shape.append((x, y, z))
-
-    def create_lat_points(self) -> None:
-        for i in range(self.points):
-            theta = math.pi * i / (self.points)
-            for j in range(self.points + 1):
-                phi = 2.0 * math.pi * j / (self.points)
-                x = 1.0 * math.sin(theta) * math.cos(phi)
-                y = 1.0 * math.sin(theta) * math.sin(phi)
-                z = 1.0 * math.cos(theta)
-                self.shape.append((x, y, z))
-
-    def get_shape(self) -> list[tuple[float, float, float]]:
-        self.create_long_points()
-        self.create_lat_points()
-        return self.shape
-
-
-class CubeShape:
-    def __init__(self) -> None:
-        self.shape: list[tuple[float, float, float]] = []
-
-    def get_shape(self) -> list[tuple[float, float, float]]:
-        shape = [
-            (-1.0, -1.0, -1.0),
-            (1.0, -1.0, -1.0),
-            (-1.0, -1.0, -1.0),
-            (-1.0, -1.0, 1.0),
-            (-1.0, -1.0, 1.0),
-            (1.0, -1.0, 1.0),
-            (1.0, -1.0, -1.0),
-            (1.0, 1.0, -1.0),
-            (1.0, -1.0, -1.0),
-            (1.0, -1.0, 1.0),
-            (1.0, -1.0, 1.0),
-            (1.0, 1.0, 1.0),
-            (1.0, 1.0, -1.0),
-            (-1.0, 1.0, -1.0),
-            (1.0, 1.0, -1.0),
-            (1.0, 1.0, 1.0),
-            (1.0, 1.0, 1.0),
-            (-1.0, 1.0, 1.0),
-            (-1.0, 1.0, -1.0),
-            (-1.0, -1.0, -1.0),
-            (-1.0, 1.0, -1.0),
-            (-1.0, 1.0, 1.0),
-            (-1.0, 1.0, 1.0),
-            (-1.0, -1.0, 1.0),
-        ]
-        return shape
 
 
 class ParticleCircle:

@@ -432,20 +432,10 @@ class PygGraphics(PygGraphicsBase):
         vertices = triangles.vertices
         faces = triangles.faces
 
-
-        # for vertex in vertices:
-        #     x, y, z = vertex
-        #     p1 = (x, y)
-        #     p1 = self.get_centered_coordinates(p1)
-        #     pyg.draw.circle(self.screen, (211, 211, 211), p1, 1.0)
-
-
         for face in faces:
             if any(i >= len(vertices) for i in face):
                 print("Warning: Skipping face with out-of-bounds vertex indices.")
                 continue
-
-            # print(face)
 
             v1, v2, v3 = [vertices[i] for i in face]
 
@@ -463,7 +453,7 @@ class PygGraphics(PygGraphicsBase):
 
             points = [p1, p2, p3]
 
-            pyg.draw.polygon(self.screen, (211, 211, 211), points)
+            pyg.draw.polygon(self.screen, (200, 200, 200), points)
             pyg.draw.lines(self.screen, (0, 0, 0), True, points, 1)
 
     def draw_quads(self, quads: Quads):
@@ -494,7 +484,7 @@ class PygGraphics(PygGraphicsBase):
 
             points = [p1, p2, p3, p4]
 
-            pyg.draw.polygon(self.screen, (211, 211, 211), points)
+            pyg.draw.polygon(self.screen, (200, 200, 200), points)
             pyg.draw.lines(self.screen, (0, 0, 0), True, points, 1)
 
     def draw_text(

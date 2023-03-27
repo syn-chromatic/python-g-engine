@@ -1,5 +1,5 @@
 from components.shared_dcs import Polygons, Triangles, Quads
-
+from components.vertices import MeshConverter
 from pathlib import Path
 
 
@@ -47,28 +47,9 @@ class OBJModelFormat:
         polygons = [Polygons(quads)]
         return polygons
 
-    def quads_to_triangles(self, polygons: list[Polygons]) -> list[Polygons]:
-
-        for idx, polys in enumerate(polygons):
-            polys_type = polys.type
-
-            if isinstance(polys_type, Quads):
-                triangle_faces: list[tuple[int, int, int]] = []
-                quad_faces = polys_type.faces
-                for quad in quad_faces:
-                    triangle1 = (quad[0], quad[1], quad[2])
-                    triangle2 = (quad[0], quad[2], quad[3])
-
-                    triangle_faces.extend([triangle1, triangle2])
-                triangles = Triangles(polys_type.vertices, triangle_faces)
-                polygons[idx].type = triangles
-
-        return polygons
-
     def get_polygons(self) -> list[Polygons]:
-        triangles = self.get_model_triangles()
-        quads = self.get_model_quads()
-        quads_to_triangles = self.quads_to_triangles(quads)
-
-        polygons = [*triangles, *quads_to_triangles]
+        mesh1 = self.get_model_triangles()
+        mesh2 = self.get_model_quads()
+        mesh2 = MeshConverter(mesh2).quads_to_triangles()
+        polygons = [*mesh1, *mesh2]
         return polygons

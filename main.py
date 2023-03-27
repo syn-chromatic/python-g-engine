@@ -5,7 +5,6 @@ from components.graphics import TurtleGraphics, PygGraphics
 from components.simulation import Simulation
 from components.camera import Camera
 from components.color import RGBA
-from components.vertices import Cube, Sphere
 
 
 def main() -> None:
@@ -56,13 +55,6 @@ class GraphicsHandler:
         move_up = partial(camera.increment_position_y, -step_val)
         move_down = partial(camera.increment_position_y, step_val)
 
-        move_tar_forward = partial(camera.increment_target_z, step_val)
-        move_tar_backward = partial(camera.increment_target_z, -step_val)
-        move_tar_right = partial(camera.increment_target_x, step_val)
-        move_tar_left = partial(camera.increment_target_x, -step_val)
-        move_tar_up = partial(camera.increment_target_y, step_val)
-        move_tar_down = partial(camera.increment_target_y, -step_val)
-
         toggle_frustum = partial(camera.toggle_frustum_clipping)
 
         reset = partial(camera.reset)
@@ -72,13 +64,8 @@ class GraphicsHandler:
         self.graphics.register_onkeypress(move_left, "a")
         self.graphics.register_onkeypress(move_right, "d")
 
-
         self.graphics.register_onkeypress(move_up, "Up")
         self.graphics.register_onkeypress(move_down, "Down")
-        self.graphics.register_onkeypress(move_tar_right, "Left")
-        self.graphics.register_onkeypress(move_tar_left, "Right")
-        self.graphics.register_onkeypress(move_tar_up, "k")
-        self.graphics.register_onkeypress(move_tar_down, "l")
         self.graphics.register_onkeypress(toggle_frustum, "o", False)
 
         self.graphics.register_onkeypress(reset, "r", False)
@@ -111,13 +98,6 @@ class GraphicsHandler:
 
     def on_draw(self) -> None:
         self.graphics.clear_screen()
-        # sphere_poly = Sphere(50, 10, 10).get_polygons()
-        # sphere_poly = self.camera.apply_projection_polygons(sphere_poly)
-        # self.graphics.draw_polygons(sphere_poly)
-
-        # cube_poly = Cube(10).get_polygons()
-        # cube_poly = self.camera.apply_projection_polygons(cube_poly)
-        # self.graphics.draw_polygons(cube_poly)
         self.simulation.simulate(self.graphics)
         self.graphics.update()
 

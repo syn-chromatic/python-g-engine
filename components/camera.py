@@ -36,6 +36,7 @@ class Camera:
         self.side_direction = Vector3D(1.0, 0.0, 0.0)
         self.up_direction = Vector3D(0.0, 1.0, 0.0)
         self.look_direction = Vector3D(0.0, 0.0, 1.0)
+        self.frustum = self.make_frustum()
 
         self.previous_pointer = (width / 2.0, height / 2.0)
         self.enable_frustum_clipping = True
@@ -154,7 +155,7 @@ class Camera:
         far = -self.far_plane
         fov_rad = math.tan(math.radians(fov / 2))
 
-        y_top = abs(near) * fov_rad * 0.5
+        y_top = abs(near) * fov_rad
         x_right = y_top * aspect
 
         # Near Plane
@@ -272,53 +273,8 @@ class Camera:
             polys.type.vertices = output_vertices
             polys.type.faces = output_faces
 
-    # def clip_against_plane(self, polygons: list[Polygons], p: Plane):
-    #     for polys in polygons:
-    #         input_vertices = polys.type.vertices
-    #         input_faces = polys.type.faces
-
-    #         output_vertices = input_vertices.copy()
-    #         output_faces = []
-
-    #         for face in input_faces:
-    #             output_polygon = []
-    #             for i in range(len(face)):
-    #                 a_idx = face[i]
-    #                 b_idx = face[(i + 1) % len(face)]
-    #                 a = input_vertices[a_idx]
-    #                 b = input_vertices[b_idx]
-
-    #                 t = self.get_plane_intersection(a, b, p)
-    #                 c = self.lerp_interpolation(a, b, t)
-
-    #                 if not self.is_point_behind_plane(b, p):
-    #                     if self.is_point_behind_plane(a, p):
-    #                         new_idx = len(output_vertices)
-    #                         output_vertices.append(c)
-    #                         output_polygon.append(new_idx)
-    #                     output_polygon.append(b_idx)
-    #                 elif not self.is_point_behind_plane(a, p):
-    #                     new_idx = len(output_vertices)
-    #                     output_vertices.append(c)
-    #                     output_polygon.append(new_idx)
-
-    #             n = len(output_polygon)
-    #             if n == 3:
-    #                 output_faces.append(tuple(output_polygon))
-    #             elif n == 4:
-    #                 output_faces.append((output_polygon[0], output_polygon[1], output_polygon[2]))
-    #                 output_faces.append((output_polygon[0], output_polygon[2], output_polygon[3]))
-    #             elif n == 5:  # One quad and one triangle
-    #                 output_faces.append((output_polygon[0], output_polygon[1], output_polygon[2]))
-    #                 output_faces.append((output_polygon[2], output_polygon[3], output_polygon[4]))
-
-    #         polys.type.vertices = output_vertices
-    #         polys.type.faces = output_faces
-
     def frustum_clip(self, polygons: list[Polygons]):
-        frustum = self.make_frustum()
-
-        for plane in frustum.planes:
+        for plane in self.frustum.planes:
             self.clip_against_plane(polygons, plane)
 
     def handle_mouse_movement(self, x: float, y: float) -> None:
@@ -512,3 +468,46 @@ class Camera:
 
         for variable, value in class_dict.items():
             self.__setattr__(variable, value)
+
+    # def clip_against_plane(self, polygons: list[Polygons], p: Plane):
+    #     for polys in polygons:
+    #         input_vertices = polys.type.vertices
+    #         input_faces = polys.type.faces
+
+    #         output_vertices = input_vertices.copy()
+    #         output_faces = []
+
+    #         for face in input_faces:
+    #             output_polygon = []
+    #             for i in range(len(face)):
+    #                 a_idx = face[i]
+    #                 b_idx = face[(i + 1) % len(face)]
+    #                 a = input_vertices[a_idx]
+    #                 b = input_vertices[b_idx]
+
+    #                 t = self.get_plane_intersection(a, b, p)
+    #                 c = self.lerp_interpolation(a, b, t)
+
+    #                 if not self.is_point_behind_plane(b, p):
+    #                     if self.is_point_behind_plane(a, p):
+    #                         new_idx = len(output_vertices)
+    #                         output_vertices.append(c)
+    #                         output_polygon.append(new_idx)
+    #                     output_polygon.append(b_idx)
+    #                 elif not self.is_point_behind_plane(a, p):
+    #                     new_idx = len(output_vertices)
+    #                     output_vertices.append(c)
+    #                     output_polygon.append(new_idx)
+
+    #             n = len(output_polygon)
+    #             if n == 3:
+    #                 output_faces.append(tuple(output_polygon))
+    #             elif n == 4:
+    #                 output_faces.append((output_polygon[0], output_polygon[1], output_polygon[2]))
+    #                 output_faces.append((output_polygon[0], output_polygon[2], output_polygon[3]))
+    #             elif n == 5:  # One quad and one triangle
+    #                 output_faces.append((output_polygon[0], output_polygon[1], output_polygon[2]))
+    #                 output_faces.append((output_polygon[2], output_polygon[3], output_polygon[4]))
+
+    #         polys.type.vertices = output_vertices
+    #         polys.type.faces = output_faces
