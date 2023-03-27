@@ -23,7 +23,7 @@ class Frustum:
         self.far_plane = 5000.0
         self.planes = self.make_frustum()
 
-    def make_frustum(self):
+    def make_frustum(self) -> list[Plane]:
         fov = self.fov
         aspect = self.width / self.height
         near = -self.near_plane
@@ -84,15 +84,20 @@ class Frustum:
 
         return p
 
-    def get_plane_intersection(self, a: Vector3D, b: Vector3D, p: Plane) -> float:
+    def get_plane_distance(self, point: Vector3D, plane: Plane):
+        x, y, z = point.x, point.y, point.z
+        distance = plane.A * x + plane.B * y + plane.C * z + plane.D
+        return distance
+
+    def get_plane_intersection(self, a: Vector3D, b: Vector3D, plane: Plane) -> float:
         ax, ay, az = a.x, a.y, a.z
         bx, by, bz = b.x, b.y, b.z
 
-        numerator = -(ax * p.A + ay * p.B + az * p.C + p.D)
-        denominator = p.A * (bx - ax) + p.B * (by - ay) + p.C * (bz - az)
-        if denominator == 0:
+        distance = -self.get_plane_distance(a, plane)
+        interpolation = plane.A * (bx - ax) + plane.B * (by - ay) + plane.C * (bz - az)
+        if interpolation == 0:
             return 0
-        return numerator / denominator
+        return distance / interpolation
 
     def is_point_behind_plane(self, point: Vector3D, plane: Plane) -> bool:
         x, y, z = point.x, point.y, point.z
@@ -116,7 +121,7 @@ class Frustum:
             faces.append(face)
         return faces
 
-    def clip_against_plane(self, mesh: Mesh, p: Plane):
+    def clip_against_plane(self, mesh: Mesh, plane: Plane) -> None:
         output_polygons = []
 
         for polygon in mesh.polygons:
@@ -133,11 +138,11 @@ class Frustum:
                 a = input_vertices[i]
                 b = input_vertices[(i + 1) % 3]
 
-                t = self.get_plane_intersection(a, b, p)
+                t = self.get_plane_intersection(a, b, plane)
                 c = a.lerp_interpolation(b, t)
 
-                ap_inside = self.is_point_behind_plane(a, p)
-                bp_inside = self.is_point_behind_plane(b, p)
+                ap_inside = self.is_point_behind_plane(a, plane)
+                bp_inside = self.is_point_behind_plane(b, plane)
 
                 if not bp_inside:
                     if ap_inside:
@@ -159,7 +164,10 @@ class Frustum:
                 for face in faces:
                     new_vertices = tuple(output_vertices[idx] for idx in face)
                     new_polygon = Triangle(
-                        new_vertices, face, polygon.shader, polygon.color
+                        vertices=new_vertices,
+                        face=face,
+                        shader=polygon.shader,
+                        color=polygon.color,
                     )
                     output_polygons.append(new_polygon)
 

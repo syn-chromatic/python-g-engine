@@ -90,13 +90,6 @@ class Camera:
             vertices = list(polygon.vertices)
             for idx, vertex in enumerate(vertices):
                 vertex = self.apply_view_transform(vertex)
-                in_frustum = self.frustum.is_point_in_frustum(vertex)
-
-                if not in_frustum:
-                    polygon.color = (20, 255, 20)
-                else:
-                    polygon.color = (255, 255, 255)
-
                 vertices[idx] = vertex
             polygon.vertices = tuple(vertices)
 
