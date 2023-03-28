@@ -65,19 +65,19 @@ class Sphere:
                 faces.append(face)
         return faces
 
-    def get_triangle_polygons(self) -> Mesh:
+    def get_triangle_mesh(self) -> Mesh:
         vertices = self.get_vertices()
         faces = self.get_triangle_faces()
-        triangle_polygons = []
+        triangle_mesh = []
         for face in faces:
             triangle = Triangle(
                 (vertices[face[0]], vertices[face[1]], vertices[face[2]]),
                 face,
             )
-            triangle_polygons.append(triangle)
-        return Mesh(triangle_polygons)
+            triangle_mesh.append(triangle)
+        return Mesh(triangle_mesh)
 
-    def get_quad_polygons(self) -> Mesh:
+    def get_quad_mesh(self) -> Mesh:
         vertices = self.get_vertices()
         faces = self.get_quad_faces()
         quad_polygons = []

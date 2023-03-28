@@ -29,7 +29,7 @@ def get_center_sphere():
     mass = 10_000_000
     sphere = Sphere(50, 10, 10)
     sphere.set_offset(300.0, 500.0, 400)
-    polygons = sphere.get_triangle_polygons()
+    polygons = sphere.get_triangle_mesh()
 
     color = RGBA(0.8, 0.3, 0.3, 1.0)
     scale = mass / 250_000
