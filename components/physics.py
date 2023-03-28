@@ -1,7 +1,9 @@
 import math
 import random
+
+from components.polygons import Mesh
 from components.vectors import Vector3D
-from components.shared_dcs import PhysicsProperties, CollisionProperties, CollisionVel
+from shared_dcs import PhysicsProperties, CollisionProperties, CollisionVel
 
 
 from typing import Optional
@@ -9,8 +11,8 @@ from typing_extensions import Self
 
 
 class Physics:
-    def __init__(self, shape: list[tuple[float, float, float]]):
-        self.shape = shape
+    def __init__(self, mesh: Mesh):
+        self.mesh = mesh
         self.position = Vector3D(0.0, 0.0, 0.0)
         self.velocity = Vector3D(0.0, 0.0, 0.0)
         self.acceleration = Vector3D(0.0, 0.0, 0.0)
@@ -24,37 +26,31 @@ class Physics:
         self.g_const = 0.001
 
     @staticmethod
-    def _rotate_x(
-        xyz_point: tuple[float, float, float], theta: float
-    ) -> tuple[float, float, float]:
+    def _rotate_x(xyz_point: Vector3D, theta: float) -> Vector3D:
         cs = math.cos(theta)
         sn = math.sin(theta)
-        x = xyz_point[0]
-        y = (cs * xyz_point[1]) - (sn * xyz_point[2])
-        z = (sn * xyz_point[1]) + (cs * xyz_point[2])
-        return (x, y, z)
+        x = xyz_point.x
+        y = (cs * xyz_point.y) - (sn * xyz_point.z)
+        z = (sn * xyz_point.y) + (cs * xyz_point.z)
+        return Vector3D(x, y, z)
 
     @staticmethod
-    def _rotate_y(
-        xyz_point: tuple[float, float, float], theta
-    ) -> tuple[float, float, float]:
+    def _rotate_y(xyz_point: Vector3D, theta) -> Vector3D:
         cs = math.cos(theta)
         sn = math.sin(theta)
-        x = (cs * xyz_point[0]) + (sn * xyz_point[2])
-        y = xyz_point[1]
-        z = (-sn * xyz_point[0]) + (cs * xyz_point[2])
-        return (x, y, z)
+        x = (cs * xyz_point.x) + (sn * xyz_point.z)
+        y = xyz_point.y
+        z = (-sn * xyz_point.x) + (cs * xyz_point.z)
+        return Vector3D(x, y, z)
 
     @staticmethod
-    def _rotate_z(
-        xyz_point: tuple[float, float, float], theta: float
-    ) -> tuple[float, float, float]:
+    def _rotate_z(xyz_point: Vector3D, theta: float) -> Vector3D:
         cs = math.cos(theta)
         sn = math.sin(theta)
-        x = (cs * xyz_point[0]) - (sn * xyz_point[1])
-        y = (sn * xyz_point[0]) + (cs * xyz_point[1])
-        z = xyz_point[2]
-        return (x, y, z)
+        x = (cs * xyz_point.x) - (sn * xyz_point.y)
+        y = (sn * xyz_point.x) + (cs * xyz_point.y)
+        z = xyz_point.z
+        return Vector3D(x, y, z)
 
     @staticmethod
     def _constrain(val: float, min_val: float, max_val: float) -> float:
@@ -72,13 +68,17 @@ class Physics:
         x_rotation = self.spin_velocity.x * timestep
         y_rotation = self.spin_velocity.y * timestep
         z_rotation = self.spin_velocity.z * timestep
-        shape = []
-        for point in self.shape:
-            point = self._rotate_x(point, x_rotation)
-            point = self._rotate_y(point, y_rotation)
-            point = self._rotate_z(point, z_rotation)
-            shape.append(point)
-        self.shape = shape
+
+        for polygon in self.mesh.polygons:
+
+            vertices = list(polygon.vertices)
+            for idx, vertex in enumerate(vertices):
+                vertex = self._rotate_x(vertex, x_rotation)
+                vertex = self._rotate_y(vertex, y_rotation)
+                vertex = self._rotate_z(vertex, z_rotation)
+                vertices[idx] = vertex
+
+            polygon.vertices = tuple(vertices)
 
     def get_random_direction(self):
         x_rnd = random.uniform(-1.0, 1.0)

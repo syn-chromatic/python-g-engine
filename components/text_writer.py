@@ -1,4 +1,4 @@
-from components.graphics import Graphics
+from abstracts.graphics_abc import GraphicsABC
 from components.font import FontSettings
 
 from typing import Optional
@@ -12,7 +12,7 @@ class TextWriter:
     def add_text_top_left(self, text: str, font: Optional[FontSettings] = None):
         self.tl_column.append((text, font))
 
-    def draw(self, graphics: Graphics):
+    def draw(self, graphics: GraphicsABC):
         width = graphics.get_width()
         height = graphics.get_height()
 
