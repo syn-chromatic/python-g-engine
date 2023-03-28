@@ -73,7 +73,6 @@ class Sphere:
             triangle = Triangle(
                 (vertices[face[0]], vertices[face[1]], vertices[face[2]]),
                 face,
-                (1.0, 1.0, 1.0),
             )
             triangle_polygons.append(triangle)
         return Mesh(triangle_polygons)
@@ -91,7 +90,6 @@ class Sphere:
                     vertices[face[3]],
                 ),
                 face,
-                (1.0, 1.0, 1.0),
             )
             quad_polygons.append(quad)
         return Mesh(quad_polygons)
@@ -139,7 +137,6 @@ class Cube:
                     vertices[face[3]],
                 ),
                 face,
-                (1.0, 1.0, 1.0),
             )
             quad_polygons.append(quad)
         return Mesh(quad_polygons)
@@ -249,7 +246,6 @@ class GridHorizontal:
             triangle = Triangle(
                 (vertices[face[0]], vertices[face[1]], vertices[face[2]]),
                 face,
-                (1.0, 1.0, 1.0),
             )
             triangle_polygons.append(triangle)
         return Mesh(triangle_polygons)
@@ -267,7 +263,6 @@ class GridHorizontal:
                     vertices[face[3]],
                 ),
                 face,
-                (1.0, 1.0, 1.0),
             )
             quad_polygons.append(quad)
         return Mesh(quad_polygons)

@@ -197,21 +197,18 @@ class TurtleGraphics(TurtleGraphicsBase):
         vertices = triangle.vertices
         shader = triangle.shader
         color = triangle.color
-        color = self.integer_color_to_float(color)
-        color = self.apply_shader(color, shader)
+        color = color.multiply(shader)
 
-        line_shader = (0.5, 0.5, 0.5)
-        line_color = self.apply_shader(color, line_shader)
+        line_shader = RGBA.from_rgb(0.5, 0.5, 0.5)
+        line_color = color.multiply(line_shader)
+
+        color = color.rgb_tuple
+        line_color = line_color.rgb_tuple
 
         v1, v2, v3 = vertices
         p1 = v1.to_tuple()[:2]
         p2 = v2.to_tuple()[:2]
         p3 = v3.to_tuple()[:2]
-
-        color = triangle.color
-        color = tuple(ch / 255 for ch in color)
-
-        color = tuple(ch * shading_ch for ch, shading_ch in zip(color, shader))
 
         self.turtle.pencolor(line_color)
         self.turtle.fillcolor(color)
@@ -227,11 +224,13 @@ class TurtleGraphics(TurtleGraphicsBase):
         vertices = quad.vertices
         shader = quad.shader
         color = quad.color
-        color = self.integer_color_to_float(color)
-        color = self.apply_shader(color, shader)
+        color = color.multiply(shader)
 
-        line_shader = (0.5, 0.5, 0.5)
-        line_color = self.apply_shader(color, line_shader)
+        line_shader = RGBA.from_rgb(0.5, 0.5, 0.5)
+        line_color = color.multiply(line_shader)
+
+        color = color.rgb_tuple
+        line_color = line_color.rgb_tuple
 
         v1, v2, v3, v4 = vertices
         p1 = v1.to_tuple()[:2]
@@ -461,7 +460,8 @@ class PygGraphics(PygGraphicsBase):
         vertices = triangle.vertices
         shader = triangle.shader
         color = triangle.color
-        color = self.apply_shader(color, shader)
+        color = color.multiply(shader)
+        color_u8 = color.rgb_tuple_u8
 
         v1, v2, v3 = vertices
 
@@ -475,18 +475,20 @@ class PygGraphics(PygGraphicsBase):
 
         points = [p1, p2, p3]
 
-        pyg.draw.polygon(self.screen, color, points)
+        pyg.draw.polygon(self.screen, color_u8, points)
 
         if mesh_lines:
-            line_shader = (0.5, 0.5, 0.5)
-            line_color = self.apply_shader(color, line_shader)
-            pyg.draw.lines(self.screen, line_color, True, points, 1)
+            line_shader = RGBA.from_rgb(0.5, 0.5, 0.5)
+            line_color = color.multiply(line_shader)
+            line_color_u8 = line_color.rgb_tuple_u8
+            pyg.draw.lines(self.screen, line_color_u8, True, points, 1)
 
     def draw_quad(self, quad: Quad, mesh_lines: bool):
         vertices = quad.vertices
         shader = quad.shader
         color = quad.color
-        color = self.apply_shader(color, shader)
+        color = color.multiply(shader)
+        color_u8 = color.rgb_tuple_u8
 
         v1, v2, v3, v4 = vertices
 
@@ -502,11 +504,12 @@ class PygGraphics(PygGraphicsBase):
 
         points = [p1, p2, p3, p4]
 
-        pyg.draw.polygon(self.screen, color, points)
+        pyg.draw.polygon(self.screen, color_u8, points)
         if mesh_lines:
-            line_shader = (0.5, 0.5, 0.5)
-            line_color = self.apply_shader(color, line_shader)
-            pyg.draw.lines(self.screen, line_color, True, points, 1)
+            line_shader = RGBA.from_rgb(0.5, 0.5, 0.5)
+            line_color = color.multiply(line_shader)
+            line_color_u8 = line_color.rgb_tuple_u8
+            pyg.draw.lines(self.screen, line_color_u8, True, points, 1)
 
     def draw_text(
         self, point: tuple[float, float], text: str, font_settings: FontSettings

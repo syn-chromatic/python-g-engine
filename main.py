@@ -43,8 +43,8 @@ class GraphicsHandler:
 
         step_val = 30.0
 
-        increase_distance = partial(camera.increment_plane, step_val)
-        decrease_distance = partial(camera.increment_plane, -step_val)
+        increase_distance = partial(camera.increment_planes, step_val)
+        decrease_distance = partial(camera.increment_planes, -step_val)
         increase_timestep = partial(simulation.increment_timestep, 100)
         decrease_timestep = partial(simulation.increment_timestep, -100)
 

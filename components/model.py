@@ -1,6 +1,8 @@
 from components.polygons import Mesh, Triangle, Quad
 from components.vertices import MeshConverter
 from components.vectors import Vector3D
+from components.color import RGBA
+
 from pathlib import Path
 
 
@@ -47,7 +49,6 @@ class OBJModelFormat:
             triangle = Triangle(
                 (vertices[face[0]], vertices[face[1]], vertices[face[2]]),
                 face,
-                (1.0, 1.0, 1.0),
             )
             triangle_polygons.append(triangle)
         return Mesh(triangle_polygons)
@@ -85,7 +86,6 @@ class OBJModelFormat:
                     vertices[face[3]],
                 ),
                 face,
-                (1.0, 1.0, 1.0),
             )
             quad_polygons.append(quad)
         return Mesh(quad_polygons)

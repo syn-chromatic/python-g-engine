@@ -1,5 +1,6 @@
 from components.vectors import Vector3D
 from components.polygons import Mesh, Triangle, Quad
+from components.color import RGBA
 
 
 class Light:
@@ -74,4 +75,4 @@ class Shaders:
 
             shading = ambient.add_vector(diffuse).add_vector(specular)
             shading = shading.clamp(0.0, 1.0)
-            triangle.shader = shading.to_tuple()
+            triangle.shader = RGBA.from_vector(shading)

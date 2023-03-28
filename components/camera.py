@@ -116,10 +116,10 @@ class Camera:
         self.yaw += dx * sens_x
         self.pitch += dy * -sens_y
 
-        if self.pitch > 90.0:
-            self.pitch = 90.0
-        elif self.pitch < -90.0:
-            self.pitch = -90.0
+        if self.pitch > 89.0:
+            self.pitch = 89.0
+        elif self.pitch < -89.0:
+            self.pitch = -89.0
         self.apply_mouse_movement()
 
     def apply_direction_adjustment(self):
@@ -164,7 +164,7 @@ class Camera:
         self.camera_position = self.camera_position.add_vector(look_vector)
         self.camera_target = self.camera_position.add_vector(self.look_direction)
 
-    def increment_plane(self, increment: float):
+    def increment_planes(self, increment: float):
         near_plane = self.frustum.near_plane
         far_plane = self.frustum.far_plane
 
