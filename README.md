@@ -22,8 +22,8 @@ ___
 * Change: Separate physics from the Body abstraction 
 
 ___
-### Scene with simple lighting, mesh models loaded from the built-in OBJ file loader.
-https://user-images.githubusercontent.com/68112904/228265504-85410196-b1f5-4eb0-b052-797b9d497c06.mp4
+### Scene with simple PBR lighting, mesh models loaded from the built-in OBJ file loader.
+https://user-images.githubusercontent.com/68112904/228430947-58a5b0d0-a3e1-4d1a-9a93-9393def56874.mp4
 
 ___
 ### Collision Simulation ~150 objects (Particles) *(currently broken)*
