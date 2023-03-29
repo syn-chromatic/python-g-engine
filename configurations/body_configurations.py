@@ -26,19 +26,10 @@ def get_center_cube(px, py, pz):
 
 
 def get_center_sphere():
-    mass = 10_000_000
-    sphere = Sphere(50, 10, 10)
-    sphere.set_offset(300.0, 500.0, 400)
+    sphere = Sphere(100, 10, 10)
+    sphere.set_offset(400.0, 1100.0, 3100.0)
     polygons = sphere.get_triangle_mesh()
-
-    color = RGBA(0.8, 0.3, 0.3, 1.0)
-    scale = mass / 250_000
-
     body = Shape(polygons)
-    body.set_color(color)
-    body.physics.set_mass(mass)
-    body.physics.set_scale(scale)
-    body.physics.set_spin_velocity(50, 50, 0)
     return body
 
 
@@ -61,7 +52,7 @@ def get_cube_t1():
 
 def get_grid():
     mass = 10_000_000
-    grid = GridHorizontal(15, 15, 100)
+    grid = GridHorizontal(10, 10, 300)
     grid.set_offset(-1000, -100, -1000)
     polygons = grid.get_triangle_polygons()
 
@@ -77,7 +68,7 @@ def get_grid():
 def get_obj():
     file_path = Path("./cottage.obj")
     obj = OBJModelFormat(file_path, 0.2)
-    obj.set_offset(0, -100, 0)
+    obj.set_offset(500, -100, 600)
     polygons = obj.get_polygons()
     color = RGBA(0.8, 0.3, 0.3, 1.0)
 

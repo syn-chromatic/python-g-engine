@@ -186,32 +186,36 @@ class TurtleGraphics(TurtleGraphicsBase):
             shaded_color.append(shaded_channel)
         return tuple(shaded_color)
 
-    def draw_polygons(self, mesh: Mesh):
+    def draw_polygons(self, mesh: Mesh, mesh_lines: bool = False):
         for polygon in mesh.polygons:
             if isinstance(polygon, Triangle):
-                self.draw_triangle(polygon)
+                self.draw_triangle(polygon, mesh_lines)
             elif isinstance(polygon, Quad):
-                self.draw_quad(polygon)
+                self.draw_quad(polygon, mesh_lines)
 
-    def draw_triangle(self, triangle: Triangle):
+    def draw_triangle(self, triangle: Triangle, mesh_lines: bool = False):
         vertices = triangle.vertices
         shader = triangle.shader
         color = triangle.color
         color = color.multiply(shader)
+        color = color.clamp(0.0, 1.0)
 
-        line_shader = RGBA.from_rgb(0.5, 0.5, 0.5)
-        line_color = color.multiply(line_shader)
+        color_rgb = color.rgb_tuple
+        line_rgb = color_rgb
 
-        color = color.rgb_tuple
-        line_color = line_color.rgb_tuple
+        if mesh_lines:
+            line_shader = RGBA.from_rgb(0.8, 0.8, 0.8)
+            line_color = color.multiply(line_shader)
+            line_color = line_color.clamp(0.0, 1.0)
+            line_rgb = line_color.rgb_tuple
 
         v1, v2, v3 = vertices
         p1 = v1.to_tuple()[:2]
         p2 = v2.to_tuple()[:2]
         p3 = v3.to_tuple()[:2]
 
-        self.turtle.pencolor(line_color)
-        self.turtle.fillcolor(color)
+        self.turtle.pencolor(line_rgb)
+        self.turtle.fillcolor(color_rgb)
         self.draw_begin_fill(p1)
 
         self.turtle.pendown()
@@ -220,17 +224,20 @@ class TurtleGraphics(TurtleGraphicsBase):
         self.turtle.goto(p1)
         self.draw_end_fill()
 
-    def draw_quad(self, quad: Quad):
+    def draw_quad(self, quad: Quad, mesh_lines: bool = False):
         vertices = quad.vertices
         shader = quad.shader
         color = quad.color
         color = color.multiply(shader)
 
-        line_shader = RGBA.from_rgb(0.5, 0.5, 0.5)
-        line_color = color.multiply(line_shader)
+        color_rgb = color.rgb_tuple
+        line_rgb = color_rgb
 
-        color = color.rgb_tuple
-        line_color = line_color.rgb_tuple
+        if mesh_lines:
+            line_shader = RGBA.from_rgb(0.8, 0.8, 0.8)
+            line_color = color.multiply(line_shader)
+            line_color = line_color.clamp(0.0, 1.0)
+            line_rgb = line_color.rgb_tuple
 
         v1, v2, v3, v4 = vertices
         p1 = v1.to_tuple()[:2]
@@ -238,8 +245,8 @@ class TurtleGraphics(TurtleGraphicsBase):
         p3 = v3.to_tuple()[:2]
         p4 = v4.to_tuple()[:2]
 
-        self.turtle.pencolor(line_color)
-        self.turtle.fillcolor(color)
+        self.turtle.pencolor(line_rgb)
+        self.turtle.fillcolor(color_rgb)
         self.draw_begin_fill(p1)
 
         self.turtle.pendown()
@@ -461,6 +468,7 @@ class PygGraphics(PygGraphicsBase):
         shader = triangle.shader
         color = triangle.color
         color = color.multiply(shader)
+        color = color.clamp(0.0, 1.0)
         color_u8 = color.rgb_tuple_u8
 
         v1, v2, v3 = vertices
@@ -478,8 +486,9 @@ class PygGraphics(PygGraphicsBase):
         pyg.draw.polygon(self.screen, color_u8, points)
 
         if mesh_lines:
-            line_shader = RGBA.from_rgb(0.5, 0.5, 0.5)
+            line_shader = RGBA.from_rgb(0.8, 0.8, 0.8)
             line_color = color.multiply(line_shader)
+            color = color.clamp(0.0, 1.0)
             line_color_u8 = line_color.rgb_tuple_u8
             pyg.draw.lines(self.screen, line_color_u8, True, points, 1)
 
@@ -506,7 +515,7 @@ class PygGraphics(PygGraphicsBase):
 
         pyg.draw.polygon(self.screen, color_u8, points)
         if mesh_lines:
-            line_shader = RGBA.from_rgb(0.5, 0.5, 0.5)
+            line_shader = RGBA.from_rgb(0.8, 0.8, 0.8)
             line_color = color.multiply(line_shader)
             line_color_u8 = line_color.rgb_tuple_u8
             pyg.draw.lines(self.screen, line_color_u8, True, points, 1)

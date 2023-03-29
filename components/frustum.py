@@ -18,7 +18,7 @@ class Frustum:
     def __init__(self, width: int, height: int):
         self.width = width
         self.height = height
-        self.fov = 100
+        self.fov = 90
         self.near_plane = 0.1
         self.far_plane = 5000.0
         self.planes = self.make_frustum()
@@ -162,7 +162,6 @@ class Frustum:
             if len(output_faces) > 2:
                 faces = self.get_triangle_faces(output_faces)
                 for face in faces:
-                    print(face)
                     new_vertices = tuple(output_vertices[idx] for idx in face)
                     new_polygon = Triangle(
                         vertices=new_vertices,

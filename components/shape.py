@@ -19,7 +19,7 @@ class Shape(Body):
 
     def draw(self, graphics: GraphicsABC, camera: Camera):
         mesh = self.physics.mesh
+        Shaders.apply_pbr_lighting(mesh, self.light, camera.camera_position)
         mesh = camera.apply_projection_polygons(mesh)
         if mesh:
-            Shaders(mesh).apply_lighting(self.light, camera.camera_position)
-            graphics.draw_polygons(mesh)
+            graphics.draw_polygons(mesh, True)

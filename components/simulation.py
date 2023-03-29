@@ -79,8 +79,8 @@ class Simulation:
         obj = get_obj()
         self.objects.append(obj)
 
-        # sphere = get_center_sphere()
-        # self.objects.append(sphere)
+        sphere = get_center_sphere()
+        self.objects.append(sphere)
 
     def compute_all_objects(self, graphics: GraphicsABC) -> float:
         frame_st = time.perf_counter()

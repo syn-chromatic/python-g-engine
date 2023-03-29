@@ -74,15 +74,15 @@ class GraphicsABC(ABC):
         pass
 
     @abstractmethod
-    def draw_polygons(self, mesh: Mesh) -> None:
+    def draw_polygons(self, mesh: Mesh, mesh_lines: bool = False) -> None:
         pass
 
     @abstractmethod
-    def draw_triangle(self, triangle: Triangle) -> None:
+    def draw_triangle(self, triangle: Triangle, mesh_lines: bool = False) -> None:
         pass
 
     @abstractmethod
-    def draw_quad(self, quad: Quad):
+    def draw_quad(self, quad: Quad, mesh_lines: bool = False):
         pass
 
     @abstractmethod

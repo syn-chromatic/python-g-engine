@@ -14,7 +14,7 @@ class Camera:
         self.frustum = Frustum(width, height)
         self.yaw = 0.0
         self.pitch = 0.0
-        self.camera_position = Vector3D(-100.0, 25.0, 500.0)
+        self.camera_position = Vector3D(-1000.0, 25.0, 500.0)
         self.camera_target = Vector3D(0.0, 0.0, 0.0)
         self.side_direction = Vector3D(1.0, 0.0, 0.0)
         self.up_direction = Vector3D(0.0, 1.0, 0.0)

@@ -54,3 +54,10 @@ class RGBA:
         blue = self.blue * color.blue
         alpha = self.alpha * color.alpha
         return RGBA(red, green, blue, alpha)
+
+    def clamp(self, min_value: float, max_value: float) -> "RGBA":
+        red = max(min_value, min(self.red, max_value))
+        green = max(min_value, min(self.green, max_value))
+        blue = max(min_value, min(self.red, max_value))
+        alpha = max(min_value, min(self.red, max_value))
+        return RGBA(red, green, blue, alpha)
