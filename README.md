@@ -21,6 +21,11 @@ ___
 * ~~Change: Implement Backface Culling~~
 * Change: Separate physics from the Body abstraction 
 
+
+___
+### Same scene from below, but with Backface Culling, performance improves.
+https://user-images.githubusercontent.com/68112904/228908793-249e8fb0-3466-40ea-9998-a8acfccbf5af.mp4
+
 ___
 ### Scene with simple PBR lighting, mesh models loaded from the built-in OBJ file loader.
 https://user-images.githubusercontent.com/68112904/228430947-58a5b0d0-a3e1-4d1a-9a93-9393def56874.mp4
