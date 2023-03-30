@@ -39,8 +39,8 @@ class Shape(Body):
         shaders = Shaders()
         shaders.apply_pbr_lighting(mesh, self.light, camera_position)
 
-        light_camera = Light.get_light_from_position(camera_position, camera_target)
-        shaders.apply_pbr_lighting(mesh, light_camera, camera_position)
+        # light_camera = Light.get_light_from_position(camera_position, camera_target)
+        # shaders.apply_pbr_lighting(mesh, light_camera, camera_position)
 
         mesh = camera.apply_projection_polygons(mesh)
         if mesh:

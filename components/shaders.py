@@ -28,7 +28,7 @@ class Light:
         ambient_color = Vector3D(0.6, 0.6, 0.6)
         diffuse_color = Vector3D(0.4, 0.4, 0.4)
         specular_color = Vector3D(0.2, 0.2, 0.2)
-        lumens = 5000.0
+        lumens = 4000.0
 
         light = Light(
             position=position,

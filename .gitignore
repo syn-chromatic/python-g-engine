@@ -1,3 +1,9 @@
+# Ignore
 *.pyc
 *.obj
 test.py
+
+# Allow
+!cottage.obj
+
+
