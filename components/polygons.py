@@ -66,3 +66,38 @@ class Mesh:
     ) -> None:
         self.polygons = polygons
         self.light = light
+
+    def get_axes(self) -> list[Vector3D]:
+        axes = []
+        for polygon in self.polygons:
+            for i in range(len(polygon.vertices)):
+                vertex1 = polygon.vertices[i]
+                vertex2 = polygon.vertices[i - 1]
+                edge = vertex1.subtract_vector(vertex2)
+                normal = Vector3D(-edge.y, edge.x, edge.z)
+                axes.append(normal.normalize())
+        return axes
+
+    def project_polygon(self, axis: Vector3D) -> tuple[float, float]:
+        min_proj = max_proj = self.polygons[0].vertices[0].dot_product(axis)
+
+        for polygon in self.polygons:
+            for vertex in polygon.vertices:
+                proj = vertex.dot_product(axis)
+                min_proj = min(min_proj, proj)
+                max_proj = max(max_proj, proj)
+
+        return min_proj, max_proj
+
+    def intersects(self, other: "Mesh") -> bool:
+        axes1 = self.get_axes()
+        axes2 = other.get_axes()
+
+        for axis in axes1 + axes2:
+            min_proj1, max_proj1 = self.project_polygon(axis)
+            min_proj2, max_proj2 = other.project_polygon(axis)
+
+            if max_proj1 < min_proj2 or max_proj2 < min_proj1:
+                return False
+
+        return True

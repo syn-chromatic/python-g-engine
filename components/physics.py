@@ -3,6 +3,7 @@ import random
 
 from components.polygons import Mesh
 from components.vectors import Vector3D
+from components.polygons import Triangle, Quad
 from shared_dcs import PhysicsProperties, CollisionProperties, CollisionVel
 
 
@@ -62,6 +63,38 @@ class Physics:
         self.position = self.position.add_vector(timestep_velocity)
         self.velocity = self.velocity.add_vector(timestep_acceleration)
 
+        if self.mesh.light:
+            light_position = self.mesh.light.position
+            light_position = light_position.add_vector(timestep_velocity)
+            self.mesh.light.position = light_position
+
+        for polygon in self.mesh.polygons:
+
+            if isinstance(polygon, Triangle):
+                v1 = polygon.vertices[0]
+                v2 = polygon.vertices[1]
+                v3 = polygon.vertices[2]
+
+                v1 = v1.add_vector(timestep_velocity)
+                v2 = v2.add_vector(timestep_velocity)
+                v3 = v3.add_vector(timestep_velocity)
+
+                vertices = (v1, v2, v3)
+                polygon.vertices = vertices
+
+            elif isinstance(polygon, Quad):
+                v1 = polygon.vertices[0]
+                v2 = polygon.vertices[1]
+                v3 = polygon.vertices[2]
+                v4 = polygon.vertices[3]
+
+                v1 = v1.add_vector(timestep_velocity)
+                v2 = v2.add_vector(timestep_velocity)
+                v3 = v3.add_vector(timestep_velocity)
+                v4 = v4.add_vector(timestep_velocity)
+
+                vertices = (v1, v2, v3, v4)
+                polygon.vertices = vertices
 
     def _calculate_spin(self, timestep: float):
         timestep_spin_acc = self.spin_acceleration.multiply(timestep)
@@ -71,16 +104,12 @@ class Physics:
         z_rotation = self.spin_velocity.z * timestep
 
         for polygon in self.mesh.polygons:
-
             vertices = list(polygon.vertices)
             for idx, vertex in enumerate(vertices):
                 vertex = self._rotate_x(vertex, x_rotation)
                 vertex = self._rotate_y(vertex, y_rotation)
                 vertex = self._rotate_z(vertex, z_rotation)
                 if self.mesh.light:
-                    # print(self.mesh.light.position)
-                    # print(self.position)
-                    # input()
                     self.mesh.light.position = vertex
                 vertices[idx] = vertex
 
@@ -226,23 +255,23 @@ class Physics:
 
         total_radius = self_radius + target_radius
         edge_distance = tts_distance.get_length() - total_radius
-
-        if edge_distance <= 0:
-            # Self-To-Target Distance
+        if self.mesh.intersects(target.mesh):
+            # # if edge_distance <= 0:
+            #     # Self-To-Target Distance
             stt_distance = tts_distance.multiply(-1)
             stt_direction = stt_distance.normalize()
             collision_vel = self.calc_collision_vel(target, stt_direction)
-            self.calc_collision_temp(target, collision_vel)
+            # self.calc_collision_temp(target, collision_vel)
 
-            shift_args = (target, timestep, stt_direction, edge_distance)
-            self_shifted, target_shifted = self.correct_shift_collision(*shift_args)
+            # shift_args = (target, timestep, stt_direction, edge_distance)
+            # self_shifted, target_shifted = self.correct_shift_collision(*shift_args)
 
-            properties_args = (target, self_shifted, target_shifted, stt_direction)
-            collision_properties = self.create_collision_properties(*properties_args)
-            return collision_properties
+            # properties_args = (target, self_shifted, target_shifted, stt_direction)
+            # collision_properties = self.create_collision_properties(*properties_args)
+            # return collision_properties
 
     def update(self, timestep: float):
         self._calculate_position(timestep)
-        self._calculate_spin(timestep)
+        # self._calculate_spin(timestep)
         self.acceleration = Vector3D(0.0, 0.0, 0.0)
         self.spin_acceleration = Vector3D(0.0, 0.0, 0.0)

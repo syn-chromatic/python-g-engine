@@ -5,6 +5,7 @@ from abstracts.graphics_abc import GraphicsABC
 from abstracts.body_abc import Body
 from components.camera import Camera
 from components.color import RGBA
+from components.physics import Physics
 from components.font import FontSettings, ArialFontNormal, ArialFontBold
 from components.text_writer import TextWriter
 
@@ -74,34 +75,47 @@ class Simulation:
         obj = body_configurations.get_obj()
         self.objects.append(obj)
 
-        sphere = body_configurations.get_center_sphere()
+        sphere = body_configurations.get_sphere1()
         self.objects.append(sphere)
+
+        # sphere = body_configurations.get_sphere2()
+        # self.objects.append(sphere)
+
+        # obj = body_configurations.get_obj2()
+        # self.objects.append(obj)
+
+    def handle_physics(
+        self, obj1_physics: Physics, obj2_physics: Physics, idx1: int, idx2: int
+    ):
+        timestep = 1.0 / self.timestep_hz
+
+        p_props = obj1_physics.apply_forces(obj2_physics, timestep)
+        p_props_collision = p_props.collision
+        # if p_props_collision:
+        #     if (
+        #         obj1_physics.temperature > obj1_physics.melting_point
+        #         and obj2_physics.temperature > obj2_physics.melting_point
+        #     ):
+        #         if obj1_physics.mass > obj2_physics.mass:
+        #             self.objects.pop(idx2)
+        #             obj1_physics.scale += obj2_physics.scale
+        #             obj1_physics.mass += obj2_physics.mass
+        #         else:
+        #             self.objects.pop(idx1)
+        #             obj2_physics.scale += obj1_physics.scale
+        #             obj2_physics.mass += obj1_physics.mass
+        #             continue
 
     def compute_all_objects(self, graphics: GraphicsABC):
         timestep = 1.0 / self.timestep_hz
 
         for idx1, obj1 in enumerate(self.objects):
-            # obj1_physics = obj1.physics
-            # for idx2, obj2 in enumerate(self.objects):
-            #     if obj1 == obj2:
-            #         continue
-            #     obj2_physics = obj2.physics
-            #     p_props = obj1_physics.apply_forces(obj2_physics, timestep)
-            #     p_props_collision = p_props.collision
-            #     if p_props_collision:
-            #         if (
-            #             obj1_physics.temperature > obj1_physics.melting_point
-            #             and obj2_physics.temperature > obj2_physics.melting_point
-            #         ):
-            #             if obj1_physics.mass > obj2_physics.mass:
-            #                 self.objects.pop(idx2)
-            #                 obj1_physics.scale += obj2_physics.scale
-            #                 obj1_physics.mass += obj2_physics.mass
-            #             else:
-            #                 self.objects.pop(idx1)
-            #                 obj2_physics.scale += obj1_physics.scale
-            #                 obj2_physics.mass += obj1_physics.mass
-            #                 continue
+            obj1_physics = obj1.physics
+            for idx2, obj2 in enumerate(self.objects):
+                if obj1 == obj2:
+                    continue
+                obj2_physics = obj2.physics
+                # self.handle_physics(obj1_physics, obj2_physics, idx1, idx2)
 
             # obj1_physics.update(timestep)
             obj1.draw(graphics, self.camera)
