@@ -4,9 +4,10 @@ https://github.com/syn-chromatic/rust-physics-simulation
 
 ___
 # Setup
-No external libraries are required, other than typing-extensions.
-
-```pip install typing-extensions```
+```
+pip install typing-extensions
+pip install pygame
+```
 
 ___
 # Issues and Upcoming changes 
