@@ -137,3 +137,11 @@ class Vector3D:
         if length_squared == 0.0:
             return 0.0
         return math.sqrt(length_squared)
+
+    def get_distance(self, vec: "Vector3D") -> float:
+        x = (self.x - vec.x) ** 2
+        y = (self.y - vec.y) ** 2
+        z = (self.z - vec.z) ** 2
+
+        distance = math.sqrt(x + y + z)
+        return distance

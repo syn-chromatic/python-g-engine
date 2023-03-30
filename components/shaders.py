@@ -8,12 +8,14 @@ class Light:
     def __init__(
         self,
         position: Vector3D,
+        target: Vector3D,
         ambient: Vector3D,
         diffuse: Vector3D,
         specular: Vector3D,
         lumens: float,
     ) -> None:
         self.position = position
+        self.target = target
         self.ambient = ambient
         self.diffuse = diffuse
         self.specular = specular
@@ -21,14 +23,33 @@ class Light:
 
     @staticmethod
     def get_light() -> "Light":
-        light_position = Vector3D(300.0, 1000.0, 3000.0)
+        position = Vector3D(300.0, 1000.0, 3000.0)
+        target = Vector3D(0.0, 0.0, 0.0)
         ambient_color = Vector3D(0.6, 0.6, 0.6)
         diffuse_color = Vector3D(0.4, 0.4, 0.4)
         specular_color = Vector3D(0.2, 0.2, 0.2)
         lumens = 8_000_000.0
 
         light = Light(
-            position=light_position,
+            position=position,
+            target=target,
+            ambient=ambient_color,
+            diffuse=diffuse_color,
+            specular=specular_color,
+            lumens=lumens,
+        )
+        return light
+
+    @staticmethod
+    def get_light_from_position(position: Vector3D, target: Vector3D) -> "Light":
+        ambient_color = Vector3D(0.8, 0.8, 0.8)
+        diffuse_color = Vector3D(0.0, 0.0, 0.0)
+        specular_color = Vector3D(0.0, 0.0, 0.0)
+        lumens = 100_000.0
+
+        light = Light(
+            position=position,
+            target=target,
             ambient=ambient_color,
             diffuse=diffuse_color,
             specular=specular_color,
@@ -49,6 +70,9 @@ class Shaders:
         linear_attenuation = 0.09
         quadratic_attenuation = 0.032
 
+        light_dir = light.target.subtract_vector(light.position)
+        light_dir = light_dir.normalize()
+
         for polygon in mesh.polygons:
             if isinstance(polygon, Quad):
                 continue
@@ -65,10 +89,12 @@ class Shaders:
             normal = edge1.cross_product(edge2)
             normal = normal.normalize()
 
-            light_dir = light.position.subtract_vector(centroid)
-            distance = light_dir.get_length()
-            light_dir = light_dir.normalize()
+            distance_vector = centroid.subtract_vector(light.position)
+            distance = distance_vector.get_length()
+            distance_vector = distance_vector.normalize()
+
             light_intensity = light.lumens / (distance * distance)
+            light_dir = light_dir.multiply(distance_vector.dot_product(light_dir))
 
             viewer_dir = viewer_position.subtract_vector(centroid)
             viewer_dir = viewer_dir.normalize()
@@ -124,7 +150,8 @@ class Shaders:
                 .add_vector(diffuse.multiply(k_d))
                 .add_vector(specular.multiply(k_s))
             )
-            triangle.shader = RGBA.from_vector(shading)
+            shader = RGBA.from_vector(shading)
+            triangle.shader = triangle.shader.average(shader)
 
     @staticmethod
     def apply_lighting(mesh: Mesh, light: Light, viewer_position: Vector3D) -> None:
@@ -164,4 +191,5 @@ class Shaders:
             specular = light.specular.multiply(specular_clamped)
 
             shading = ambient.add_vector(diffuse).add_vector(specular)
-            triangle.shader = RGBA.from_vector(shading)
+            shader = RGBA.from_vector(shading)
+            triangle.shader = triangle.shader.average(shader)

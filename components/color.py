@@ -55,6 +55,13 @@ class RGBA:
         alpha = self.alpha * color.alpha
         return RGBA(red, green, blue, alpha)
 
+    def average(self, color: "RGBA") -> "RGBA":
+        red = (self.red + color.red) / 2.0
+        green = (self.green + color.green) / 2.0
+        blue = (self.blue + color.blue) / 2.0
+        alpha = (self.alpha + color.alpha) / 2.0
+        return RGBA(red, green, blue, alpha)
+
     def clamp(self, min_value: float, max_value: float) -> "RGBA":
         red = max(min_value, min(self.red, max_value))
         green = max(min_value, min(self.green, max_value))
