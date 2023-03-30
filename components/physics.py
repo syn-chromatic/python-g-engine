@@ -62,6 +62,7 @@ class Physics:
         self.position = self.position.add_vector(timestep_velocity)
         self.velocity = self.velocity.add_vector(timestep_acceleration)
 
+
     def _calculate_spin(self, timestep: float):
         timestep_spin_acc = self.spin_acceleration.multiply(timestep)
         self.spin_velocity = self.spin_velocity.add_vector(timestep_spin_acc)
@@ -76,6 +77,11 @@ class Physics:
                 vertex = self._rotate_x(vertex, x_rotation)
                 vertex = self._rotate_y(vertex, y_rotation)
                 vertex = self._rotate_z(vertex, z_rotation)
+                if self.mesh.light:
+                    # print(self.mesh.light.position)
+                    # print(self.position)
+                    # input()
+                    self.mesh.light.position = vertex
                 vertices[idx] = vertex
 
             polygon.vertices = tuple(vertices)

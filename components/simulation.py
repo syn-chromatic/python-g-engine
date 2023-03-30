@@ -8,12 +8,7 @@ from components.color import RGBA
 from components.font import FontSettings, ArialFontNormal, ArialFontBold
 from components.text_writer import TextWriter
 
-from configurations.body_configurations import (
-    get_center_cube,
-    get_center_sphere,
-    get_grid,
-    get_obj,
-)
+import configurations.body_configurations as body_configurations
 
 
 class Simulation:
@@ -66,20 +61,20 @@ class Simulation:
             y = 0
             z = random.uniform(0, 1000)
 
-            cube = get_center_cube(x, y, z)
+            cube = body_configurations.get_center_cube(x, y, z)
             self.objects.append(cube)
 
     def setup_objects(self) -> None:
 
-        grid = get_grid()
+        grid = body_configurations.get_grid()
         self.objects.append(grid)
 
         # self.setup_objects_cubes()
 
-        obj = get_obj()
+        obj = body_configurations.get_obj()
         self.objects.append(obj)
 
-        sphere = get_center_sphere()
+        sphere = body_configurations.get_center_sphere()
         self.objects.append(sphere)
 
     def compute_all_objects(self, graphics: GraphicsABC):

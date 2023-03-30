@@ -5,6 +5,7 @@ from components.color import RGBA
 
 from components.vertices import Sphere, Cube, GridHorizontal, MeshConverter
 from components.model import OBJModelFormat
+from components.light import Light
 
 from pathlib import Path
 
@@ -26,10 +27,14 @@ def get_center_cube(px, py, pz):
 
 
 def get_center_sphere():
+    mass = 500_000
+    light = Light.get_light()
     sphere = Sphere(100, 10, 10)
     sphere.set_offset(400.0, 1100.0, 3100.0)
-    polygons = sphere.get_triangle_mesh()
-    body = Shape(polygons)
+    mesh = sphere.get_triangle_mesh()
+    mesh.light = light
+    body = Shape(mesh)
+    body.physics.set_mass(mass)
     return body
 
 
@@ -66,7 +71,8 @@ def get_grid():
 
 
 def get_obj():
-    file_path = Path("./cottage.obj")
+    mass = 10_000_000
+    file_path = Path("./cottage2.obj")
     obj = OBJModelFormat(file_path, 0.2)
     obj.set_offset(500, -100, 600)
     polygons = obj.get_polygons()
@@ -74,4 +80,5 @@ def get_obj():
 
     body = Shape(polygons)
     body.set_color(color)
+    body.physics.set_mass(mass)
     return body

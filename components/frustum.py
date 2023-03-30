@@ -20,7 +20,7 @@ class Frustum:
         self.height = height
         self.fov = 90
         self.near_plane = 0.1
-        self.far_plane = 5000.0
+        self.far_plane = 20_000.0
         self.planes = self.make_frustum()
 
     def make_frustum(self) -> list[Plane]:

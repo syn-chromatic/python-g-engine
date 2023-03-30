@@ -1,7 +1,8 @@
 from components.vectors import Vector3D
 from components.color import RGBA
+from components.light import Light
 
-from typing import Union
+from typing import Union, Optional
 
 
 class Triangle:
@@ -60,5 +61,8 @@ class Polygon:
 
 
 class Mesh:
-    def __init__(self, polygons: list[Union[Triangle, Quad]]) -> None:
+    def __init__(
+        self, polygons: list[Union[Triangle, Quad]], light: Optional[Light] = None
+    ) -> None:
         self.polygons = polygons
+        self.light = light

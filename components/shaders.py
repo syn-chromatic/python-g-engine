@@ -1,76 +1,33 @@
 from components.vectors import Vector3D
 from components.polygons import Mesh, Triangle, Quad
 from components.color import RGBA
+from components.light import Light
 import math
 
 
-class Light:
-    def __init__(
-        self,
-        position: Vector3D,
-        target: Vector3D,
-        ambient: Vector3D,
-        diffuse: Vector3D,
-        specular: Vector3D,
-        lumens: float,
-    ) -> None:
-        self.position = position
-        self.target = target
-        self.ambient = ambient
-        self.diffuse = diffuse
-        self.specular = specular
-        self.lumens = lumens
-
-    @staticmethod
-    def get_light() -> "Light":
-        position = Vector3D(300.0, 1000.0, 3000.0)
-        target = Vector3D(0.0, 0.0, 0.0)
-        ambient_color = Vector3D(0.6, 0.6, 0.6)
-        diffuse_color = Vector3D(0.4, 0.4, 0.4)
-        specular_color = Vector3D(0.2, 0.2, 0.2)
-        lumens = 4000.0
-
-        light = Light(
-            position=position,
-            target=target,
-            ambient=ambient_color,
-            diffuse=diffuse_color,
-            specular=specular_color,
-            lumens=lumens,
-        )
-        return light
-
-    @staticmethod
-    def get_light_from_position(position: Vector3D, target: Vector3D) -> "Light":
-        ambient_color = Vector3D(0.8, 0.8, 0.8)
-        diffuse_color = Vector3D(0.5, 0.5, 0.5)
-        specular_color = Vector3D(0.2, 0.2, 0.2)
-        lumens = 500.0
-
-        light = Light(
-            position=position,
-            target=target,
-            ambient=ambient_color,
-            diffuse=diffuse_color,
-            specular=specular_color,
-            lumens=lumens,
-        )
-        return light
-
-
 class Shaders:
+    def __init__(self):
+        self.roughness = 0.2
+        self.metallic = 0.8
+        self.k_s = self.metallic
+        self.k_d = 1.0 - self.k_s
+        self.f0 = 0.04
+        self.constant_attenuation = 1.0
+        self.linear_attenuation = 0.09
+        self.quadratic_attenuation = 0.032
+
+    def get_attenuation(self, distance: float):
+        attenuation_denom = (
+            self.constant_attenuation
+            + self.linear_attenuation * distance
+            + self.quadratic_attenuation * (distance**2)
+        )
+        attenuation = 1.0 / attenuation_denom
+        return attenuation
+
     def get_pbr_shader(
         self, light: Light, triangle: Triangle, viewer_position: Vector3D
     ) -> Vector3D:
-        roughness = 0.2
-        metallic = 0.8
-        k_s = metallic
-        k_d = 1.0 - k_s
-        f0 = 0.04
-        constant_attenuation = 1.0
-        linear_attenuation = 0.09
-        quadratic_attenuation = 0.032
-
         light_dir = light.target.subtract_vector(light.position)
         light_dir = light_dir.normalize()
 
@@ -90,7 +47,7 @@ class Shaders:
         distance = distance_vector.get_length()
         distance_vector = distance_vector.normalize()
 
-        light_intensity = light.lumens / (distance * distance)
+        light_intensity = light.lumens / (distance**2)
         light_dir = light_dir.multiply(distance_vector.dot_product(light_dir))
         light_dir = light_dir.multiply(-1.0)
 
@@ -106,7 +63,7 @@ class Shaders:
         n_dot_l = max(0.0, normal.dot_product(light_dir))
         n_dot_h = max(0.0, normal.dot_product(halfway))
 
-        roughness_sq = roughness * roughness
+        roughness_sq = self.roughness**2
         n_dot_vsq = n_dot_v * n_dot_v
         n_dot_lsq = n_dot_l * n_dot_l
         n_dot_hsq = n_dot_h * n_dot_h
@@ -117,36 +74,27 @@ class Shaders:
         g1 = 2.0 * n_dot_v / g1_denom
         g2 = 2.0 * n_dot_l / g2_denom
 
-        attenuation_denom = (
-            constant_attenuation
-            + linear_attenuation * distance
-            + quadratic_attenuation * (distance**2)
-        )
-        attenuation = 1.0 / attenuation_denom
+        attenuation = self.get_attenuation(distance)
 
         ambient = light.ambient.multiply(light.lumens).multiply(light_intensity)
+        diffuse_mult = diffuse_angle * light.lumens * attenuation
+        diffuse = light.diffuse.multiply(diffuse_mult).multiply(light_intensity)
 
-        diffuse = light.diffuse.multiply(
-            diffuse_angle * light.lumens * attenuation
-        ).multiply(light_intensity)
+        roughness_sq_intr = roughness_sq - 1.0
 
-        d_denom = (n_dot_hsq * (roughness_sq - 1.0) + 1.0) * (
-            n_dot_hsq * (roughness_sq - 1.0) + 1.0
-        )
+        d_denom = (n_dot_hsq * roughness_sq_intr + 1.0) ** 2
 
-        f = f0 + (1.0 - f0) * (1.0 - n_dot_h) ** 5
+        f = self.f0 + (1.0 - self.f0) * (1.0 - n_dot_h) ** 5
         g = g1 * g2
         d = roughness_sq / d_denom
 
-        specular = light.specular.multiply(
-            f * g * d / (4.0 * n_dot_l * n_dot_v + 0.000001) * light_intensity * attenuation
-        )
+        specular_mult = f * g * d * light_intensity * attenuation
+        specular_mult_denom = 4.0 * n_dot_l * n_dot_v + 0.000001
 
-        shader_vec = (
-            ambient.multiply(k_d)
-            .add_vector(diffuse.multiply(k_d))
-            .add_vector(specular.multiply(k_s))
-        )
+        specular = light.specular.multiply(specular_mult / specular_mult_denom)
+        shader_vec = ambient.multiply(self.k_d)
+        shader_vec = shader_vec.add_vector(diffuse.multiply(self.k_d))
+        shader_vec = shader_vec.add_vector(specular.multiply(self.k_s))
         return shader_vec
 
     def apply_pbr_lighting(self, mesh: Mesh, light: Light, viewer_position: Vector3D):
@@ -170,7 +118,6 @@ class Shaders:
 
             triangle = polygon
             vertices = triangle.vertices
-            face = triangle.face
             v0, v1, v2 = vertices
 
             edge1 = v1.subtract_vector(v0)

@@ -6,10 +6,10 @@ from typing import Union
 
 
 class ZBufferSort1:
-    def __init__(self, camera_position: Vector3D):
+    def __init__(self, camera_position: Vector3D) -> None:
         self.camera_position = camera_position
 
-    def get_centroid(self, polygon: Union[Triangle, Quad]):
+    def get_centroid(self, polygon: Union[Triangle, Quad]) -> Vector3D:
         vertices_sum = Vector3D(0, 0, 0)
         num_vertices = len(polygon.vertices)
 
@@ -30,10 +30,10 @@ class ZBufferSort1:
 
 
 class ZBufferSort2:
-    def __init__(self, camera_position):
+    def __init__(self, camera_position: Vector3D) -> None:
         self.camera_position = camera_position
 
-    def get_centroid(self, polygon):
+    def get_centroid(self, polygon: Union[Triangle, Quad]) -> Vector3D:
         vertices = polygon.vertices
         num_vertices = len(vertices)
         vertices_sum = Vector3D(0.0, 0.0, 0.0)
@@ -43,19 +43,13 @@ class ZBufferSort2:
 
         return vertices_sum.divide(num_vertices)
 
-    def get_centroid_distance(self, polygon):
+    def get_centroid_distance(self, polygon: Union[Triangle, Quad]) -> float:
         centroid = self.get_centroid(polygon)
         distance = self.camera_position.get_distance(centroid)
         return distance
 
-    def get_polygon_max_z(self, polygon):
-        if isinstance(polygon, Triangle):
-            vertices = polygon.vertices
-        elif isinstance(polygon, Quad):
-            vertices = polygon.vertices
-        else:
-            raise TypeError("Invalid polygon type")
-
+    def get_polygon_max_z(self, polygon: Union[Triangle, Quad]) -> float:
+        vertices = polygon.vertices
         max_z = float("-inf")
 
         for vertex in vertices:
@@ -66,19 +60,21 @@ class ZBufferSort2:
 
         return max_z
 
-    def merge_sort(self, distances, left, right):
+    def merge_sort(self, distances: list[tuple[float, int]], left: int, right: int):
         if left < right:
             mid = left + (right - left) // 2
             self.merge_sort(distances, left, mid)
             self.merge_sort(distances, mid + 1, right)
             self.merge(distances, left, mid, right)
 
-    def merge(self, distances, left, mid, right):
+    def merge(
+        self, distances: list[tuple[float, int]], left: int, mid: int, right: int
+    ) -> None:
         n1 = mid - left + 1
         n2 = right - mid
 
-        left_distances = distances[left : (left + n1)]
-        right_distances = distances[(mid + 1) : (mid + 1 + n2)]
+        left_distances = distances[left: (left + n1)]
+        right_distances = distances[(mid + 1): (mid + 1 + n2)]
 
         i = j = 0
         k = left
@@ -102,7 +98,9 @@ class ZBufferSort2:
             j += 1
             k += 1
 
-    def get_sorted_polygons(self, polygons):
+    def get_sorted_polygons(
+        self, polygons: list[Union[Triangle, Quad]]
+    ) -> list[Triangle | Quad]:
         distances = [
             (self.get_centroid_distance(polygons[i]), i) for i in range(len(polygons))
         ]

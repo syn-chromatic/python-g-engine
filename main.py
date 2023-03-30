@@ -50,7 +50,7 @@ class GraphicsHandler:
         camera = self.simulation.camera
         simulation = self.simulation
 
-        step_val = 30.0
+        step_val = 60.0
 
         increase_distance = partial(camera.increment_planes, step_val)
         decrease_distance = partial(camera.increment_planes, -step_val)
