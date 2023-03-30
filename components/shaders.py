@@ -28,7 +28,7 @@ class Light:
         ambient_color = Vector3D(0.6, 0.6, 0.6)
         diffuse_color = Vector3D(0.4, 0.4, 0.4)
         specular_color = Vector3D(0.2, 0.2, 0.2)
-        lumens = 8_000_000.0
+        lumens = 5000.0
 
         light = Light(
             position=position,
@@ -43,9 +43,9 @@ class Light:
     @staticmethod
     def get_light_from_position(position: Vector3D, target: Vector3D) -> "Light":
         ambient_color = Vector3D(0.8, 0.8, 0.8)
-        diffuse_color = Vector3D(0.0, 0.0, 0.0)
-        specular_color = Vector3D(0.0, 0.0, 0.0)
-        lumens = 100_000.0
+        diffuse_color = Vector3D(0.5, 0.5, 0.5)
+        specular_color = Vector3D(0.2, 0.2, 0.2)
+        lumens = 500.0
 
         light = Light(
             position=position,
@@ -59,10 +59,11 @@ class Light:
 
 
 class Shaders:
-    @staticmethod
-    def apply_pbr_lighting(mesh: Mesh, light: Light, viewer_position: Vector3D):
-        roughness = 0.6
-        metallic = 0.6
+    def get_pbr_shader(
+        self, light: Light, triangle: Triangle, viewer_position: Vector3D
+    ) -> Vector3D:
+        roughness = 0.2
+        metallic = 0.8
         k_s = metallic
         k_d = 1.0 - k_s
         f0 = 0.04
@@ -73,84 +74,92 @@ class Shaders:
         light_dir = light.target.subtract_vector(light.position)
         light_dir = light_dir.normalize()
 
+        vertices = triangle.vertices
+        v0 = vertices[0]
+        v1 = vertices[1]
+        v2 = vertices[2]
+
+        centroid = v0.add_vector(v1).add_vector(v2).divide(3.0)
+
+        edge1 = v1.subtract_vector(v0)
+        edge2 = v2.subtract_vector(v0)
+        normal = edge1.cross_product(edge2)
+        normal = normal.normalize()
+
+        distance_vector = centroid.subtract_vector(light.position)
+        distance = distance_vector.get_length()
+        distance_vector = distance_vector.normalize()
+
+        light_intensity = light.lumens / (distance * distance)
+        light_dir = light_dir.multiply(distance_vector.dot_product(light_dir))
+        light_dir = light_dir.multiply(-1.0)
+
+        viewer_dir = viewer_position.subtract_vector(centroid)
+        viewer_dir = viewer_dir.normalize()
+
+        halfway = light_dir.add_vector(viewer_dir)
+        halfway = halfway.normalize()
+
+        diffuse_angle = normal.dot_product(light_dir)
+        diffuse_angle = max(0.0, diffuse_angle)
+        n_dot_v = max(0.0, normal.dot_product(viewer_dir))
+        n_dot_l = max(0.0, normal.dot_product(light_dir))
+        n_dot_h = max(0.0, normal.dot_product(halfway))
+
+        roughness_sq = roughness * roughness
+        n_dot_vsq = n_dot_v * n_dot_v
+        n_dot_lsq = n_dot_l * n_dot_l
+        n_dot_hsq = n_dot_h * n_dot_h
+
+        g1_denom = n_dot_v + math.sqrt((1.0 - roughness_sq) * n_dot_vsq + roughness_sq)
+        g2_denom = n_dot_l + math.sqrt((1.0 - roughness_sq) * n_dot_lsq + roughness_sq)
+
+        g1 = 2.0 * n_dot_v / g1_denom
+        g2 = 2.0 * n_dot_l / g2_denom
+
+        attenuation_denom = (
+            constant_attenuation
+            + linear_attenuation * distance
+            + quadratic_attenuation * (distance**2)
+        )
+        attenuation = 1.0 / attenuation_denom
+
+        ambient = light.ambient.multiply(light.lumens).multiply(light_intensity)
+
+        diffuse = light.diffuse.multiply(
+            diffuse_angle * light.lumens * attenuation
+        ).multiply(light_intensity)
+
+        d_denom = (n_dot_hsq * (roughness_sq - 1.0) + 1.0) * (
+            n_dot_hsq * (roughness_sq - 1.0) + 1.0
+        )
+
+        f = f0 + (1.0 - f0) * (1.0 - n_dot_h) ** 5
+        g = g1 * g2
+        d = roughness_sq / d_denom
+
+        specular = light.specular.multiply(
+            f * g * d / (4.0 * n_dot_l * n_dot_v + 0.000001) * light_intensity * attenuation
+        )
+
+        shader_vec = (
+            ambient.multiply(k_d)
+            .add_vector(diffuse.multiply(k_d))
+            .add_vector(specular.multiply(k_s))
+        )
+        return shader_vec
+
+    def apply_pbr_lighting(self, mesh: Mesh, light: Light, viewer_position: Vector3D):
+        light_dir = light.target.subtract_vector(light.position)
+        light_dir = light_dir.normalize()
+
         for polygon in mesh.polygons:
             if isinstance(polygon, Quad):
                 continue
+
             triangle = polygon
-            vertices = triangle.vertices
-            v0 = vertices[0]
-            v1 = vertices[1]
-            v2 = vertices[2]
-
-            centroid = v0.add_vector(v1).add_vector(v2).divide(3.0)
-
-            edge1 = v1.subtract_vector(v0)
-            edge2 = v2.subtract_vector(v0)
-            normal = edge1.cross_product(edge2)
-            normal = normal.normalize()
-
-            distance_vector = centroid.subtract_vector(light.position)
-            distance = distance_vector.get_length()
-            distance_vector = distance_vector.normalize()
-
-            light_intensity = light.lumens / (distance * distance)
-            light_dir = light_dir.multiply(distance_vector.dot_product(light_dir))
-
-            viewer_dir = viewer_position.subtract_vector(centroid)
-            viewer_dir = viewer_dir.normalize()
-
-            halfway = light_dir.add_vector(viewer_dir)
-            halfway = halfway.normalize()
-
-            diffuse_angle = normal.dot_product(light_dir)
-            diffuse_angle = max(0, diffuse_angle)
-            n_dot_v = max(0.0, normal.dot_product(viewer_dir))
-            n_dot_l = max(0.0, normal.dot_product(light_dir))
-            n_dot_h = max(0.0, normal.dot_product(halfway))
-
-            roughness_sq = roughness * roughness
-            n_dot_vsq = n_dot_v * n_dot_v
-            n_dot_lsq = n_dot_l * n_dot_l
-            n_dot_hsq = n_dot_h * n_dot_h
-
-            g1 = (2.0 * n_dot_v) / (
-                n_dot_v + (math.sqrt(1.0 - roughness_sq) * n_dot_vsq + roughness_sq)
-            )
-            g2 = (2.0 * n_dot_l) / (
-                n_dot_l + (math.sqrt(1.0 - roughness_sq) * n_dot_lsq + roughness_sq)
-            )
-
-            attenuation = 1.0 / (
-                constant_attenuation
-                + linear_attenuation * distance
-                + quadratic_attenuation * distance * distance
-            )
-            ambient = light.ambient.multiply(light_intensity)
-            diffuse = light.diffuse.multiply(
-                diffuse_angle * light_intensity * attenuation
-            )
-
-            f = f0 + (1.0 - f0) * (1.0 - n_dot_h) ** 5
-            g = g1 * g2
-            d = roughness_sq / (
-                (n_dot_hsq * (roughness_sq - 1.0) + 1.0)
-                * (n_dot_hsq * (roughness_sq - 1.0) + 1.0)
-            )
-
-            specular = light.specular.multiply(
-                f
-                * g
-                * d
-                / (4.0 * n_dot_l * n_dot_v + 0.0000001)
-                * light_intensity
-                * attenuation
-            )
-            shading = (
-                ambient.multiply(k_d)
-                .add_vector(diffuse.multiply(k_d))
-                .add_vector(specular.multiply(k_s))
-            )
-            shader = RGBA.from_vector(shading)
+            shader_vec = self.get_pbr_shader(light, triangle, viewer_position)
+            shader = RGBA.from_vector(shader_vec)
             triangle.shader = triangle.shader.average(shader)
 
     @staticmethod

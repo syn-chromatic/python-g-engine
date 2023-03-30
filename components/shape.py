@@ -6,33 +6,10 @@ from components.color import RGBA
 from components.polygons import Mesh
 from components.shaders import Shaders, Light
 
-from components.polygons import Triangle, Quad
-from components.vectors import Vector3D
-from typing import Union
+from components.z_buffer import ZBufferSort2
+from components.backface_culling import BackfaceCulling
 
-
-class ZBufferSort:
-    def __init__(self, camera_position: Vector3D):
-        self.camera_position = camera_position
-
-    def get_centroid(self, polygon: Union[Triangle, Quad]):
-        vertices_sum = Vector3D(0, 0, 0)
-        num_vertices = len(polygon.vertices)
-
-        for vertex in polygon.vertices:
-            vertices_sum = vertices_sum.add_vector(vertex)
-
-        return vertices_sum.divide(num_vertices)
-
-    def get_sorted_polygons(
-        self, polygons: list[Union[Triangle, Quad]]
-    ) -> list[Union[Triangle, Quad]]:
-        camera_position = self.camera_position
-        return sorted(
-            polygons,
-            key=lambda p: camera_position.get_distance(self.get_centroid(p)),
-            reverse=True,
-        )
+from copy import copy
 
 
 class Shape(Body):
@@ -45,20 +22,26 @@ class Shape(Body):
         self.color = color
 
     def draw(self, graphics: GraphicsABC, camera: Camera):
-        mesh = self.physics.mesh
+        mesh = copy(self.physics.mesh)
+
         camera_position = camera.camera_position
         camera_target = camera.camera_target
 
-        Shaders.apply_pbr_lighting(mesh, self.light, camera_position)
+        polygons = mesh.polygons
+        backface_culling = BackfaceCulling()
+        polygons = backface_culling.cull_backfaces(camera_position, polygons)
+        mesh.polygons = polygons
+
+        z_buffer_sort = ZBufferSort2(camera.camera_position)
+        polygons = z_buffer_sort.get_sorted_polygons(mesh.polygons)
+        mesh.polygons = polygons
+
+        shaders = Shaders()
+        shaders.apply_pbr_lighting(mesh, self.light, camera_position)
 
         light_camera = Light.get_light_from_position(camera_position, camera_target)
-        Shaders.apply_pbr_lighting(mesh, light_camera, camera_position)
+        shaders.apply_pbr_lighting(mesh, light_camera, camera_position)
 
-        z_buffer_sort = ZBufferSort(camera.camera_position)
-        sorted_polygons = z_buffer_sort.get_sorted_polygons(mesh.polygons)
-
-        mesh.polygons = sorted_polygons
         mesh = camera.apply_projection_polygons(mesh)
-
         if mesh:
             graphics.draw_polygons(mesh, False)
