@@ -12,7 +12,6 @@ pip install pygame
 ___
 # Issues and Upcoming changes 
 * Issue: Physics is currently broken
-* Issue: Lighting is flawed and is only a placeholder
 * Issue: Frustum Clipping doesn't work for quad polygons
 * Issue: Projection math causes drift when an object is positioned on an axis plane
 * Issue: Performance optimization is needed for draw calls
