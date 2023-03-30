@@ -5,6 +5,7 @@ from components.graphics import TurtleGraphics, PygGraphics
 from components.simulation import Simulation
 from components.camera import Camera
 from components.color import RGBA
+from components.frametime import FrameTimeHandler
 
 
 def main() -> None:
@@ -14,20 +15,28 @@ def main() -> None:
 
     graphics = PygGraphics(width, height)
     camera = Camera(width, height)
+    frame_timing = FrameTimeHandler(30)
 
     graphics.set_title("Physics System")
     graphics.set_background_color(background_color)
 
     simulation = Simulation(camera)
     simulation.setup_objects()
-    GraphicsHandler(graphics, simulation, camera)
+    GraphicsHandler(graphics, simulation, camera, frame_timing)
 
 
 class GraphicsHandler:
-    def __init__(self, graphics: GraphicsABC, simulation: Simulation, camera: Camera):
+    def __init__(
+        self,
+        graphics: GraphicsABC,
+        simulation: Simulation,
+        camera: Camera,
+        frame_timing: FrameTimeHandler,
+    ):
         self.graphics = graphics
         self.simulation = simulation
         self.camera = camera
+        self.frame_timing = frame_timing
         self.previous_pointer = graphics.get_pointer_xy()
         self.register_keys()
         self.draw_loop()
@@ -97,8 +106,10 @@ class GraphicsHandler:
             camera.handle_mouse_movement(dx, dy)
 
     def on_draw(self) -> None:
+        fps = self.frame_timing.get_frames_per_second()
         self.graphics.clear_screen()
-        self.simulation.simulate(self.graphics)
+        self.simulation.simulate(self.graphics, fps)
+        self.frame_timing.tick()
         self.graphics.update()
 
     def draw_loop(self) -> None:

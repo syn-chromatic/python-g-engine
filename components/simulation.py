@@ -82,8 +82,7 @@ class Simulation:
         sphere = get_center_sphere()
         self.objects.append(sphere)
 
-    def compute_all_objects(self, graphics: GraphicsABC) -> float:
-        frame_st = time.perf_counter()
+    def compute_all_objects(self, graphics: GraphicsABC):
         timestep = 1.0 / self.timestep_hz
 
         for idx1, obj1 in enumerate(self.objects):
@@ -112,13 +111,10 @@ class Simulation:
             # obj1_physics.update(timestep)
             obj1.draw(graphics, self.camera)
 
-        frame_time = time.perf_counter() - frame_st
-        return frame_time
-
-    def write_fps_text(self, frame_time: float):
+    def write_fps_text(self, fps: float):
         header_font = self.get_header_font()
         header_text = "Simulation Information"
-        text = f"{1 / frame_time:.2f} FPS"
+        text = f"{fps:.2f} FPS"
         self.text_writer.add_text_top_left(header_text, header_font)
         self.text_writer.add_text_top_left(text)
 
@@ -170,10 +166,10 @@ class Simulation:
     def draw_text(self, graphics: GraphicsABC):
         self.text_writer.draw(graphics)
 
-    def simulate(self, graphics: GraphicsABC):
-        frame_time = self.compute_all_objects(graphics)
+    def simulate(self, graphics: GraphicsABC, fps: float):
+        self.compute_all_objects(graphics)
 
-        self.write_fps_text(frame_time)
+        self.write_fps_text(fps)
         self.write_timestep_text()
         self.write_object_count()
         self.write_camera_information()
