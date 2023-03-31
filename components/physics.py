@@ -69,7 +69,6 @@ class Physics:
             self.mesh.light.position = light_position
 
         for polygon in self.mesh.polygons:
-
             if isinstance(polygon, Triangle):
                 v1 = polygon.vertices[0]
                 v2 = polygon.vertices[1]

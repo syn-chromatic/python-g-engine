@@ -16,7 +16,8 @@ ___
 * Issue: Projection math causes drift when an object is positioned on an axis plane
 * Issue: Performance optimization is needed for draw calls
 * Issue: Text Writer flickering and disappearance for the Turtle graphical backend
-* Change: Implement a Draw Call system
+* Issue: ZBuffer needs improvement
+* ~~Change: Implement a Draw Call system~~
 * ~~Change: Implement a Z-Buffer~~
 * ~~Change: Implement Backface Culling~~
 * Change: Separate physics from the Body abstraction 

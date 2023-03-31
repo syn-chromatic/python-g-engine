@@ -14,7 +14,3 @@ class Body(ABC):
     @abstractmethod
     def set_color(self, color: RGBA) -> None:
         return
-
-    @abstractmethod
-    def draw(self, graphics: GraphicsABC, camera: Camera) -> None:
-        return

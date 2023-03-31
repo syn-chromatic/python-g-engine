@@ -3,6 +3,7 @@ from components.color import RGBA
 from components.light import Light
 
 from typing import Union, Optional
+from copy import deepcopy
 
 
 class Triangle:
@@ -64,6 +65,7 @@ class Mesh:
     def __init__(
         self, polygons: list[Union[Triangle, Quad]], light: Optional[Light] = None
     ) -> None:
+        self.original_polygons = deepcopy(polygons)
         self.polygons = polygons
         self.light = light
 

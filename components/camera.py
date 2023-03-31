@@ -2,9 +2,8 @@ import math
 
 from components.frustum import Frustum
 from components.vectors import Vector3D
-from components.polygons import Mesh
+from components.polygons import Mesh, Triangle, Quad
 
-from typing import Optional
 from components.utils import clamp_float
 from copy import deepcopy
 
@@ -33,8 +32,6 @@ class Camera:
         print("FRUSTUM CLIPPING:", self.enable_frustum_clipping)
 
     def apply_view_transform(self, position: Vector3D) -> Vector3D:
-        self.apply_direction_adjustment()
-
         look_dir = self.look_direction
         side_dir = self.side_direction
         up_dir = self.up_direction
@@ -51,8 +48,8 @@ class Camera:
         half_width = self.frustum.width / 2.0
         half_height = self.frustum.height / 2.0
 
-        x = (position.x) * half_width
-        y = (position.y) * half_height
+        x = (position.x + 1.0) * half_width
+        y = (1.0 - position.y) * half_height
 
         screen_coordinates = Vector3D(x, y, position.z)
         return screen_coordinates
@@ -83,8 +80,9 @@ class Camera:
         vo = Vector3D(xo, yo, zo)
         return vo
 
-    def apply_projection_polygons(self, mesh: Mesh) -> Optional[Mesh]:
+    def apply_projection_polygons(self, mesh: Mesh) -> Mesh:
         mesh = deepcopy(mesh)
+        self.apply_direction_adjustment()
 
         for polygon in mesh.polygons:
             vertices = list(polygon.vertices)
@@ -103,6 +101,47 @@ class Camera:
                 vertex = self.ndc_to_screen_coordinates(vertex)
                 vertices[idx] = vertex
             polygon.vertices = tuple(vertices)
+        return mesh
+
+    def filter_polygons_outside_frustum(self, mesh: Mesh):
+        polygons = []
+
+        for polygon in mesh.polygons:
+            if isinstance(polygon, Triangle):
+                v1 = polygon.vertices[0]
+                v2 = polygon.vertices[1]
+                v3 = polygon.vertices[2]
+
+                v1 = self.apply_view_transform(v1)
+                v2 = self.apply_view_transform(v2)
+                v3 = self.apply_view_transform(v3)
+
+                v1_in = self.frustum.is_point_in_frustum(v1)
+                v2_in = self.frustum.is_point_in_frustum(v2)
+                v3_in = self.frustum.is_point_in_frustum(v3)
+                in_frustums = [v1_in, v2_in, v3_in]
+                if any(in_frustums):
+                    polygons.append(polygon)
+
+            elif isinstance(polygon, Quad):
+                v1 = polygon.vertices[0]
+                v2 = polygon.vertices[1]
+                v3 = polygon.vertices[2]
+                v4 = polygon.vertices[3]
+
+                v1 = self.apply_view_transform(v1)
+                v2 = self.apply_view_transform(v2)
+                v3 = self.apply_view_transform(v3)
+                v4 = self.apply_view_transform(v4)
+
+                v1_in = self.frustum.is_point_in_frustum(v1)
+                v2_in = self.frustum.is_point_in_frustum(v2)
+                v3_in = self.frustum.is_point_in_frustum(v3)
+                v4_in = self.frustum.is_point_in_frustum(v4)
+                in_frustums = [v1_in, v2_in, v3_in, v4_in]
+                if any(in_frustums):
+                    polygons.append(polygon)
+        mesh.polygons = polygons
         return mesh
 
     def handle_mouse_movement(self, x: float, y: float) -> None:

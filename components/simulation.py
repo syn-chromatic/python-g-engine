@@ -1,22 +1,19 @@
-import time
 import random
 
 from abstracts.graphics_abc import GraphicsABC
-from abstracts.body_abc import Body
-from components.camera import Camera
 from components.color import RGBA
 from components.physics import Physics
 from components.font import FontSettings, ArialFontNormal, ArialFontBold
 from components.text_writer import TextWriter
+from components.draw_call import DrawCall
 
 import configurations.body_configurations as body_configurations
 
 
 class Simulation:
-    def __init__(self, camera: Camera) -> None:
-        self.camera = camera
+    def __init__(self, draw_call: DrawCall) -> None:
+        self.draw_call = draw_call
         self.text_writer = self.create_text_writer()
-        self.objects: list[Body] = []
         self.timestep_hz = 10_000
 
     @staticmethod
@@ -63,26 +60,26 @@ class Simulation:
             z = random.uniform(0, 1000)
 
             cube = body_configurations.get_center_cube(x, y, z)
-            self.objects.append(cube)
+            self.draw_call.add_object(cube)
 
     def setup_objects(self) -> None:
 
         grid = body_configurations.get_grid()
-        self.objects.append(grid)
+        self.draw_call.add_object(grid)
 
         # self.setup_objects_cubes()
 
         obj = body_configurations.get_obj()
-        self.objects.append(obj)
+        self.draw_call.add_object(obj)
 
         sphere = body_configurations.get_sphere1()
-        self.objects.append(sphere)
+        self.draw_call.add_object(sphere)
 
         # sphere = body_configurations.get_sphere2()
-        # self.objects.append(sphere)
+        # self.draw_call.add_object(sphere)
 
         # obj = body_configurations.get_obj2()
-        # self.objects.append(obj)
+        # self.draw_call.add_object(obj)
 
     def handle_physics(
         self, obj1_physics: Physics, obj2_physics: Physics, idx1: int, idx2: int
@@ -107,18 +104,21 @@ class Simulation:
         #             continue
 
     def compute_all_objects(self, graphics: GraphicsABC):
-        timestep = 1.0 / self.timestep_hz
+        # timestep = 1.0 / self.timestep_hz
+        # objects = self.draw_call.objects
 
-        for idx1, obj1 in enumerate(self.objects):
-            obj1_physics = obj1.physics
-            for idx2, obj2 in enumerate(self.objects):
-                if obj1 == obj2:
-                    continue
-                obj2_physics = obj2.physics
-                # self.handle_physics(obj1_physics, obj2_physics, idx1, idx2)
+        # for idx1, obj1 in enumerate(objects):
+        #     obj1_physics = obj1.physics
+        #     for idx2, obj2 in enumerate(objects):
+        #         if obj1 == obj2:
+        #             continue
+        #         obj2_physics = obj2.physics
+        # self.handle_physics(obj1_physics, obj2_physics, idx1, idx2)
 
-            # obj1_physics.update(timestep)
-            obj1.draw(graphics, self.camera)
+        # obj1_physics.update(timestep)
+
+        # obj1.draw(graphics, self.camera)
+        self.draw_call.draw()
 
     def write_fps_text(self, fps: float):
         header_font = self.get_header_font()
@@ -133,12 +133,12 @@ class Simulation:
         self.text_writer.add_text_top_left(text)
 
     def write_object_count(self):
-        object_count = len(self.objects)
+        object_count = len(self.draw_call.objects)
         text = f"Objects:  {object_count}"
         self.text_writer.add_text_top_left(text)
 
     def write_camera_information(self):
-        camera = self.camera
+        camera = self.draw_call.camera
         cp = camera.camera_position
         clt = camera.camera_target
         cld = camera.look_direction

@@ -84,6 +84,14 @@ class TurtleGraphicsBase(GraphicsABC):
         canvas = self.get_canvas()
         return canvas.winfo_pointerxy()
 
+    def get_centered_coordinates(
+        self, position: tuple[float, float]
+    ) -> tuple[float, float]:
+        width, height = self.get_screensize()
+        centered_x = position[0] - (width / 2)
+        centered_y = -1 * (position[1] - (height / 2))
+        return (centered_x, centered_y)
+
 
 class TurtleGraphics(TurtleGraphicsBase):
     def __init__(self, width: int, height: int):
@@ -214,6 +222,10 @@ class TurtleGraphics(TurtleGraphicsBase):
         p2 = v2.to_tuple()[:2]
         p3 = v3.to_tuple()[:2]
 
+        p1 = self.get_centered_coordinates(p1)
+        p2 = self.get_centered_coordinates(p2)
+        p3 = self.get_centered_coordinates(p3)
+
         self.turtle.pencolor(line_rgb)
         self.turtle.fillcolor(color_rgb)
         self.draw_begin_fill(p1)
@@ -244,6 +256,11 @@ class TurtleGraphics(TurtleGraphicsBase):
         p2 = v2.to_tuple()[:2]
         p3 = v3.to_tuple()[:2]
         p4 = v4.to_tuple()[:2]
+
+        p1 = self.get_centered_coordinates(p1)
+        p2 = self.get_centered_coordinates(p2)
+        p3 = self.get_centered_coordinates(p3)
+        p4 = self.get_centered_coordinates(p4)
 
         self.turtle.pencolor(line_rgb)
         self.turtle.fillcolor(color_rgb)
@@ -477,10 +494,6 @@ class PygGraphics(PygGraphicsBase):
         p2 = v2.to_tuple()[:2]
         p3 = v3.to_tuple()[:2]
 
-        p1 = self.get_centered_coordinates(p1)
-        p2 = self.get_centered_coordinates(p2)
-        p3 = self.get_centered_coordinates(p3)
-
         points = [p1, p2, p3]
 
         pyg.draw.polygon(self.screen, color_u8, points)
@@ -505,11 +518,6 @@ class PygGraphics(PygGraphicsBase):
         p2 = v2.to_tuple()[:2]
         p3 = v3.to_tuple()[:2]
         p4 = v4.to_tuple()[:2]
-
-        p1 = self.get_centered_coordinates(p1)
-        p2 = self.get_centered_coordinates(p2)
-        p3 = self.get_centered_coordinates(p3)
-        p4 = self.get_centered_coordinates(p4)
 
         points = [p1, p2, p3, p4]
 

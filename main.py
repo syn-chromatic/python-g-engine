@@ -6,6 +6,7 @@ from components.simulation import Simulation
 from components.camera import Camera
 from components.color import RGBA
 from components.frametime import FrameTimeHandler
+from components.draw_call import DrawCall
 
 
 def main() -> None:
@@ -15,12 +16,13 @@ def main() -> None:
 
     graphics = PygGraphics(width, height)
     camera = Camera(width, height)
+    draw_call = DrawCall(graphics, camera)
     frame_timing = FrameTimeHandler(30)
 
     graphics.set_title("Physics System")
     graphics.set_background_color(background_color)
 
-    simulation = Simulation(camera)
+    simulation = Simulation(draw_call)
     simulation.setup_objects()
     GraphicsHandler(graphics, simulation, camera, frame_timing)
 
@@ -47,7 +49,7 @@ class GraphicsHandler:
         self.on_window_resize()
 
     def register_keys(self) -> None:
-        camera = self.simulation.camera
+        camera = self.camera
         simulation = self.simulation
 
         step_val = 60.0
@@ -102,7 +104,7 @@ class GraphicsHandler:
 
         if px != nx or py != ny:
             dx, dy = self.graphics.get_pointer_xy()
-            camera = self.simulation.camera
+            camera = self.camera
             camera.handle_mouse_movement(dx, dy)
 
     def on_draw(self) -> None:
