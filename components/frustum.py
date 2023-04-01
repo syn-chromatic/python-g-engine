@@ -1,7 +1,7 @@
 import math
 
 from components.vectors import Vector3D
-from components.polygons import Mesh, Triangle, Quad
+from components.polygons import Mesh, Triangle, Quad, Polygon
 
 from dataclasses import dataclass
 
@@ -124,10 +124,10 @@ class Frustum:
         output_polygons = []
 
         for polygon in mesh.polygons:
-            if isinstance(polygon, Quad):
+            if isinstance(polygon.shape, Quad):
                 continue
 
-            input_vertices = polygon.vertices
+            input_vertices = polygon.shape.vertices
             output_vertices = []
             output_faces = []
 
@@ -162,13 +162,14 @@ class Frustum:
                 faces = self.get_triangle_faces(output_faces)
                 for face in faces:
                     new_vertices = tuple(output_vertices[idx] for idx in face)
-                    new_polygon = Triangle(
+                    new_triangle = Triangle(
                         vertices=new_vertices,
                         face=face,
-                        shader=polygon.shader,
-                        color=polygon.color,
+                        shader=polygon.shape.shader,
+                        color=polygon.shape.color,
                     )
-                    output_polygons.append(new_polygon)
+                    triangle_poly = Polygon(new_triangle)
+                    output_polygons.append(triangle_poly)
 
         mesh.polygons = output_polygons
 

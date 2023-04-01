@@ -35,13 +35,13 @@ class Quad:
 
 
 class Polygon:
-    def __init__(self, polygon: Union[Triangle, Quad]):
-        self.polygon = polygon
+    def __init__(self, shape: Union[Triangle, Quad]):
+        self.shape = shape
 
     def get_normal(self) -> Vector3D:
-        v0 = self.polygon.vertices[0]
-        v1 = self.polygon.vertices[1]
-        v2 = self.polygon.vertices[2]
+        v0 = self.shape.vertices[0]
+        v1 = self.shape.vertices[1]
+        v2 = self.shape.vertices[2]
 
         edge1 = v1.subtract_vector(v0)
         edge2 = v2.subtract_vector(v0)
@@ -50,7 +50,7 @@ class Polygon:
         return normal
 
     def get_centroid(self) -> Vector3D:
-        vertices = self.polygon.vertices
+        vertices = self.shape.vertices
         vertices_sum = Vector3D(0.0, 0.0, 0.0)
         num_vertices = len(vertices)
 
@@ -62,9 +62,7 @@ class Polygon:
 
 
 class Mesh:
-    def __init__(
-        self, polygons: list[Union[Triangle, Quad]], light: Optional[Light] = None
-    ) -> None:
+    def __init__(self, polygons: list[Polygon], light: Optional[Light] = None) -> None:
         self.original_polygons = deepcopy(polygons)
         self.polygons = polygons
         self.light = light
@@ -72,19 +70,19 @@ class Mesh:
     def get_axes(self) -> list[Vector3D]:
         axes = []
         for polygon in self.polygons:
-            for i in range(len(polygon.vertices)):
-                vertex1 = polygon.vertices[i]
-                vertex2 = polygon.vertices[i - 1]
+            for i in range(len(polygon.shape.vertices)):
+                vertex1 = polygon.shape.vertices[i]
+                vertex2 = polygon.shape.vertices[i - 1]
                 edge = vertex1.subtract_vector(vertex2)
                 normal = Vector3D(-edge.y, edge.x, edge.z)
                 axes.append(normal.normalize())
         return axes
 
     def project_polygon(self, axis: Vector3D) -> tuple[float, float]:
-        min_proj = max_proj = self.polygons[0].vertices[0].dot_product(axis)
+        min_proj = max_proj = self.polygons[0].shape.vertices[0].dot_product(axis)
 
         for polygon in self.polygons:
-            for vertex in polygon.vertices:
+            for vertex in polygon.shape.vertices:
                 proj = vertex.dot_product(axis)
                 min_proj = min(min_proj, proj)
                 max_proj = max(max_proj, proj)

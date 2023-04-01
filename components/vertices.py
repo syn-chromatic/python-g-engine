@@ -1,5 +1,5 @@
 import math
-from components.polygons import Mesh, Triangle, Quad
+from components.polygons import Mesh, Triangle, Quad, Polygon
 from components.vectors import Vector3D
 
 
@@ -74,7 +74,8 @@ class Sphere:
                 (vertices[face[0]], vertices[face[1]], vertices[face[2]]),
                 face,
             )
-            triangle_mesh.append(triangle)
+            triangle_poly = Polygon(triangle)
+            triangle_mesh.append(triangle_poly)
         return Mesh(triangle_mesh)
 
     def get_quad_mesh(self) -> Mesh:
@@ -91,7 +92,8 @@ class Sphere:
                 ),
                 face,
             )
-            quad_polygons.append(quad)
+            quad_poly = Polygon(quad)
+            quad_polygons.append(quad_poly)
         return Mesh(quad_polygons)
 
 
@@ -138,7 +140,8 @@ class Cube:
                 ),
                 face,
             )
-            quad_polygons.append(quad)
+            quad_poly = Polygon(quad)
+            quad_polygons.append(quad_poly)
         return Mesh(quad_polygons)
 
 
@@ -150,12 +153,14 @@ class MeshConverter:
         polygons = self.mesh.polygons
         new_polygons = []
 
-        for poly in polygons:
-            if isinstance(poly, Quad):
-                vertices = poly.vertices
-                face = poly.face
-                shader = poly.shader
-                color = poly.color
+        for polygon in polygons:
+            if isinstance(polygon.shape, Quad):
+                quad = polygon.shape
+
+                vertices = quad.vertices
+                face = quad.face
+                shader = quad.shader
+                color = quad.color
 
                 triangle1 = Triangle(
                     (vertices[0], vertices[1], vertices[2]),
@@ -171,9 +176,12 @@ class MeshConverter:
                 )
                 triangle2.color = color
 
-                new_polygons.extend([triangle1, triangle2])
+                triangle_poly1 = Polygon(triangle1)
+                triangle_poly2 = Polygon(triangle2)
+
+                new_polygons.extend([triangle_poly1, triangle_poly2])
             else:
-                new_polygons.append(poly)
+                new_polygons.append(polygon)
 
         return Mesh(new_polygons)
 
@@ -247,7 +255,8 @@ class GridHorizontal:
                 (vertices[face[0]], vertices[face[1]], vertices[face[2]]),
                 face,
             )
-            triangle_polygons.append(triangle)
+            triangle_poly = Polygon(triangle)
+            triangle_polygons.append(triangle_poly)
         return Mesh(triangle_polygons)
 
     def get_quad_polygons(self) -> Mesh:
@@ -264,7 +273,8 @@ class GridHorizontal:
                 ),
                 face,
             )
-            quad_polygons.append(quad)
+            quad_poly = Polygon(quad)
+            quad_polygons.append(quad_poly)
         return Mesh(quad_polygons)
 
 

@@ -1,29 +1,18 @@
 from components.vectors import Vector3D
-from components.polygons import Triangle, Quad
 from components.polygons import Mesh
-
-from typing import Union
+from components.polygons import Polygon
 
 
 class ZBufferSort1:
     def __init__(self, camera_position: Vector3D) -> None:
         self.camera_position = camera_position
 
-    def get_centroid(self, polygon: Union[Triangle, Quad]) -> Vector3D:
-        vertices_sum = Vector3D(0, 0, 0)
-        num_vertices = len(polygon.vertices)
-
-        for vertex in polygon.vertices:
-            vertices_sum = vertices_sum.add_vector(vertex)
-
-        return vertices_sum.divide(num_vertices)
-
     def get_sorted_polygons(self, mesh: Mesh) -> Mesh:
         polygons = mesh.polygons
         camera_position = self.camera_position
         sorted_polygons = sorted(
             polygons,
-            key=lambda p: camera_position.get_distance(self.get_centroid(p)),
+            key=lambda p: camera_position.get_distance(p.get_centroid()),
             reverse=True,
         )
         mesh.polygons = sorted_polygons
@@ -34,27 +23,15 @@ class ZBufferSort2:
     def __init__(self) -> None:
         pass
 
-    def get_centroid(self, polygon: Union[Triangle, Quad]) -> Vector3D:
-        vertices = polygon.vertices
-        num_vertices = len(vertices)
-        vertices_sum = Vector3D(0.0, 0.0, 0.0)
-
-        for vertex in vertices:
-            vertices_sum = vertices_sum.add_vector(vertex)
-
-        return vertices_sum.divide(num_vertices)
-
     def get_centroid_distance(
-        self, polygon: Union[Triangle, Quad], camera_position: Vector3D
+        self, polygon: Polygon, camera_position: Vector3D
     ) -> float:
-        centroid = self.get_centroid(polygon)
+        centroid = polygon.get_centroid()
         distance = camera_position.get_distance(centroid)
         return distance
 
-    def get_polygon_max_z(
-        self, polygon: Union[Triangle, Quad], camera_position: Vector3D
-    ) -> float:
-        vertices = polygon.vertices
+    def get_polygon_max_z(self, polygon: Polygon, camera_position: Vector3D) -> float:
+        vertices = polygon.shape.vertices
         max_z = float("-inf")
 
         for vertex in vertices:

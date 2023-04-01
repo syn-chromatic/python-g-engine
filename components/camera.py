@@ -85,32 +85,32 @@ class Camera:
         self.apply_direction_adjustment()
 
         for polygon in mesh.polygons:
-            vertices = list(polygon.vertices)
+            vertices = list(polygon.shape.vertices)
             for idx, vertex in enumerate(vertices):
                 vertex = self.apply_view_transform(vertex)
                 vertices[idx] = vertex
-            polygon.vertices = tuple(vertices)
+            polygon.shape.vertices = tuple(vertices)
 
         if self.enable_frustum_clipping:
             self.frustum.frustum_clip(mesh)
 
         for polygon in mesh.polygons:
-            vertices = list(polygon.vertices)
+            vertices = list(polygon.shape.vertices)
             for idx, vertex in enumerate(vertices):
                 vertex = self.calculate_perspective_projection(vertex)
                 vertex = self.ndc_to_screen_coordinates(vertex)
                 vertices[idx] = vertex
-            polygon.vertices = tuple(vertices)
+            polygon.shape.vertices = tuple(vertices)
         return mesh
 
     def filter_polygons_outside_frustum(self, mesh: Mesh):
         polygons = []
 
         for polygon in mesh.polygons:
-            if isinstance(polygon, Triangle):
-                v1 = polygon.vertices[0]
-                v2 = polygon.vertices[1]
-                v3 = polygon.vertices[2]
+            if isinstance(polygon.shape, Triangle):
+                v1 = polygon.shape.vertices[0]
+                v2 = polygon.shape.vertices[1]
+                v3 = polygon.shape.vertices[2]
 
                 v1 = self.apply_view_transform(v1)
                 v2 = self.apply_view_transform(v2)
@@ -123,11 +123,11 @@ class Camera:
                 if any(in_frustums):
                     polygons.append(polygon)
 
-            elif isinstance(polygon, Quad):
-                v1 = polygon.vertices[0]
-                v2 = polygon.vertices[1]
-                v3 = polygon.vertices[2]
-                v4 = polygon.vertices[3]
+            elif isinstance(polygon.shape, Quad):
+                v1 = polygon.shape.vertices[0]
+                v2 = polygon.shape.vertices[1]
+                v3 = polygon.shape.vertices[2]
+                v4 = polygon.shape.vertices[3]
 
                 v1 = self.apply_view_transform(v1)
                 v2 = self.apply_view_transform(v2)

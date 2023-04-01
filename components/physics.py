@@ -71,23 +71,23 @@ class Physics:
             self.mesh.light.position = light_position
 
         for polygon in self.mesh.original_polygons:
-            if isinstance(polygon, Triangle):
-                v1 = polygon.vertices[0]
-                v2 = polygon.vertices[1]
-                v3 = polygon.vertices[2]
+            if isinstance(polygon.shape, Triangle):
+                v1 = polygon.shape.vertices[0]
+                v2 = polygon.shape.vertices[1]
+                v3 = polygon.shape.vertices[2]
 
                 v1 = v1.add_vector(timestep_velocity)
                 v2 = v2.add_vector(timestep_velocity)
                 v3 = v3.add_vector(timestep_velocity)
 
                 vertices = (v1, v2, v3)
-                polygon.vertices = vertices
+                polygon.shape.vertices = vertices
 
-            elif isinstance(polygon, Quad):
-                v1 = polygon.vertices[0]
-                v2 = polygon.vertices[1]
-                v3 = polygon.vertices[2]
-                v4 = polygon.vertices[3]
+            elif isinstance(polygon.shape, Quad):
+                v1 = polygon.shape.vertices[0]
+                v2 = polygon.shape.vertices[1]
+                v3 = polygon.shape.vertices[2]
+                v4 = polygon.shape.vertices[3]
 
                 v1 = v1.add_vector(timestep_velocity)
                 v2 = v2.add_vector(timestep_velocity)
@@ -95,7 +95,7 @@ class Physics:
                 v4 = v4.add_vector(timestep_velocity)
 
                 vertices = (v1, v2, v3, v4)
-                polygon.vertices = vertices
+                polygon.shape.vertices = vertices
 
     def _calculate_spin(self, timestep: float):
         timestep_velocity = self.spin_velocity.multiply(timestep)
@@ -107,7 +107,7 @@ class Physics:
         z_rotation = timestep_velocity.z * timestep
 
         for polygon in self.mesh.original_polygons:
-            vertices = list(polygon.vertices)
+            vertices = list(polygon.shape.vertices)
             for idx, vertex in enumerate(vertices):
                 vertex = self._rotate_x(vertex, x_rotation)
                 vertex = self._rotate_y(vertex, y_rotation)
@@ -116,7 +116,7 @@ class Physics:
                     self.mesh.light.position = vertex
                 vertices[idx] = vertex
 
-            polygon.vertices = tuple(vertices)
+            polygon.shape.vertices = tuple(vertices)
 
     def get_random_direction(self):
         x_rnd = random.uniform(-1.0, 1.0)

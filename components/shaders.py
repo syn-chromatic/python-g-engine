@@ -102,10 +102,10 @@ class Shaders:
         light_dir = light_dir.normalize()
 
         for polygon in mesh.polygons:
-            if isinstance(polygon, Quad):
+            if isinstance(polygon.shape, Quad):
                 continue
 
-            triangle = polygon
+            triangle = polygon.shape
             shader_vec = self.get_pbr_shader(light, triangle, viewer_position)
             shader = RGBA.from_vector(shader_vec)
             triangle.shader = triangle.shader.average(shader)
@@ -113,10 +113,10 @@ class Shaders:
     @staticmethod
     def apply_lighting(mesh: Mesh, light: Light, viewer_position: Vector3D) -> None:
         for polygon in mesh.polygons:
-            if isinstance(polygon, Quad):
+            if isinstance(polygon.shape, Quad):
                 continue
 
-            triangle = polygon
+            triangle = polygon.shape
             vertices = triangle.vertices
             v0, v1, v2 = vertices
 

@@ -1,4 +1,5 @@
 from components.polygons import Mesh, Triangle, Quad
+from components.polygons import Polygon
 from components.vertices import MeshConverter
 from components.vectors import Vector3D
 from components.color import RGBA
@@ -50,7 +51,8 @@ class OBJModelFormat:
                 (vertices[face[0]], vertices[face[1]], vertices[face[2]]),
                 face,
             )
-            triangle_polygons.append(triangle)
+            triangle_poly = Polygon(triangle)
+            triangle_polygons.append(triangle_poly)
         return Mesh(triangle_polygons)
 
     def get_model_quads(self) -> Mesh:
@@ -87,7 +89,9 @@ class OBJModelFormat:
                 ),
                 face,
             )
-            quad_polygons.append(quad)
+            quad_poly = Polygon(quad)
+            quad_polygons.append(quad_poly)
+
         return Mesh(quad_polygons)
 
     def get_polygons(self) -> Mesh:

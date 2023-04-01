@@ -196,10 +196,10 @@ class TurtleGraphics(TurtleGraphicsBase):
 
     def draw_polygons(self, mesh: Mesh, mesh_lines: bool = False):
         for polygon in mesh.polygons:
-            if isinstance(polygon, Triangle):
-                self.draw_triangle(polygon, mesh_lines)
-            elif isinstance(polygon, Quad):
-                self.draw_quad(polygon, mesh_lines)
+            if isinstance(polygon.shape, Triangle):
+                self.draw_triangle(polygon.shape, mesh_lines)
+            elif isinstance(polygon.shape, Quad):
+                self.draw_quad(polygon.shape, mesh_lines)
 
     def draw_triangle(self, triangle: Triangle, mesh_lines: bool = False):
         vertices = triangle.vertices
@@ -474,10 +474,10 @@ class PygGraphics(PygGraphicsBase):
 
     def draw_polygons(self, mesh: Mesh, mesh_lines: bool = False):
         for polygon in mesh.polygons:
-            if isinstance(polygon, Triangle):
-                self.draw_triangle(polygon, mesh_lines)
-            elif isinstance(polygon, Quad):
-                self.draw_quad(polygon, mesh_lines)
+            if isinstance(polygon.shape, Triangle):
+                self.draw_triangle(polygon.shape, mesh_lines)
+            elif isinstance(polygon.shape, Quad):
+                self.draw_quad(polygon.shape, mesh_lines)
 
     def draw_triangle(self, triangle: Triangle, mesh_lines: bool):
         vertices = triangle.vertices
