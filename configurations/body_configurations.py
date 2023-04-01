@@ -28,7 +28,7 @@ def get_center_cube(px, py, pz):
 
 def get_sphere1():
     position = (400.0, 1100.0, 3100.0)
-    mass = 50_000
+    mass = 500_000_000_000
     light = Light.get_light()
     sphere = Sphere(100, 10, 10)
     sphere.set_offset(*position)
@@ -42,18 +42,38 @@ def get_sphere1():
 
 
 def get_sphere2():
-    position = (-400.0, 1100.0, 3100.0)
-    mass = 50_000
+    position = (-5000.0, -1100.0, 3100.0)
+    mass = 5_000_000_000
     light = Light.get_light()
     sphere = Sphere(100, 10, 10)
     sphere.set_offset(*position)
     mesh = sphere.get_triangle_mesh()
     mesh.light = light
     body = Shape(mesh)
-    body.physics.set_position(*position)
     body.physics.set_mass(mass)
+    body.physics.set_position(*position)
     body.physics.set_velocity(200, 0, 0)
     return body
+
+
+
+def get_sphere3():
+    position = (-5000.0, -1100.0, -3100.0)
+    mass = 500_000_000
+    light = Light.get_light()
+    sphere = Sphere(100, 10, 10)
+    sphere.set_offset(*position)
+    mesh = sphere.get_triangle_mesh()
+    mesh.light = light
+    body = Shape(mesh)
+    body.physics.set_mass(mass)
+    body.physics.set_position(*position)
+    body.physics.set_velocity(200, 0, 0)
+    return body
+
+
+
+
 
 
 def get_cube_t1():
@@ -88,8 +108,21 @@ def get_grid():
     return body
 
 
-def get_obj():
+def get_obj_from_file(file_path: Path):
     mass = 10_000_000
+    obj = OBJModelFormat(file_path, 0.2)
+    obj.set_offset(500, -100, 600)
+    polygons = obj.get_polygons()
+    color = RGBA(0.8, 0.3, 0.3, 1.0)
+
+    body = Shape(polygons)
+    body.set_color(color)
+    body.physics.set_mass(mass)
+    return body
+
+
+def get_obj():
+    mass = 100_000_000_000
     file_path = Path("./cottage2.obj")
     obj = OBJModelFormat(file_path, 0.2)
     obj.set_offset(500, -100, 600)

@@ -81,7 +81,6 @@ class Frustum:
         pC = -n.z
         pD = -p0.dot_product(n)
         p = Plane(pA, pB, pC, pD)
-
         return p
 
     def get_plane_distance(self, point: Vector3D, plane: Plane):

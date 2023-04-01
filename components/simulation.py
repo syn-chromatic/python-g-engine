@@ -6,6 +6,9 @@ from components.physics import Physics
 from components.font import FontSettings, ArialFontNormal, ArialFontBold
 from components.text_writer import TextWriter
 from components.draw_call import DrawCall
+from shared_dcs import FrameTime
+
+from pathlib import Path
 
 import configurations.body_configurations as body_configurations
 
@@ -14,7 +17,7 @@ class Simulation:
     def __init__(self, draw_call: DrawCall) -> None:
         self.draw_call = draw_call
         self.text_writer = self.create_text_writer()
-        self.timestep_hz = 10_000
+        self.timestep_hz = 1
 
     @staticmethod
     def get_header_font():
@@ -68,6 +71,8 @@ class Simulation:
         self.draw_call.add_object(grid)
 
         # self.setup_objects_cubes()
+        # obj = body_configurations.get_obj_from_file(Path("./male.obj"))
+        # self.draw_call.add_object(obj)
 
         obj = body_configurations.get_obj()
         self.draw_call.add_object(obj)
@@ -76,6 +81,9 @@ class Simulation:
         self.draw_call.add_object(sphere)
 
         # sphere = body_configurations.get_sphere2()
+        # self.draw_call.add_object(sphere)
+
+        # sphere = body_configurations.get_sphere3()
         # self.draw_call.add_object(sphere)
 
         # obj = body_configurations.get_obj2()
@@ -103,29 +111,28 @@ class Simulation:
         #             obj2_physics.mass += obj1_physics.mass
         #             continue
 
-    def compute_all_objects(self, graphics: GraphicsABC):
-        # timestep = 1.0 / self.timestep_hz
+    def compute_all_objects(self):
         # objects = self.draw_call.objects
+        # timestep = 1.0 / self.timestep_hz
 
-        # for idx1, obj1 in enumerate(objects):
+        # for obj1 in objects:
         #     obj1_physics = obj1.physics
-        #     for idx2, obj2 in enumerate(objects):
+        #     for obj2 in objects:
         #         if obj1 == obj2:
         #             continue
         #         obj2_physics = obj2.physics
-        # self.handle_physics(obj1_physics, obj2_physics, idx1, idx2)
+        #         obj1_physics.apply_forces(obj2_physics, timestep)
+        #     obj1_physics.update(timestep)
 
-        # obj1_physics.update(timestep)
-
-        # obj1.draw(graphics, self.camera)
         self.draw_call.draw()
 
-    def write_fps_text(self, fps: float):
+    def write_fps_text(self, frametime: FrameTime):
         header_font = self.get_header_font()
         header_text = "Simulation Information"
-        text = f"{fps:.2f} FPS"
+        text_average = f"Average: {frametime.average_fps:.2f} FPS"
+
         self.text_writer.add_text_top_left(header_text, header_font)
-        self.text_writer.add_text_top_left(text)
+        self.text_writer.add_text_top_left(text_average)
 
     def write_timestep_text(self):
         khz = self.timestep_hz / 1000.0
@@ -175,10 +182,10 @@ class Simulation:
     def draw_text(self, graphics: GraphicsABC):
         self.text_writer.draw(graphics)
 
-    def simulate(self, graphics: GraphicsABC, fps: float):
-        self.compute_all_objects(graphics)
+    def simulate(self, graphics: GraphicsABC, frametime: FrameTime):
+        self.compute_all_objects()
 
-        self.write_fps_text(fps)
+        self.write_fps_text(frametime)
         self.write_timestep_text()
         self.write_object_count()
         self.write_camera_information()

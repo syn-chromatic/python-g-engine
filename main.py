@@ -17,7 +17,7 @@ def main() -> None:
     graphics = PygGraphics(width, height)
     camera = Camera(width, height)
     draw_call = DrawCall(graphics, camera)
-    frame_timing = FrameTimeHandler(30)
+    frame_timing = FrameTimeHandler(10)
 
     graphics.set_title("Physics System")
     graphics.set_background_color(background_color)
@@ -108,9 +108,9 @@ class GraphicsHandler:
             camera.handle_mouse_movement(dx, dy)
 
     def on_draw(self) -> None:
-        fps = self.frame_timing.get_frames_per_second()
+        frametime = self.frame_timing.get_frametime_data()
         self.graphics.clear_screen()
-        self.simulation.simulate(self.graphics, fps)
+        self.simulation.simulate(self.graphics, frametime)
         self.frame_timing.tick()
         self.graphics.update()
 

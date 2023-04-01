@@ -47,3 +47,8 @@ class KeyRegister:
     press_time: float
     is_pressed: bool
     is_repeatable: bool
+
+
+@dataclass
+class FrameTime:
+    average_fps: float

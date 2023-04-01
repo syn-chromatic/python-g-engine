@@ -8,6 +8,8 @@ from components.backface_culling import BackfaceCulling
 
 from components.shaders import Shaders
 from components.light import Light
+from components.debug import console_overwrite
+from copy import copy
 
 
 class DrawCall:
@@ -18,6 +20,7 @@ class DrawCall:
         self.shaders = Shaders()
         self.z_buffer_sort = ZBufferSort2()
         self.backface_culling = BackfaceCulling()
+        self.meshes = []
 
     def add_object(self, object: Body) -> None:
         self.objects.append(object)
@@ -40,10 +43,9 @@ class DrawCall:
 
     def get_meshes(self) -> list[Mesh]:
         meshes = []
-
         for body in self.objects:
             mesh = body.physics.mesh
-            mesh.polygons = mesh.original_polygons
+            mesh.polygons = copy(mesh.original_polygons)
             meshes.append(mesh)
         return meshes
 
@@ -117,13 +119,14 @@ class DrawCall:
         if not meshes:
             return
 
-        mesh = self.combine_meshes(meshes)
-        mesh = self.apply_z_buffer_sort(mesh)
-        mesh = self.cull_backfaces_mesh(mesh)
-        mesh = self.apply_lighting_mesh(mesh, lights)
-        mesh = self.apply_projection(mesh)
+        # mesh = self.combine_meshes(meshes)
+        for mesh in meshes:
+            mesh = self.apply_z_buffer_sort(mesh)
+            mesh = self.cull_backfaces_mesh(mesh)
+            mesh = self.apply_lighting_mesh(mesh, lights)
+            mesh = self.apply_projection(mesh)
 
-        # polygon_count = len(mesh.polygons)
-        # print(f"POLYGON COUNT: {polygon_count}", end="\r")
+            # polygon_count = len(mesh.polygons)
+            # console_overwrite(f"POLYGON COUNT: {polygon_count}")
 
-        self.graphics.draw_polygons(mesh)
+            self.graphics.draw_polygons(mesh)

@@ -24,7 +24,7 @@ class Physics:
         self.melting_point = 1500
         self.mass = 1.0
         self.scale = 1.0
-        self.g_const = 0.001
+        self.g_const = 0.1
 
     @staticmethod
     def _rotate_x(xyz_point: Vector3D, theta: float) -> Vector3D:
@@ -59,16 +59,18 @@ class Physics:
 
     def _calculate_position(self, timestep: float) -> None:
         timestep_velocity = self.velocity.multiply(timestep)
-        timestep_acceleration = self.acceleration.multiply(timestep)
+        timestep_change = 0.5 * (timestep**2)
+        timestep_acceleration = self.acceleration.multiply(timestep_change)
         self.position = self.position.add_vector(timestep_velocity)
-        self.velocity = self.velocity.add_vector(timestep_acceleration)
+        self.position = self.position.add_vector(timestep_acceleration)
+        self.velocity = self.velocity.add_vector(self.acceleration.multiply(timestep))
 
         if self.mesh.light:
             light_position = self.mesh.light.position
             light_position = light_position.add_vector(timestep_velocity)
             self.mesh.light.position = light_position
 
-        for polygon in self.mesh.polygons:
+        for polygon in self.mesh.original_polygons:
             if isinstance(polygon, Triangle):
                 v1 = polygon.vertices[0]
                 v2 = polygon.vertices[1]
@@ -96,13 +98,15 @@ class Physics:
                 polygon.vertices = vertices
 
     def _calculate_spin(self, timestep: float):
-        timestep_spin_acc = self.spin_acceleration.multiply(timestep)
-        self.spin_velocity = self.spin_velocity.add_vector(timestep_spin_acc)
-        x_rotation = self.spin_velocity.x * timestep
-        y_rotation = self.spin_velocity.y * timestep
-        z_rotation = self.spin_velocity.z * timestep
+        timestep_velocity = self.spin_velocity.multiply(timestep)
+        timestep_acceleration = self.spin_acceleration.multiply(timestep)
+        self.spin_velocity = self.spin_velocity.add_vector(timestep_acceleration)
 
-        for polygon in self.mesh.polygons:
+        x_rotation = timestep_velocity.x * timestep
+        y_rotation = timestep_velocity.y * timestep
+        z_rotation = timestep_velocity.z * timestep
+
+        for polygon in self.mesh.original_polygons:
             vertices = list(polygon.vertices)
             for idx, vertex in enumerate(vertices):
                 vertex = self._rotate_x(vertex, x_rotation)
@@ -240,11 +244,10 @@ class Physics:
         distance = tts_distance.get_length()
 
         if distance > 0:
-            strength = self.g_const * ((self.mass * target.mass) / distance)
+            strength = self.g_const * ((self.mass * target.mass) / (distance**2))
             force = tts_distance.set_magnitude(strength)
-            force = force.divide(self.mass)
-            self.acceleration = self.acceleration.add_vector(force)
-            self.spin_acceleration = self.spin_acceleration.add_vector(force)
+            acceleration_change = force.divide(self.mass)
+            self.acceleration = self.acceleration.add_vector(acceleration_change)
 
     def apply_collision(
         self, target: Self, tts_distance: Vector3D, timestep: float
@@ -254,7 +257,11 @@ class Physics:
 
         total_radius = self_radius + target_radius
         edge_distance = tts_distance.get_length() - total_radius
-        if self.mesh.intersects(target.mesh):
+        if (
+            self.mesh.polygons
+            and target.mesh.polygons
+            and self.mesh.intersects(target.mesh)
+        ):
             # # if edge_distance <= 0:
             #     # Self-To-Target Distance
             stt_distance = tts_distance.multiply(-1)
@@ -267,10 +274,7 @@ class Physics:
 
             # properties_args = (target, self_shifted, target_shifted, stt_direction)
             # collision_properties = self.create_collision_properties(*properties_args)
-            # return collision_properties
 
     def update(self, timestep: float):
         self._calculate_position(timestep)
-        # self._calculate_spin(timestep)
         self.acceleration = Vector3D(0.0, 0.0, 0.0)
-        self.spin_acceleration = Vector3D(0.0, 0.0, 0.0)

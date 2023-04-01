@@ -1,6 +1,7 @@
 import time
 from collections import deque
-from typing import Optional
+
+from shared_dcs import FrameTime
 
 
 class FrameTimeHandler:
@@ -17,16 +18,23 @@ class FrameTimeHandler:
         if len(self.frame_times) > self.frame_count:
             self.frame_times.popleft()
 
-    def get_average_frame_time(self) -> Optional[float]:
+    def get_average_frame_time(self) -> float:
         if not self.frame_times:
-            return None
-        else:
-            total_time = sum(self.frame_times)
-            return total_time / len(self.frame_times)
+            return 0.0
+
+        total_time = sum(self.frame_times)
+        return total_time / len(self.frame_times)
 
     def get_frames_per_second(self) -> float:
         average_frame_time = self.get_average_frame_time()
-        if average_frame_time is not None:
-            return 1.0 / average_frame_time
-        else:
+        if not average_frame_time:
             return 0.0
+
+        return 1.0 / average_frame_time
+
+    def get_frametime_data(self) -> FrameTime:
+        average_fps = self.get_frames_per_second()
+        frame_time = FrameTime(
+            average_fps=average_fps,
+        )
+        return frame_time

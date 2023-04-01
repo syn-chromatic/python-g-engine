@@ -296,7 +296,6 @@ class PygGraphicsBase(GraphicsABC):
         self.clock = pyg.time.Clock()
         self.default_font = pyg.font.get_default_font()
         self.bg_color = RGBA(1.0, 1.0, 1.0, 1.0)
-        # self.registered_keys: dict[int, dict[str, Union[Callable, bool, float]]] = {}
         self.registered_keys: list[KeyRegister] = []
 
     def update(self) -> None:
