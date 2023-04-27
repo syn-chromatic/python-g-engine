@@ -1,6 +1,6 @@
 # Python G-Engine
 Python is too slow for these types of simulations, see the Rust implementation (being worked on)
-https://github.com/syn-chromatic/rust-physics-simulation
+https://github.com/syn-chromatic/rust-g-engine
 
 ___
 # Setup
